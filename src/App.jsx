@@ -10,12 +10,14 @@ import {
   CardContent,
   Alert,
   Typography,
+  useMediaQuery,
 } from "@mui/material";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { BarChart } from "@mui/x-charts";
 
 function App() {
   const { energyCost, loading, cheapPrice } = useEnergyCost();
+  const isMobile = useMediaQuery("(max-width:600px)");
 
   const chartSetting = {
     xAxis: [
@@ -23,8 +25,8 @@ function App() {
         label: "Coste €/MWh",
       },
     ],
-    width: 500,
-    height: 400,
+    width: isMobile ? 300 : 500,
+    height: isMobile ? 200 : 400,
   };
 
   const getColor = (price) => {
