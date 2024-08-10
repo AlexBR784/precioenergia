@@ -25,6 +25,12 @@ function App() {
         label: "Coste €/MWh",
       },
     ],
+    yAxis: [
+      {
+        tickCount: isMobile ? 5 : 10, // Reduce el número de etiquetas en dispositivos móviles
+        tickLabelAngle: isMobile ? -45 : 0, // Rota las etiquetas en dispositivos móviles
+      },
+    ],
     width: isMobile ? 300 : 500,
     height: isMobile ? 200 : 400,
   };
