@@ -11,7 +11,7 @@ export const useEnergyCost = () => {
     useEffect(() => {
         async function fetchEnergyCost() {
 
-            const targetUrl = 'https://corsproxy.io/?https://api.preciodelaluz.org/v1/prices/all?zone=PCB';
+            const targetUrl = 'https://api.preciodelaluz.org/v1/prices/all?zone=PCB';
 
             const resp = await axios.get(targetUrl);
 
