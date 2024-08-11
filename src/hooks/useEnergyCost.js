@@ -11,16 +11,23 @@ export const useEnergyCost = () => {
     useEffect(() => {
         async function fetchEnergyCost() {
 
-            const targetUrl = 'https://api.preciodelaluz.org/v1/prices/all?zone=PCB';
+            const targetUrl = 'https://api.allorigins.win/get?url=https://api.preciodelaluz.org/v1/prices/all?zone=PCB';
 
-            const resp = await axios.get(targetUrl);
+            const response = await axios.get(targetUrl, {
+                withCredentials: false,
+                
+            });
 
             const parsedData = [];
             const isCheap = [];
-
+           
+            const resp = JSON.parse(response.data.contents)
+    
             // Loop through each item in the response and return the price
-            Object.keys(resp.data).forEach((key) => {
-                const item = resp.data[key];
+            Object.keys(resp).forEach((key) => {
+                
+                const item = resp[key];
+          
                 if (item['is-cheap']) {
                     isCheap.push(item)
                 }
