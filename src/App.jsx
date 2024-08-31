@@ -166,8 +166,7 @@ function App() {
                 <Alert severity="info">{`El precio más bajo es de ${cheapPrice}€/MWh de las ${xAxisData[minPriceIndex]}h.`}</Alert>
                 {
                   // Obtener la hora actual y comprobar si estamos en el rango horario donde el precio es mas bajo. El rango horario es en formato X - X
-                  currentHour >= xAxisData[minPriceIndex].split("-")[0] &&
-                  currentHour <= xAxisData[minPriceIndex].split("-")[1] ? (
+                  currentHour == xAxisData[minPriceIndex].split("-")[0] ? (
                     <Alert severity="success">
                       Estamos en el rango horario más barato
                     </Alert>
