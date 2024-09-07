@@ -30,7 +30,7 @@ import {
 } from "@mui/x-charts";
 
 function App() {
-  const { energyCost, loading, cheapPrice } = useEnergyCost();
+  const { energyCost, loading, cheapPrice, timeoutFlag } = useEnergyCost();
   const [units, setUnits] = useState("€/MWh");
 
   const handleUnitChange = (event) => {
@@ -143,7 +143,13 @@ function App() {
   return (
     <>
       {loading ? (
-        <CircularProgress />
+        !timeoutFlag ? (
+          <CircularProgress />
+        ) : (
+          <Alert severity="error">
+            Error al obtener los datos, recargue la página o pruebe más tarde.
+          </Alert>
+        )
       ) : (
         <Box
           sx={{

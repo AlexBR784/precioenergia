@@ -7,27 +7,35 @@ export const useEnergyCost = () => {
     const [energyCost, setEnergyCost] = useState(null);
     const [loading, setLoading] = useState(true);
     const [cheapPrice, setCheapPrice] = useState(true);
+    const [timeoutFlag, setTimeoutFlag] = useState(false);
 
     useEffect(() => {
         async function fetchEnergyCost() {
 
             const targetUrl = 'https://api.allorigins.win/get?url=https://api.preciodelaluz.org/v1/prices/all?zone=PCB';
+            let response = null;
+            try {
+                response = await axios.get(targetUrl, {
+                    withCredentials: false,
+                    timeout: 8000
+                });
+            } catch (e) {
+                console.log(e);
+                setTimeoutFlag(true)
+                return;
+            }
 
-            const response = await axios.get(targetUrl, {
-                withCredentials: false,
-                
-            });
 
             const parsedData = [];
             const isCheap = [];
-           
+
             const resp = JSON.parse(response.data.contents)
-    
+
             // Loop through each item in the response and return the price
             Object.keys(resp).forEach((key) => {
-                
+
                 const item = resp[key];
-          
+
                 if (item['is-cheap']) {
                     isCheap.push(item)
                 }
@@ -52,5 +60,5 @@ export const useEnergyCost = () => {
 
     }, []);
 
-    return { energyCost, loading, cheapPrice };
+    return { energyCost, loading, cheapPrice, timeoutFlag };
 }
