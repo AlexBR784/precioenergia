@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import "./App.css";
 import { useEnergyCost } from "./hooks/useEnergyCost";
 import {
@@ -19,6 +19,9 @@ import {
   InputLabel,
   MenuItem,
   FormControl,
+  Tooltip,
+  Snackbar,
+  Grow,
 } from "@mui/material";
 import {
   ResponsiveChartContainer,
@@ -32,10 +35,44 @@ import {
 function App() {
   const { energyCost, loading, cheapPrice, timeoutFlag } = useEnergyCost();
   const [units, setUnits] = useState("€/MWh");
+  const [order, setOrder] = useState("price");
+  const [rowsTable, setRowsTable] = useState([]);
+  const [open, setOpen] = useState(false);
+
+  function GrowTransition(props) {
+    return <Grow {...props} />;
+  }
 
   const handleUnitChange = (event) => {
     setUnits(event.target.value);
+    handleOpenSnackbar();
   };
+
+  const handleOrderChange = (event) => {
+    setOrder(event.target.value);
+    handleOpenSnackbar();
+  };
+
+  const handleOpenSnackbar = () => {
+    setOpen(true);
+  };
+
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setOpen(false);
+  };
+
+  function sortData(data, sortBy) {
+    return data.sort((a, b) => {
+      if (sortBy === "name") {
+        return a.name - b.name; // Sort numerically by name (price)
+      } else if (sortBy === "hour") {
+        return a.hour.localeCompare(b.hour); // Sort lexicographically by hour
+      }
+    });
+  }
 
   function priceConversion(price) {
     if (units === "€/MWh") {
@@ -140,6 +177,10 @@ function App() {
       });
   }, [energyCost, units]);
 
+  useEffect(() => {
+    rows ? setRowsTable(sortData([...rows], order)) : setRowsTable([]);
+  }, [rows, order]);
+
   return (
     <>
       {loading ? (
@@ -161,19 +202,25 @@ function App() {
           <div
             style={{ padding: 10, display: "flex", justifyContent: "flex-end" }}
           >
-            <FormControl>
-              <InputLabel id="unitslabel">Unidades</InputLabel>
-              <Select
-                labelId="unitslabel"
-                id="units-select"
-                value={units}
-                label="Unidades"
-                onChange={handleUnitChange}
-              >
-                <MenuItem value={"€/MWh"}>€/MWh</MenuItem>
-                <MenuItem value={"€/KWh"}>€/KWh</MenuItem>
-              </Select>
-            </FormControl>
+            <Tooltip
+              title="Selecciona las unidades con la que ver los datos"
+              arrow
+              placement="left"
+            >
+              <FormControl>
+                <InputLabel id="unitslabel">Unidades</InputLabel>
+                <Select
+                  labelId="unitslabel"
+                  id="units-select"
+                  value={units}
+                  label="Unidades"
+                  onChange={handleUnitChange}
+                >
+                  <MenuItem value={"€/MWh"}>€/MWh</MenuItem>
+                  <MenuItem value={"€/KWh"}>€/KWh</MenuItem>
+                </Select>
+              </FormControl>
+            </Tooltip>
           </div>
           <Card variant="outlined">
             <CardContent>
@@ -231,6 +278,33 @@ function App() {
                   )
                 }
               </div>
+              <div
+                style={{
+                  marginTop: 20,
+                  display: "flex",
+                  justifyContent: "flex-start",
+                }}
+              >
+                <Tooltip
+                  title="Selecciona como deseas ordenar la tabla"
+                  arrow
+                  placement="right"
+                >
+                  <FormControl>
+                    <InputLabel id="orderLabel">Ordenar</InputLabel>
+                    <Select
+                      labelId="orderLabel"
+                      id="order-select"
+                      value={order}
+                      label="Orden"
+                      onChange={handleOrderChange}
+                    >
+                      <MenuItem value={"price"}>Precio</MenuItem>
+                      <MenuItem value={"hour"}>Horas</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Tooltip>
+              </div>
               <TableContainer sx={{ marginTop: 4, maxHeight: 600 }}>
                 <Table aria-label="table" stickyHeader>
                   <TableHead>
@@ -244,13 +318,18 @@ function App() {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {rows.map((row, index) => (
+                    {rowsTable.map((row, index) => (
                       <TableRow
                         key={row.key}
                         sx={{
                           "&:last-child td, &:last-child th": { border: 0 },
                           backgroundColor:
-                            index % 2 === 0 ? "#F4F4F4" : "white",
+                            row.hour.split("-")[0] <= currentHour &&
+                            row.hour.split("-")[1] > currentHour
+                              ? "#e5f6fd"
+                              : index % 2 === 0
+                              ? "#F4F4F4"
+                              : "white",
                         }}
                       >
                         <TableCell align="center">{row.hour}</TableCell>
@@ -264,6 +343,17 @@ function App() {
           </Card>
         </Box>
       )}
+
+      <Snackbar
+        open={open}
+        onClose={handleCloseSnackbar}
+        TransitionComponent={GrowTransition}
+        autoHideDuration={1500}
+      >
+        <Alert severity="success" variant="filled" elevation={6}>
+          Opciones actualizadas
+        </Alert>
+      </Snackbar>
     </>
   );
 }
