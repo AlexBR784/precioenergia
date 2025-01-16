@@ -1,64 +1,57 @@
-// Custom hook that uses the energy cost API to get the energy cost for today
-
-import { useState, useEffect } from 'react';
-import axios from 'axios';
+import { useState, useEffect } from "react";
+import axios from "axios";
 
 export const useEnergyCost = () => {
-    const [energyCost, setEnergyCost] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [cheapPrice, setCheapPrice] = useState(true);
-    const [timeoutFlag, setTimeoutFlag] = useState(false);
+  const [energyCost, setEnergyCost] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [cheapPrice, setCheapPrice] = useState(null);
+  const [timeoutFlag, setTimeoutFlag] = useState(false);
 
-    useEffect(() => {
-        async function fetchEnergyCost() {
+  useEffect(() => {
+    async function fetchEnergyCost() {
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = (today.getMonth() + 1).toString().padStart(2, "0");
+      const day = today.getDate().toString().padStart(2, "0");
+      const startDate = `${year}-${month}-${day}T00:00`;
+      const endDate = `${year}-${month}-${day}T23:59`;
+      const targetUrl = `https://apidatos.ree.es/es/datos/mercados/precios-mercados-tiempo-real?start_date=${startDate}&end_date=${endDate}&time_trunc=hour`;
 
-            const targetUrl = 'https://api.allorigins.win/get?url=https://api.preciodelaluz.org/v1/prices/all?zone=PCB';
-            let response = null;
-            try {
-                response = await axios.get(targetUrl, {
-                    withCredentials: false,
-                    timeout: 8000
-                });
-            } catch (e) {
-                console.log(e);
-                setTimeoutFlag(true)
-                return;
-            }
+      let response = null;
+      try {
+        response = await axios.get(targetUrl, {
+          withCredentials: false,
+          timeout: 8000,
+        });
+      } catch (e) {
+        console.log(e);
+        setTimeoutFlag(true);
+        return;
+      }
 
+      const parsedData = response.data.included[0].attributes.values;
 
-            const parsedData = [];
-            const isCheap = [];
+      parsedData.forEach((item) => {
+        const date = new Date(item.datetime);
+        const hours = date.getHours().toString().padStart(2, "0");
+        const minutes = date.getMinutes().toString().padStart(2, "0");
+        item.datetime = `${hours}:${minutes}`;
+      });
+      const isCheap = parsedData.filter((item) => item.percentage < 0.55);
 
-            const resp = JSON.parse(response.data.contents)
+      setEnergyCost(parsedData);
+      setLoading(false);
 
-            // Loop through each item in the response and return the price
-            Object.keys(resp).forEach((key) => {
+      if (isCheap.length > 0) {
+        const cheaper = isCheap.reduce((prev, current) => {
+          return prev.value < current.value ? prev : current;
+        });
+        setCheapPrice(cheaper.value);
+      }
+    }
+    setLoading(true);
+    fetchEnergyCost();
+  }, []);
 
-                const item = resp[key];
-
-                if (item['is-cheap']) {
-                    isCheap.push(item)
-                }
-                // From the cheapest items, get the cheaper
-                parsedData.push(item)
-
-            });
-
-            setEnergyCost(parsedData);
-            setLoading(false);
-
-            if (isCheap.length > 0) {
-                const cheaper = isCheap.reduce((prev, current) => {
-                    return (prev.price < current.price) ? prev : current
-                });
-                setCheapPrice(cheaper.price);
-            }
-
-        }
-        setLoading(true);
-        fetchEnergyCost();
-
-    }, []);
-
-    return { energyCost, loading, cheapPrice, timeoutFlag };
-}
+  return { energyCost, loading, cheapPrice, timeoutFlag };
+};

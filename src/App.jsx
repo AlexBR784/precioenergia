@@ -135,20 +135,21 @@ function App() {
   if (isMobile) {
     const currentHour = new Date().getHours();
     finalEnergyCost = energyCost?.filter((item) => {
-      return item.hour.split("-")[0] >= currentHour;
+      return item.datetime.split("-")[0] >= currentHour;
     });
   } else {
     finalEnergyCost = energyCost;
   }
+
   finalEnergyCost?.map((item) => {
-    yAxisData.push(priceConversion(item.price));
-    xAxisData.push(item.hour);
-    colors.push(getColor(item.price));
+    yAxisData.push(priceConversion(item.value));
+    xAxisData.push(item.datetime);
+    colors.push(getColor(item.value));
   });
 
   energyCost?.map((item) => {
-    yAxisDataFull.push(priceConversion(item.price));
-    xAxisDataFull.push(item.hour);
+    yAxisDataFull.push(priceConversion(item.value));
+    xAxisDataFull.push(item.datetime);
   });
 
   // Get the minimum price and assoiated hour
@@ -167,12 +168,12 @@ function App() {
       .map((item) => {
         let value =
           units != "€/MWh"
-            ? priceConversion(item.price).toFixed(5)
-            : priceConversion(item.price);
+            ? priceConversion(item.value).toFixed(5)
+            : priceConversion(item.value);
         return {
-          key: item.hour,
+          key: `${item.datetime}-${item.value}`, // Combina datetime y value para una clave única
           name: value,
-          hour: item.hour,
+          hour: item.datetime,
         };
       });
   }, [energyCost, units]);
@@ -264,7 +265,9 @@ function App() {
               <div style={{ marginTop: 20 }}>
                 <Alert severity="info">{`El precio más bajo es de ${priceConversion(
                   cheapPrice
-                )} ${units} de las ${xAxisDataFull[minPriceIndex]}h.`}</Alert>
+                ).toFixed(5)} ${units} de las ${
+                  xAxisDataFull[minPriceIndex]
+                }h.`}</Alert>
                 {
                   // Obtener la hora actual y comprobar si estamos en el rango horario donde el precio es mas bajo. El rango horario es en formato X - X
                   currentHour == xAxisDataFull[minPriceIndex].split("-")[0] ? (
