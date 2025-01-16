@@ -134,8 +134,9 @@ function App() {
   // If is mobile, only show since currrent hour
   if (isMobile) {
     const currentHour = new Date().getHours();
+
     finalEnergyCost = energyCost?.filter((item) => {
-      return item.datetime.split("-")[0] >= currentHour;
+      return item.datetime.split(":")[0] >= currentHour;
     });
   } else {
     finalEnergyCost = energyCost;
