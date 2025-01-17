@@ -65,12 +65,28 @@ function App() {
   };
 
   function sortData(data, sortBy) {
+    console.log(sortBy);
+    console.log(
+      data.sort((a, b) => {
+        if (sortBy === "price") {
+          return a.name - b.name; // Ordenar numéricamente por nombre (precio)
+        } else if (sortBy === "hour") {
+          const [aHour, aMinute] = a.hour.split(":").map(Number);
+          const [bHour, bMinute] = b.hour.split(":").map(Number);
+          return aHour - bHour || aMinute - bMinute; // Ordenar numéricamente por hora y minuto
+        }
+        return 0; // Caso por defecto si sortBy no coincide
+      })
+    );
     return data.sort((a, b) => {
       if (sortBy === "name") {
-        return a.name - b.name; // Sort numerically by name (price)
+        return a.name - b.name; // Ordenar numéricamente por nombre (precio)
       } else if (sortBy === "hour") {
-        return a.hour.localeCompare(b.hour); // Sort lexicographically by hour
+        const [aHour, aMinute] = a.hour.split(":").map(Number);
+        const [bHour, bMinute] = b.hour.split(":").map(Number);
+        return aHour - bHour || aMinute - bMinute; // Ordenar numéricamente por hora y minuto
       }
+      return 0; // Caso por defecto si sortBy no coincide
     });
   }
 
