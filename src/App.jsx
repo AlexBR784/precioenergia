@@ -1,6 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import "./App.css";
 import { useEnergyCost } from "./hooks/useEnergyCost";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import dayjs from "dayjs";
+import es from "dayjs/locale/es";
 import {
   CircularProgress,
   Card,
@@ -33,7 +38,14 @@ import {
 } from "@mui/x-charts";
 
 function App() {
-  const { energyCost, loading, cheapPrice, timeoutFlag } = useEnergyCost();
+  const {
+    energyCost,
+    loading,
+    cheapPrice,
+    timeoutFlag,
+    fetchEnergyCost,
+    noData,
+  } = useEnergyCost();
   const [units, setUnits] = useState("€/MWh");
   const [order, setOrder] = useState("price");
   const [rowsTable, setRowsTable] = useState([]);
@@ -64,22 +76,14 @@ function App() {
     setOpen(false);
   };
 
+  const dateChange = (newValue) => {
+    const formattedDate = dayjs(newValue.$d).format("YYYY-MM-DD");
+    fetchEnergyCost(formattedDate);
+  };
+
   function sortData(data, sortBy) {
-    console.log(sortBy);
-    console.log(
-      data.sort((a, b) => {
-        if (sortBy === "price") {
-          return a.name - b.name; // Ordenar numéricamente por nombre (precio)
-        } else if (sortBy === "hour") {
-          const [aHour, aMinute] = a.hour.split(":").map(Number);
-          const [bHour, bMinute] = b.hour.split(":").map(Number);
-          return aHour - bHour || aMinute - bMinute; // Ordenar numéricamente por hora y minuto
-        }
-        return 0; // Caso por defecto si sortBy no coincide
-      })
-    );
     return data.sort((a, b) => {
-      if (sortBy === "name") {
+      if (sortBy === "price") {
         return a.name - b.name; // Ordenar numéricamente por nombre (precio)
       } else if (sortBy === "hour") {
         const [aHour, aMinute] = a.hour.split(":").map(Number);
@@ -201,7 +205,11 @@ function App() {
 
   return (
     <>
-      {loading ? (
+      {noData ? (
+        <Alert severity="error">
+          No hay datos para esa fecha, por favor recargue la página.
+        </Alert>
+      ) : loading ? (
         !timeoutFlag ? (
           <CircularProgress />
         ) : (
@@ -218,8 +226,21 @@ function App() {
           }}
         >
           <div
-            style={{ padding: 10, display: "flex", justifyContent: "flex-end" }}
+            style={{
+              padding: 10,
+              display: "flex",
+              justifyContent: "space-between",
+            }}
           >
+            <LocalizationProvider dateAdapter={AdapterDayjs} locale={es}>
+              <DatePicker
+                label="Selecciona fecha de fin"
+                format="DD/MM/YYYY"
+                defaultValue={dayjs(new Date().setHours(23, 59, 59, 999))}
+                onChange={(newValue) => dateChange(newValue)}
+              />
+            </LocalizationProvider>
+
             <Tooltip
               title="Selecciona las unidades con la que ver los datos"
               arrow
