@@ -234,7 +234,7 @@ function App() {
           >
             <LocalizationProvider dateAdapter={AdapterDayjs} locale={es}>
               <DatePicker
-                label="Selecciona fecha de fin"
+                label="Selecciona fecha"
                 format="DD/MM/YYYY"
                 defaultValue={dayjs(new Date().setHours(23, 59, 59, 999))}
                 onChange={(newValue) => dateChange(newValue)}
