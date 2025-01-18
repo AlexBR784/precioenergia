@@ -232,7 +232,7 @@ function App() {
               justifyContent: "space-between",
             }}
           >
-            <LocalizationProvider dateAdapter={AdapterDayjs} locale={es}>
+            <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale={es}>
               <DatePicker
                 label="Selecciona fecha"
                 format="DD/MM/YYYY"
