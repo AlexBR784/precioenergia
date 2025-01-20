@@ -6,6 +6,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs from "dayjs";
 import es from "dayjs/locale/es";
+import { ExcelIcon } from "./assets/Excel";
 import {
   CircularProgress,
   Card,
@@ -27,6 +28,7 @@ import {
   Tooltip,
   Snackbar,
   Grow,
+  Button,
 } from "@mui/material";
 import {
   ResponsiveChartContainer,
@@ -36,6 +38,7 @@ import {
   ChartsTooltip,
   axisClasses,
 } from "@mui/x-charts";
+import * as XLSX from "xlsx";
 
 function App() {
   const {
@@ -50,6 +53,23 @@ function App() {
   const [order, setOrder] = useState("price");
   const [rowsTable, setRowsTable] = useState([]);
   const [open, setOpen] = useState(false);
+  const [currentDate, setCurrentDate] = useState(new Date());
+
+  const exportToExcel = () => {
+    let copyRowsTable = [...rowsTable];
+    const sortedRowsTable = sortData(copyRowsTable, "hour");
+    const exportData = sortedRowsTable.map((row) => ({
+      Horas: row.hour,
+      Precio: row.name,
+    }));
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Precios Energia");
+    XLSX.writeFile(
+      workbook,
+      `Precios Energia ${dayjs(currentDate).format("DD/MM/YYYY")}.xlsx`
+    );
+  };
 
   function GrowTransition(props) {
     return <Grow {...props} />;
@@ -78,6 +98,7 @@ function App() {
 
   const dateChange = (newValue) => {
     const formattedDate = dayjs(newValue.$d).format("YYYY-MM-DD");
+    setCurrentDate(formattedDate);
     fetchEnergyCost(formattedDate);
   };
 
@@ -380,6 +401,9 @@ function App() {
                   </TableBody>
                 </Table>
               </TableContainer>
+              <Button onClick={exportToExcel} startIcon={<ExcelIcon />}>
+                Descargar
+              </Button>
             </CardContent>
           </Card>
         </Box>
