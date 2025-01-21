@@ -7,6 +7,7 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs from "dayjs";
 import es from "dayjs/locale/es";
 import { ExcelIcon } from "./assets/Excel";
+import Modal from "@mui/material/Modal";
 import {
   CircularProgress,
   Card,
@@ -29,6 +30,9 @@ import {
   Snackbar,
   Grow,
   Button,
+  Input,
+  Slider,
+  styled,
 } from "@mui/material";
 import {
   ResponsiveChartContainer,
@@ -54,6 +58,84 @@ function App() {
   const [rowsTable, setRowsTable] = useState([]);
   const [open, setOpen] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [openModal, setOpenModal] = useState(false);
+  const [rangeValue, setRangeValue] = useState(0);
+  const [bestRangeResult, setBestRangeResult] = useState([]);
+
+  const handleOpenModal = () => {
+    setOpenModal(true);
+    setRangeValue(0);
+    setBestRangeResult([]);
+  };
+  const handleCloseModal = () => setOpenModal(false);
+
+  const bestRange = (rangeS) => {
+    const range = parseInt(rangeS, 10);
+    if (!energyCost || energyCost.length === 0) {
+      console.error("No se han proporcionado datos de energía.");
+      return;
+    }
+
+    if (range <= 0 || range > energyCost.length) {
+      console.error("Invalid range value");
+      return;
+    }
+
+    let minCost = Infinity;
+    let bestRangeResult = [];
+
+    // Calcular el rango más barato
+    for (let i = 0; i <= energyCost.length - range; i++) {
+      const currentRange = energyCost.slice(i, i + range);
+      const currentCost = currentRange.reduce(
+        (sum, item) => sum + item.value,
+        0
+      );
+
+      if (currentCost < minCost) {
+        minCost = currentCost;
+        bestRangeResult = currentRange.map((item) => item.datetime);
+      }
+    }
+
+    // Mostrar resultados
+    console.log("Rango más barato:", bestRangeResult);
+    console.log("Costo total:", minCost);
+
+    // Devolver resultados si se necesita usarlos más adelante
+    setBestRangeResult(bestRangeResult);
+  };
+
+  const CustomSlider = styled(Slider)({
+    color: "#1565c0",
+    height: 10,
+    "& .MuiSlider-track": {
+      border: "none",
+    },
+    "& .MuiSlider-thumb": {
+      display: "none",
+    },
+    "& .MuiSlider-rail": { backgroundColor: "#1565c0", opacity: 1 },
+    "& .MuiSlider-valueLabel": {
+      lineHeight: 1.2,
+      fontSize: 12,
+      background: "unset",
+      padding: 0,
+      width: 32,
+      height: 32,
+      borderRadius: "50% 50% 50% 0",
+      backgroundColor: "#1565c0",
+      transformOrigin: "bottom left",
+      transform: "translate(50%, -100%) rotate(-45deg) scale(0)",
+      "&::before": { display: "none" },
+      "&.MuiSlider-valueLabelOpen": {
+        transform: "translate(50%, -100%) rotate(-45deg) scale(1)",
+      },
+      "& > *": {
+        transform: "rotate(45deg)",
+      },
+    },
+  });
 
   const exportToExcel = () => {
     let copyRowsTable = [...rowsTable];
@@ -69,6 +151,10 @@ function App() {
       workbook,
       `Precios Energia ${dayjs(currentDate).format("DD/MM/YYYY")}.xlsx`
     );
+  };
+
+  const setBestRangeNumber = (event) => {
+    setRangeValue(event.target.value);
   };
 
   function GrowTransition(props) {
@@ -339,6 +425,93 @@ function App() {
                     </Alert>
                   )
                 }
+              </div>
+              <div style={{ marginTop: 20 }}>
+                <Button onClick={handleOpenModal} variant="outlined">
+                  Calculadora Rangos Baratos
+                </Button>
+                <Modal
+                  open={openModal}
+                  onClose={handleCloseModal}
+                  aria-labelledby="modal-modal-title"
+                  aria-describedby="modal-modal-description"
+                >
+                  <Box
+                    sx={{
+                      position: "absolute",
+                      top: "50%",
+                      left: "50%",
+                      transform: "translate(-50%, -50%)",
+                      width: screen.width * 0.6,
+                      height: screen.height * 0.5,
+                      bgcolor: "background.paper",
+                      p: 4,
+                    }}
+                  >
+                    <Typography
+                      id="modal-modal-title"
+                      variant="h6"
+                      component="h2"
+                      sx={{ marginTop: 2, textAlign: "center" }}
+                    >
+                      Introduzca las fechas para calcular el rango más barato
+                    </Typography>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        gap: 25,
+                        marginTop: 25,
+                      }}
+                    >
+                      <Input type="number" onChange={setBestRangeNumber} />
+
+                      <Button
+                        variant="contained"
+                        onClick={() => bestRange(rangeValue)}
+                      >
+                        Calcular
+                      </Button>
+                    </div>
+                    {bestRangeResult.length > 0 &&
+                      (!isMobile ? (
+                        <CustomSlider
+                          sx={{
+                            marginTop: 10,
+                            width:
+                              bestRangeResult.length > 10
+                                ? "80%"
+                                : bestRangeResult.length * 10 + "%",
+                            marginLeft:
+                              bestRangeResult.length > 10
+                                ? "10%"
+                                : (100 - bestRangeResult.length * 10) / 2 + "%",
+                            "& .MuiSlider-markLabel": {
+                              color: "black",
+                            },
+                            pointerEvents: "none",
+                          }}
+                          step={1}
+                          max={bestRangeResult.length - 1}
+                          marks={bestRangeResult.map((item, index) => ({
+                            value: index,
+                            label: item + "h",
+                          }))}
+                        />
+                      ) : (
+                        <Typography
+                          sx={{
+                            marginTop: 10,
+                            display: "flex",
+                            justifyContent: "center",
+                            textAlign: "center",
+                          }}
+                        >
+                          {bestRangeResult.map((item) => item + "h ")}
+                        </Typography>
+                      ))}
+                  </Box>
+                </Modal>
               </div>
               <div
                 style={{
