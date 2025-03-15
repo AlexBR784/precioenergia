@@ -454,7 +454,8 @@ function App() {
                       component="h2"
                       sx={{ marginTop: 2, textAlign: "center" }}
                     >
-                      Introduzca las fechas para calcular el rango más barato
+                      Introduzca las horas deseadas para calcular el rango más
+                      barato
                     </Typography>
                     <div
                       style={{
