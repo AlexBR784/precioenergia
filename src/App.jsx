@@ -8,6 +8,8 @@ import dayjs from "dayjs";
 import es from "dayjs/locale/es";
 import { ExcelIcon } from "./assets/Excel";
 import Modal from "@mui/material/Modal";
+import { Stepper, Step, StepLabel } from "@mui/material";
+
 import {
   CircularProgress,
   Card,
@@ -31,9 +33,8 @@ import {
   Grow,
   Button,
   Input,
-  Slider,
-  styled,
 } from "@mui/material";
+
 import {
   ResponsiveChartContainer,
   BarPlot,
@@ -98,44 +99,8 @@ function App() {
       }
     }
 
-    // Mostrar resultados
-    console.log("Rango más barato:", bestRangeResult);
-    console.log("Costo total:", minCost);
-
-    // Devolver resultados si se necesita usarlos más adelante
     setBestRangeResult(bestRangeResult);
   };
-
-  const CustomSlider = styled(Slider)({
-    color: "#1565c0",
-    height: 10,
-    "& .MuiSlider-track": {
-      border: "none",
-    },
-    "& .MuiSlider-thumb": {
-      display: "none",
-    },
-    "& .MuiSlider-rail": { backgroundColor: "#1565c0", opacity: 1 },
-    "& .MuiSlider-valueLabel": {
-      lineHeight: 1.2,
-      fontSize: 12,
-      background: "unset",
-      padding: 0,
-      width: 32,
-      height: 32,
-      borderRadius: "50% 50% 50% 0",
-      backgroundColor: "#1565c0",
-      transformOrigin: "bottom left",
-      transform: "translate(50%, -100%) rotate(-45deg) scale(0)",
-      "&::before": { display: "none" },
-      "&.MuiSlider-valueLabelOpen": {
-        transform: "translate(50%, -100%) rotate(-45deg) scale(1)",
-      },
-      "& > *": {
-        transform: "rotate(45deg)",
-      },
-    },
-  });
 
   const exportToExcel = () => {
     let copyRowsTable = [...rowsTable];
@@ -474,43 +439,29 @@ function App() {
                         Calcular
                       </Button>
                     </div>
-                    {bestRangeResult.length > 0 &&
-                      (!isMobile ? (
-                        <CustomSlider
-                          sx={{
-                            marginTop: 10,
-                            width:
-                              bestRangeResult.length > 10
-                                ? "80%"
-                                : bestRangeResult.length * 10 + "%",
-                            marginLeft:
-                              bestRangeResult.length > 10
-                                ? "10%"
-                                : (100 - bestRangeResult.length * 10) / 2 + "%",
-                            "& .MuiSlider-markLabel": {
-                              color: "black",
-                            },
-                            pointerEvents: "none",
-                          }}
-                          step={1}
-                          max={bestRangeResult.length - 1}
-                          marks={bestRangeResult.map((item, index) => ({
-                            value: index,
-                            label: item + "h",
-                          }))}
-                        />
-                      ) : (
-                        <Typography
-                          sx={{
-                            marginTop: 10,
-                            display: "flex",
-                            justifyContent: "center",
-                            textAlign: "center",
-                          }}
-                        >
-                          {bestRangeResult.map((item) => item + "h ")}
-                        </Typography>
+                    <Stepper
+                      alternativeLabel
+                      sx={{
+                        marginTop: 6,
+                        overflowX: "auto",
+                        width: "90%",
+                        display: "flex",
+                        marginLeft: "auto",
+                        marginRight: "auto",
+                      }}
+                    >
+                      {bestRangeResult.map((hour, index) => (
+                        <Step key={index}>
+                          <StepLabel
+                            StepIconComponent={(props) => (
+                              <CustomStepIcon {...props} hour={hour} />
+                            )}
+                          >
+                            {/* Puedes dejar el texto vacío o usarlo para algo adicional */}
+                          </StepLabel>
+                        </Step>
                       ))}
+                    </Stepper>
                   </Box>
                 </Modal>
               </div>
@@ -596,5 +547,35 @@ function App() {
     </>
   );
 }
+
+import PropTypes from "prop-types";
+
+const CustomStepIcon = ({ hour }) => {
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        width: 40,
+        height: 40,
+        borderRadius: "50%",
+        backgroundColor: "#1565c0",
+        color: "white",
+        fontSize: 10,
+        fontWeight: "bold",
+        boxSizing: "border-box",
+      }}
+    >
+      {hour}
+    </div>
+  );
+};
+
+CustomStepIcon.propTypes = {
+  active: PropTypes.bool.isRequired,
+  completed: PropTypes.bool.isRequired,
+  hour: PropTypes.string.isRequired,
+};
 
 export default App;
