@@ -38,7 +38,28 @@ function DistributionChart({ data, units, priceConversion }) {
   }
 
   const options = {
-    grid: { top: 8, right: 8, bottom: 24, left: 36 },
+    grid: { top: 30, right: 8, bottom: 24, left: 36 },
+    tooltip: {
+      trigger: "axis",
+      axisPointer: {
+        type: "cross",
+      },
+    },
+    legend: {},
+    toolbox: {
+      show: true,
+      feature: {
+        saveAsImage: {
+          title: "Guardar",
+          name:
+            "Distribución_" +
+            new Date().toLocaleDateString().replaceAll("/", "_"),
+        },
+        dataZoom: {
+          yAxisIndex: "none",
+        },
+      },
+    },
     xAxis: {
       type: "category",
       boundaryGap: false,
@@ -75,21 +96,9 @@ function DistributionChart({ data, units, priceConversion }) {
         },
       },
     ],
-    tooltip: {
-      trigger: "axis",
-      axisPointer: {
-        type: "cross",
-      },
-    },
-    toolbox: {
-      show: true,
-      feature: {
-        saveAsImage: {},
-      },
-    },
   };
 
-  return <ReactECharts style={{ marginTop: 20 }} option={options} />;
+  return <ReactECharts option={options} />;
 }
 
 export default DistributionChart;
