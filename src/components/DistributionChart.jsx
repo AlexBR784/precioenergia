@@ -58,6 +58,7 @@ function DistributionChart({ data, units, priceConversion }) {
         dataZoom: {
           yAxisIndex: "none",
         },
+        restore: {},
       },
     },
     xAxis: {
