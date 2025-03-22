@@ -335,7 +335,7 @@ function App() {
           </div>
           <Card variant="outlined">
             <CardContent>
-              <Typography variant="h6">Coste por hora</Typography>
+              <Typography variant="h6">💸 Coste por hora</Typography>
               <ResponsiveChartContainer
                 sx={{
                   [`& .${axisClasses.left} .${axisClasses.label}`]: {
@@ -372,6 +372,20 @@ function App() {
                 <ChartsTooltip />
               </ResponsiveChartContainer>
 
+              <Typography
+                variant="h6"
+                component="h2"
+                sx={{ marginTop: 2, textAlign: "center" }}
+              >
+                📈 Distribución de subidas
+              </Typography>
+              <DistributionChart
+                style={{ padding: 10 }}
+                data={energyCost}
+                priceConversion={priceConversion}
+                units={units}
+              />
+
               <div style={{ marginTop: 20 }}>
                 <Alert severity="info">{`El precio más bajo es de ${priceConversion(
                   cheapPrice
@@ -393,7 +407,7 @@ function App() {
               </div>
               <div style={{ marginTop: 20 }}>
                 <Button onClick={handleOpenModal} variant="outlined">
-                  Calculadora Rangos Baratos
+                  🕒 Calculadora Rangos Baratos
                 </Button>
                 <Modal
                   open={openModal}
@@ -549,6 +563,7 @@ function App() {
 }
 
 import PropTypes from "prop-types";
+import DistributionChart from "./components/DistributionChart";
 
 const CustomStepIcon = ({ hour }) => {
   return (
