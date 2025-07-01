@@ -375,13 +375,6 @@ function App() {
                 <ChartsTooltip />
               </ResponsiveChartContainer>*/}
 
-              <Typography
-                variant="h6"
-                component="h2"
-                sx={{ marginTop: 2, textAlign: "center" }}
-              >
-                📈 Distribución de subidas
-              </Typography>
               <DistributionChart
                 style={{ padding: 10 }}
                 data={energyCost}
