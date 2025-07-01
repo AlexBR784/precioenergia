@@ -49,6 +49,7 @@ function DistributionChart({ data, units, priceConversion }) {
     toolbox: {
       show: true,
       feature: {
+        magicType: { type: ["line", "bar"] },
         saveAsImage: {
           title: "Guardar",
           name:

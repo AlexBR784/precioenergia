@@ -10,6 +10,9 @@ import { ExcelIcon } from "./assets/Excel";
 import Modal from "@mui/material/Modal";
 import { Stepper, Step, StepLabel } from "@mui/material";
 
+import PropTypes from "prop-types";
+import DistributionChart from "./components/DistributionChart";
+
 import {
   CircularProgress,
   Card,
@@ -336,7 +339,7 @@ function App() {
           <Card variant="outlined">
             <CardContent>
               <Typography variant="h6">💸 Coste por hora</Typography>
-              <ResponsiveChartContainer
+              {/*<ResponsiveChartContainer
                 sx={{
                   [`& .${axisClasses.left} .${axisClasses.label}`]: {
                     transform: "translateX(-10px)",
@@ -370,7 +373,7 @@ function App() {
                 <ChartsYAxis label={units} />
                 <ChartsXAxis />
                 <ChartsTooltip />
-              </ResponsiveChartContainer>
+              </ResponsiveChartContainer>*/}
 
               <Typography
                 variant="h6"
@@ -561,9 +564,6 @@ function App() {
     </>
   );
 }
-
-import PropTypes from "prop-types";
-import DistributionChart from "./components/DistributionChart";
 
 const CustomStepIcon = ({ hour }) => {
   return (
