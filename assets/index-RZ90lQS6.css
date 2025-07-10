@@ -1,0 +1,1 @@
+#root{margin:0 auto;text-align:center}@keyframes blink-warning{0%,to{opacity:1}50%{opacity:.2}}.blink-warning{animation:blink-warning 1s linear infinite}
