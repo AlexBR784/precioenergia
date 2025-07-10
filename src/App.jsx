@@ -8,7 +8,6 @@ import dayjs from "dayjs";
 import es from "dayjs/locale/es";
 import { ExcelIcon } from "./assets/Excel";
 import Modal from "@mui/material/Modal";
-import { Stepper, Step, StepLabel } from "@mui/material";
 
 import PropTypes from "prop-types";
 import DistributionChart from "./components/DistributionChart";
@@ -35,17 +34,18 @@ import {
   Snackbar,
   Grow,
   Button,
-  Input,
+  Checkbox,
+  FormControlLabel,
+  Slider,
+  Stack,
 } from "@mui/material";
 
-import {
-  ResponsiveChartContainer,
-  BarPlot,
-  ChartsXAxis,
-  ChartsYAxis,
-  ChartsTooltip,
-  axisClasses,
-} from "@mui/x-charts";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import CheckIcon from "@mui/icons-material/Check";
+import WarningAmberIcon from "@mui/icons-material/WarningAmber";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+
 import * as XLSX from "xlsx";
 
 function App() {
@@ -63,46 +63,56 @@ function App() {
   const [open, setOpen] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [openModal, setOpenModal] = useState(false);
-  const [rangeValue, setRangeValue] = useState(0);
   const [bestRangeResult, setBestRangeResult] = useState([]);
+  const [sliderValue, setSliderValue] = useState(3);
+  const [onlyFuture, setOnlyFuture] = useState(true);
+  const [copiedIdx, setCopiedIdx] = useState(null);
 
   const handleOpenModal = () => {
     setOpenModal(true);
-    setRangeValue(0);
     setBestRangeResult([]);
   };
   const handleCloseModal = () => setOpenModal(false);
 
-  const bestRange = (rangeS) => {
+  const currentHourInt = new Date().getHours();
+  const totalHours = energyCost?.length || 24;
+  const futureHours = energyCost
+    ? energyCost.filter(
+        (item) => parseInt(item.datetime.split(":")[0], 10) >= currentHourInt
+      ).length
+    : totalHours;
+
+  const sliderMax = onlyFuture ? futureHours : totalHours;
+
+  useEffect(() => {
+    if (sliderValue > sliderMax) setSliderValue(sliderMax);
+  }, [sliderMax]);
+
+  const bestRanges = (rangeS, topN = 3) => {
     const range = parseInt(rangeS, 10);
-    if (!energyCost || energyCost.length === 0) {
-      console.error("No se han proporcionado datos de energía.");
-      return;
-    }
+    if (!energyCost || energyCost.length === 0) return;
+    if (range <= 0 || range > energyCost.length) return;
 
-    if (range <= 0 || range > energyCost.length) {
-      console.error("Invalid range value");
-      return;
-    }
+    let ranges = [];
+    const nowHour = new Date().getHours();
 
-    let minCost = Infinity;
-    let bestRangeResult = [];
-
-    // Calcular el rango más barato
     for (let i = 0; i <= energyCost.length - range; i++) {
       const currentRange = energyCost.slice(i, i + range);
+      const startHour = parseInt(currentRange[0].datetime.split(":")[0], 10);
+
+      if (onlyFuture && startHour < nowHour) continue;
+
       const currentCost = currentRange.reduce(
         (sum, item) => sum + item.value,
         0
       );
-
-      if (currentCost < minCost) {
-        minCost = currentCost;
-        bestRangeResult = currentRange.map((item) => item.datetime);
-      }
+      ranges.push({
+        hours: currentRange.map((item) => item.datetime),
+        cost: currentCost,
+      });
     }
-
-    setBestRangeResult(bestRangeResult);
+    ranges.sort((a, b) => a.cost - b.cost);
+    setBestRangeResult(ranges.slice(0, topN));
   };
 
   const exportToExcel = () => {
@@ -119,10 +129,6 @@ function App() {
       workbook,
       `Precios Energia ${dayjs(currentDate).format("DD/MM/YYYY")}.xlsx`
     );
-  };
-
-  const setBestRangeNumber = (event) => {
-    setRangeValue(event.target.value);
   };
 
   function GrowTransition(props) {
@@ -178,35 +184,6 @@ function App() {
   }
 
   const isMobile = useMediaQuery("(max-width:768px)");
-  const isTablet = useMediaQuery("(min-width:769px) and (max-width:1338px)");
-
-  const tickLabelStyle = isMobile
-    ? {
-        angle: 90,
-        textAnchor: "start",
-        fontSize: 10,
-      }
-    : isTablet
-    ? {
-        angle: 45,
-        textAnchor: "start",
-        fontSize: 12,
-      }
-    : {
-        angle: 0,
-        textAnchor: "middle",
-        fontSize: 14,
-      };
-
-  const chartSetting = {
-    xAxis: [
-      {
-        label: "Coste " + units,
-      },
-    ],
-
-    height: 400,
-  };
 
   const getColor = (price) => {
     if (price == cheapPrice) {
@@ -254,7 +231,59 @@ function App() {
     return yAxisDataFull.indexOf(Math.min(...yAxisDataFull));
   }, [yAxisDataFull]);
 
+  // Get the current hour and check if it is in the cheapest range
+
   const currentHour = useMemo(() => new Date().getHours(), []);
+
+  let startHour = null;
+  let endHour = null;
+
+  let mensajeRango = "";
+  let mensajeTipo = "info"; // info, warning, error
+
+  const valorHora = xAxisDataFull[minPriceIndex];
+
+  if (minPriceIndex !== -1 && valorHora) {
+    if (valorHora.includes("-")) {
+      // Rango de horas
+      const [start, end] = valorHora.split("-");
+      startHour = parseInt(start, 10);
+      endHour = parseInt(end, 10);
+
+      if (currentHour < startHour) {
+        const faltan = startHour - currentHour;
+        mensajeRango = `Faltan ${faltan} hora${
+          faltan > 1 ? "s" : ""
+        } para el rango más barato (${startHour}:00 - ${endHour}:00).`;
+        mensajeTipo = "warning";
+      } else if (currentHour >= startHour && currentHour < endHour) {
+        const quedan = endHour - currentHour;
+        mensajeRango = `Estamos en el rango más barato. Quedan ${quedan} hora${
+          quedan > 1 ? "s" : ""
+        } (${startHour}:00 - ${endHour}:00).`;
+        mensajeTipo = "info";
+      } else {
+        mensajeRango = `El rango más barato (${startHour}:00 - ${endHour}:00) ya ha pasado.`;
+        mensajeTipo = "error";
+      }
+    } else {
+      // Solo una hora, no rango
+      const hora = parseInt(valorHora.split(":")[0], 10);
+      if (currentHour < hora) {
+        const faltan = hora - currentHour;
+        mensajeRango = `Faltan ${faltan} hora${
+          faltan > 1 ? "s" : ""
+        } para la hora más barata.`;
+        mensajeTipo = "warning";
+      } else if (currentHour === hora) {
+        mensajeRango = `¡Estamos en la hora más barata!`;
+        mensajeTipo = "success";
+      } else {
+        mensajeRango = `La hora más barata ya ha pasado.`;
+        mensajeTipo = "error";
+      }
+    }
+  }
 
   // Order the energy data arrray copy by price and store it in rows
   let rows = useMemo(() => {
@@ -267,7 +296,7 @@ function App() {
             ? priceConversion(item.value).toFixed(5)
             : priceConversion(item.value);
         return {
-          key: `${item.datetime}-${item.value}`, // Combina datetime y value para una clave única
+          key: `${item.datetime}-${item.value}`, // Unique key for each row
           name: value,
           hour: item.datetime,
         };
@@ -339,41 +368,6 @@ function App() {
           <Card variant="outlined">
             <CardContent>
               <Typography variant="h6">💸 Coste por hora</Typography>
-              {/*<ResponsiveChartContainer
-                sx={{
-                  [`& .${axisClasses.left} .${axisClasses.label}`]: {
-                    transform: "translateX(-10px)",
-                  },
-                  "&&": { touchAction: "auto" },
-                }}
-                height={chartSetting.height}
-                series={[
-                  {
-                    type: "bar",
-                    data: yAxisData,
-                    label: units,
-                    valueFormatter: (value) => `${value}`,
-                  },
-                ]}
-                xAxis={[
-                  {
-                    data: xAxisData,
-                    scaleType: "band",
-                    colorMap: {
-                      type: "ordinal",
-                      colors: colors,
-                    },
-                    tickLabelStyle: tickLabelStyle,
-                    zoom: true,
-                    valueFormatter: (value) => `${value}`,
-                  },
-                ]}
-              >
-                <BarPlot />
-                <ChartsYAxis label={units} />
-                <ChartsXAxis />
-                <ChartsTooltip />
-              </ResponsiveChartContainer>*/}
 
               <DistributionChart
                 style={{ padding: 10 }}
@@ -388,19 +382,13 @@ function App() {
                 ).toFixed(5)} ${units} de las ${
                   xAxisDataFull[minPriceIndex]
                 }h.`}</Alert>
-                {
-                  // Obtener la hora actual y comprobar si estamos en el rango horario donde el precio es mas bajo. El rango horario es en formato X - X
-                  currentHour == xAxisDataFull[minPriceIndex].split("-")[0] ? (
-                    <Alert severity="success">
-                      Estamos en el rango horario más barato
-                    </Alert>
-                  ) : (
-                    <Alert severity="warning">
-                      No estamos en el rango horario más barato
-                    </Alert>
-                  )
-                }
+                {mensajeRango && (
+                  <Alert sx={{ marginTop: 1 }} severity={mensajeTipo}>
+                    {mensajeRango}
+                  </Alert>
+                )}
               </div>
+
               <div style={{ marginTop: 20 }}>
                 <Button onClick={handleOpenModal} variant="outlined">
                   🕒 Calculadora Rangos Baratos
@@ -417,61 +405,188 @@ function App() {
                       top: "50%",
                       left: "50%",
                       transform: "translate(-50%, -50%)",
-                      width: screen.width * 0.6,
-                      height: screen.height * 0.5,
+                      width: isMobile ? "90vw" : "50vw",
                       bgcolor: "background.paper",
                       p: 4,
+                      borderRadius: 3,
+                      boxShadow: 24,
                     }}
                   >
-                    <Typography
-                      id="modal-modal-title"
-                      variant="h6"
-                      component="h2"
-                      sx={{ marginTop: 2, textAlign: "center" }}
-                    >
-                      Introduzca las horas deseadas para calcular el rango más
-                      barato
+                    <Typography variant="h6" textAlign="center" mb={2}>
+                      Calculadora de Rangos Baratos
                     </Typography>
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "center",
-                        gap: 25,
-                        marginTop: 25,
-                      }}
-                    >
-                      <Input type="number" onChange={setBestRangeNumber} />
-
+                    <Typography variant="body2" textAlign="center" mb={2}>
+                      Selecciona cuántas horas consecutivas necesitas y te
+                      mostraremos los rangos más baratos del día.
+                    </Typography>
+                    <Stack spacing={2} alignItems="center" mt={8} mb={2}>
+                      <Slider
+                        value={sliderValue}
+                        min={1}
+                        max={sliderMax}
+                        step={1}
+                        marks
+                        valueLabelDisplay="on"
+                        onChange={(_, val) => setSliderValue(val)}
+                        sx={{
+                          width: "80%",
+                          // Cambia el color de fondo del value label
+                          "& .MuiSlider-valueLabel": {
+                            backgroundColor: "#1976d2", // Cambia este color al que quieras
+                            color: "#fff",
+                          },
+                        }}
+                      />
+                      <FormControlLabel
+                        control={
+                          <Checkbox
+                            checked={onlyFuture}
+                            onChange={(_, checked) => setOnlyFuture(checked)}
+                            color="primary"
+                          />
+                        }
+                        label={
+                          isMobile
+                            ? "Solo desde ahora"
+                            : "Solo mostrar rangos a partir de la hora actual"
+                        }
+                        sx={{ mb: 4, display: "block" }}
+                      />
                       <Button
                         variant="contained"
-                        onClick={() => bestRange(rangeValue)}
+                        size="large"
+                        onClick={() => bestRanges(sliderValue)}
                       >
                         Calcular
                       </Button>
-                    </div>
-                    <Stepper
-                      alternativeLabel
-                      sx={{
-                        marginTop: 6,
-                        overflowX: "auto",
-                        width: "90%",
-                        display: "flex",
-                        marginLeft: "auto",
-                        marginRight: "auto",
-                      }}
-                    >
-                      {bestRangeResult.map((hour, index) => (
-                        <Step key={index}>
-                          <StepLabel
-                            StepIconComponent={(props) => (
-                              <CustomStepIcon {...props} hour={hour} />
-                            )}
-                          >
-                            {/* Puedes dejar el texto vacío o usarlo para algo adicional */}
-                          </StepLabel>
-                        </Step>
-                      ))}
-                    </Stepper>
+                    </Stack>
+                    {bestRangeResult.length > 0 && (
+                      <TableContainer sx={{ mt: 2, mb: 2, maxHeight: 300 }}>
+                        <Table size="small" stickyHeader>
+                          <TableHead>
+                            <TableRow>
+                              <TableCell align="center">#</TableCell>
+                              <TableCell align="center">Estado</TableCell>
+                              <TableCell align="center">Horas</TableCell>
+                              <TableCell align="center">
+                                Coste total ({units})
+                              </TableCell>
+                              <TableCell align="center">
+                                Coste medio ({units})
+                              </TableCell>
+                              <TableCell align="center">Acción</TableCell>
+                            </TableRow>
+                          </TableHead>
+                          <TableBody>
+                            {bestRangeResult.map((range, idx) => {
+                              const textoCopiar = `Rango ${idx + 1}: ${
+                                range.hours[0]
+                              } - ${range.hours[range.hours.length - 1]} (${
+                                range.hours.length
+                              }h)\nTotal: ${priceConversion(range.cost).toFixed(
+                                4
+                              )} ${units}\nMedio: ${(
+                                priceConversion(range.cost) / range.hours.length
+                              ).toFixed(4)} ${units}`;
+                              const start = parseInt(
+                                range.hours[0].split(":")[0],
+                                10
+                              );
+                              const end =
+                                parseInt(
+                                  range.hours[range.hours.length - 1].split(
+                                    ":"
+                                  )[0],
+                                  10
+                                ) + 1;
+                              const isNow =
+                                currentHour >= start && currentHour < end;
+
+                              return (
+                                <TableRow key={idx}>
+                                  <TableCell align="center">
+                                    {idx + 1}
+                                  </TableCell>
+                                  <TableCell align="center">
+                                    {isNow ? (
+                                      <Tooltip title="¡Ahora mismo estás en este rango barato!">
+                                        <WarningAmberIcon
+                                          color="warning"
+                                          className="blink-warning"
+                                        />
+                                      </Tooltip>
+                                    ) : currentHour < start ? (
+                                      <Tooltip title="Este rango barato aún no ha empezado">
+                                        <AccessTimeIcon color="success" />
+                                      </Tooltip>
+                                    ) : (
+                                      <Tooltip title="Este rango ya ha pasado">
+                                        <CheckCircleIcon color="primary" />
+                                      </Tooltip>
+                                    )}
+                                  </TableCell>
+                                  <TableCell align="center">
+                                    {range.hours[0]}
+                                    {range.hours.length > 1 &&
+                                      " - " +
+                                        range.hours[range.hours.length - 1]}
+                                  </TableCell>
+                                  <TableCell align="center">
+                                    {priceConversion(range.cost).toFixed(4)}
+                                  </TableCell>
+                                  <TableCell align="center">
+                                    {(
+                                      priceConversion(range.cost) /
+                                      range.hours.length
+                                    ).toFixed(4)}
+                                  </TableCell>
+                                  <TableCell align="center">
+                                    <Tooltip
+                                      title="Copia este rango para compartirlo por WhatsApp o redes sociales"
+                                      arrow
+                                      placement="right"
+                                      enterDelay={400}
+                                    >
+                                      <Button
+                                        size="small"
+                                        sx={{ minWidth: 100 }}
+                                        onClick={() => {
+                                          navigator.clipboard.writeText(
+                                            textoCopiar
+                                          );
+                                          setCopiedIdx(idx);
+                                          setTimeout(
+                                            () => setCopiedIdx(null),
+                                            1200
+                                          );
+                                        }}
+                                        startIcon={
+                                          <Box
+                                            sx={{
+                                              width: 24,
+                                              display: "flex",
+                                              justifyContent: "center",
+                                            }}
+                                          >
+                                            {copiedIdx === idx ? (
+                                              <CheckIcon color="success" />
+                                            ) : (
+                                              <ContentCopyIcon />
+                                            )}
+                                          </Box>
+                                        }
+                                      >
+                                        Copiar
+                                      </Button>
+                                    </Tooltip>
+                                  </TableCell>
+                                </TableRow>
+                              );
+                            })}
+                          </TableBody>
+                        </Table>
+                      </TableContainer>
+                    )}
                   </Box>
                 </Modal>
               </div>
