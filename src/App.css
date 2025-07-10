@@ -2,3 +2,12 @@
   margin: 0 auto;
   text-align: center;
 }
+
+@keyframes blink-warning {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.2; }
+}
+
+.blink-warning {
+  animation: blink-warning 1s linear infinite;
+}
