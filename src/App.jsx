@@ -38,6 +38,7 @@ import {
   FormControlLabel,
   Slider,
   Stack,
+  IconButton,
 } from "@mui/material";
 
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
@@ -45,6 +46,7 @@ import CheckIcon from "@mui/icons-material/Check";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import CloseIcon from "@mui/icons-material/Close";
 
 import * as XLSX from "xlsx";
 
@@ -412,6 +414,20 @@ function App() {
                       boxShadow: 24,
                     }}
                   >
+                    {isMobile && (
+                      <IconButton
+                        aria-label="close"
+                        onClick={handleCloseModal}
+                        sx={{
+                          position: "absolute",
+                          right: 8,
+                          top: 8,
+                          color: (theme) => theme.palette.grey[500],
+                        }}
+                      >
+                        <CloseIcon />
+                      </IconButton>
+                    )}
                     <Typography variant="h6" textAlign="center" mb={2}>
                       Calculadora de Rangos Baratos
                     </Typography>
