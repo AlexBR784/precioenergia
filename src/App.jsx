@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import "./App.css";
 import { useEnergyCost } from "./hooks/useEnergyCost";
+import { useInterchanges } from "./hooks/useInterchanges";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
@@ -11,6 +12,7 @@ import Modal from "@mui/material/Modal";
 
 import PropTypes from "prop-types";
 import DistributionChart from "./components/DistributionChart";
+import InterchangesMap from "./components/InterchangesMap";
 
 import {
   CircularProgress,
@@ -39,6 +41,8 @@ import {
   Slider,
   Stack,
   IconButton,
+  Tabs,
+  Tab,
 } from "@mui/material";
 
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
@@ -47,6 +51,7 @@ import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CloseIcon from "@mui/icons-material/Close";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 
 import * as XLSX from "xlsx";
 
@@ -59,6 +64,15 @@ function App() {
     fetchEnergyCost,
     noData,
   } = useEnergyCost();
+  const {
+    interchangesData,
+    loading: interchangesLoading,
+    error: interchangesError,
+    lastUpdate: interchangesLastUpdate,
+    fetchInterchanges,
+  } = useInterchanges();
+
+  const [activeTab, setActiveTab] = useState("prices");
   const [units, setUnits] = useState("€/MWh");
   const [order, setOrder] = useState("price");
   const [rowsTable, setRowsTable] = useState([]);
@@ -69,6 +83,12 @@ function App() {
   const [sliderValue, setSliderValue] = useState(3);
   const [onlyFuture, setOnlyFuture] = useState(true);
   const [copiedIdx, setCopiedIdx] = useState(null);
+  const [exchangeStartDate, setExchangeStartDate] = useState(
+    dayjs().subtract(12, "month")
+  );
+  const [exchangeEndDate, setExchangeEndDate] = useState(dayjs());
+  const [exchangeRangeError, setExchangeRangeError] = useState("");
+  const [interchangesLoaded, setInterchangesLoaded] = useState(false);
 
   const handleOpenModal = () => {
     setOpenModal(true);
@@ -163,6 +183,46 @@ function App() {
     setCurrentDate(formattedDate);
     fetchEnergyCost(formattedDate);
   };
+
+  const handleInterchangesUpdate = async (
+    customStartDate = exchangeStartDate,
+    customEndDate = exchangeEndDate
+  ) => {
+    if (!customStartDate || !customEndDate) {
+      setExchangeRangeError("Selecciona una fecha de inicio y fin válidas.");
+      return;
+    }
+
+    const start = dayjs(customStartDate);
+    const end = dayjs(customEndDate);
+
+    if (start.isAfter(end, "day")) {
+      setExchangeRangeError(
+        "El rango es inválido: la fecha de inicio no puede ser posterior a la fecha fin."
+      );
+      return;
+    }
+
+    setExchangeRangeError("");
+    await fetchInterchanges(start.toDate(), end.toDate());
+    setInterchangesLoaded(true);
+  };
+
+  useEffect(() => {
+    if (activeTab === "interchanges" && !interchangesLoaded) {
+      fetchInterchanges(
+        dayjs(exchangeStartDate).toDate(),
+        dayjs(exchangeEndDate).toDate()
+      );
+      setInterchangesLoaded(true);
+    }
+  }, [
+    activeTab,
+    interchangesLoaded,
+    fetchInterchanges,
+    exchangeStartDate,
+    exchangeEndDate,
+  ]);
 
   function sortData(data, sortBy) {
     return data.sort((a, b) => {
@@ -311,26 +371,38 @@ function App() {
 
   return (
     <>
-      {noData ? (
+      <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 2 }}>
+        <Tabs
+          value={activeTab}
+          onChange={(_, newValue) => setActiveTab(newValue)}
+          variant={isMobile ? "fullWidth" : "standard"}
+        >
+          <Tab label="Precios" value="prices" />
+          <Tab label="Intercambios" value="interchanges" />
+        </Tabs>
+      </Box>
+      {activeTab === "prices" ? (
+        noData ? (
         <Alert severity="error">
           No hay datos para esa fecha, por favor recargue la página.
         </Alert>
-      ) : loading ? (
-        !timeoutFlag ? (
-          <CircularProgress />
         ) : (
-          <Alert severity="error">
-            Error al obtener los datos, recargue la página o pruebe más tarde.
-          </Alert>
-        )
-      ) : (
-        <Box
-          sx={{
-            width: "100%",
-            overflow: "hidden",
-            "&&": { touchAction: "auto" },
-          }}
-        >
+          loading ? (
+            !timeoutFlag ? (
+              <CircularProgress />
+            ) : (
+              <Alert severity="error">
+                Error al obtener los datos, recargue la página o pruebe más tarde.
+              </Alert>
+            )
+          ) : (
+            <Box
+              sx={{
+                width: "100%",
+                overflow: "hidden",
+                "&&": { touchAction: "auto" },
+              }}
+            >
           <div
             style={{
               padding: 10,
@@ -673,6 +745,86 @@ function App() {
             </CardContent>
           </Card>
         </Box>
+          )
+      )) : (
+        <Card variant="outlined">
+          <CardContent>
+            <Stack
+              direction="row"
+              spacing={0.5}
+              alignItems="center"
+              justifyContent="center"
+            >
+              <Typography variant="h6">
+                Intercambios programados por frontera
+              </Typography>
+              <Tooltip
+                arrow
+                placement="right"
+                title="Este mapa muestra los flujos entre España y países frontera en el periodo elegido. Importación: energía que entra en España. Exportación: energía que sale de España. Saldo: importación menos exportación."
+              >
+                <IconButton size="small" aria-label="Información del mapa">
+                  <InfoOutlinedIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </Stack>
+            <Typography variant="body2" sx={{ mt: 1, color: "text.secondary" }}>
+              Visualización mensual de importaciones y exportaciones entre España
+              y países frontera para el rango de fechas seleccionado.
+            </Typography>
+            <Box
+              sx={{
+                mt: 2.5,
+                display: "flex",
+                gap: 2,
+                flexWrap: "wrap",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale={es}>
+                <DatePicker
+                  label="Fecha inicio"
+                  format="DD/MM/YYYY"
+                  value={exchangeStartDate}
+                  onChange={(newValue) => setExchangeStartDate(newValue)}
+                />
+                <DatePicker
+                  label="Fecha fin"
+                  format="DD/MM/YYYY"
+                  value={exchangeEndDate}
+                  onChange={(newValue) => setExchangeEndDate(newValue)}
+                />
+              </LocalizationProvider>
+              <Button variant="contained" onClick={() => handleInterchangesUpdate()}>
+                Actualizar
+              </Button>
+            </Box>
+
+            {exchangeRangeError && (
+              <Alert sx={{ mt: 2 }} severity="warning">
+                {exchangeRangeError}
+              </Alert>
+            )}
+
+            <Box sx={{ mt: 3 }}>
+              {interchangesLoading ? (
+                <CircularProgress />
+              ) : interchangesError ? (
+                <Alert severity="error">{interchangesError}</Alert>
+              ) : interchangesData.length === 0 ? (
+                <Alert severity="info">
+                  No hay datos de intercambios para el rango seleccionado.
+                </Alert>
+              ) : (
+                <InterchangesMap
+                  flows={interchangesData}
+                  lastUpdate={interchangesLastUpdate}
+                />
+              )}
+            </Box>
+          </CardContent>
+        </Card>
       )}
 
       <Snackbar

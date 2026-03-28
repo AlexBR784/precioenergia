@@ -1,0 +1,991 @@
+{
+  "data": {
+    "type": "Intercambios programados por frontera",
+    "id": "int16",
+    "attributes": {
+      "title": "Intercambios programados por frontera",
+      "last-update": "2025-03-02T04:59:11.000+01:00",
+      "description": null
+    },
+    "meta": {
+      "cache-control": {
+        "cache": "HIT",
+        "expireAt": "2026-04-27T12:15:10"
+      }
+    }
+  },
+  "included": [
+    {
+      "type": "francia",
+      "id": "Francia",
+      "attributes": {
+        "title": "francia",
+        "last-update": "2026-03-28T13:07:46.000+01:00",
+        "description": null,
+        "magnitude": null,
+        "content": [
+          {
+            "type": "Exportación",
+            "id": "102",
+            "groupId": "Francia",
+            "attributes": {
+              "title": "Exportación",
+              "description": null,
+              "color": "#28b3da",
+              "icon": null,
+              "type": "export",
+              "magnitude": null,
+              "composite": false,
+              "last-update": "2026-03-28T13:07:46.000+01:00",
+              "values": [
+                {
+                  "value": -1701497.8,
+                  "percentage": 0.8036666802421881,
+                  "datetime": "2025-03-01T00:00:00.000+01:00"
+                },
+                {
+                  "value": -1518937.05,
+                  "percentage": 0.695581810896986,
+                  "datetime": "2025-04-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": -1152328.65,
+                  "percentage": 0.5927659250037062,
+                  "datetime": "2025-05-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": -351512.15,
+                  "percentage": 0.27150962591939815,
+                  "datetime": "2025-06-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": -640696.225,
+                  "percentage": 0.3903969254796611,
+                  "datetime": "2025-07-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": -800176.825,
+                  "percentage": 0.3396169812092933,
+                  "datetime": "2025-08-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": -489125.225,
+                  "percentage": 0.2767723707938329,
+                  "datetime": "2025-09-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": -528308.35,
+                  "percentage": 0.3260881654889492,
+                  "datetime": "2025-10-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": -965942.175,
+                  "percentage": 0.5116058368066126,
+                  "datetime": "2025-11-01T00:00:00.000+01:00"
+                },
+                {
+                  "value": -735266.875,
+                  "percentage": 0.329710635390278,
+                  "datetime": "2025-12-01T00:00:00.000+01:00"
+                },
+                {
+                  "value": -1337206.775,
+                  "percentage": 0.6246356145271327,
+                  "datetime": "2026-01-01T00:00:00.000+01:00"
+                },
+                {
+                  "value": -1226492.175,
+                  "percentage": 0.6942705010888979,
+                  "datetime": "2026-02-01T00:00:00.000+01:00"
+                },
+                {
+                  "value": -1210708.225,
+                  "percentage": 0.6405919155862143,
+                  "datetime": "2026-03-01T00:00:00.000+01:00"
+                }
+              ],
+              "total": -12658198.5,
+              "total-percentage": 0
+            }
+          },
+          {
+            "type": "Importación",
+            "id": "98",
+            "groupId": "Francia",
+            "attributes": {
+              "title": "Importación",
+              "description": null,
+              "color": "#00608a",
+              "icon": null,
+              "type": "import",
+              "magnitude": null,
+              "composite": false,
+              "last-update": "2026-03-28T13:07:46.000+01:00",
+              "values": [
+                {
+                  "value": 415670.725,
+                  "percentage": 0.1963333197578119,
+                  "datetime": "2025-03-01T00:00:00.000+01:00"
+                },
+                {
+                  "value": 664755.833,
+                  "percentage": 0.3044181891030141,
+                  "datetime": "2025-04-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": 791657.334,
+                  "percentage": 0.4072340749962938,
+                  "datetime": "2025-05-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": 943146,
+                  "percentage": 0.7284903740806019,
+                  "datetime": "2025-06-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": 1000444.325,
+                  "percentage": 0.6096030745203389,
+                  "datetime": "2025-07-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": 1555938.65,
+                  "percentage": 0.6603830187907068,
+                  "datetime": "2025-08-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": 1278122.075,
+                  "percentage": 0.7232276292061672,
+                  "datetime": "2025-09-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": 1091831.25,
+                  "percentage": 0.6739118345110507,
+                  "datetime": "2025-10-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": 922117.158,
+                  "percentage": 0.4883941631933873,
+                  "datetime": "2025-11-01T00:00:00.000+01:00"
+                },
+                {
+                  "value": 1494770,
+                  "percentage": 0.670289364609722,
+                  "datetime": "2025-12-01T00:00:00.000+01:00"
+                },
+                {
+                  "value": 803572.175,
+                  "percentage": 0.3753643854728672,
+                  "datetime": "2026-01-01T00:00:00.000+01:00"
+                },
+                {
+                  "value": 540099.05,
+                  "percentage": 0.30572949891110207,
+                  "datetime": "2026-02-01T00:00:00.000+01:00"
+                },
+                {
+                  "value": 679275.391,
+                  "percentage": 0.35940808441378574,
+                  "datetime": "2026-03-01T00:00:00.000+01:00"
+                }
+              ],
+              "total": 12181399.966000004,
+              "total-percentage": 0
+            }
+          },
+          {
+            "type": "saldo",
+            "id": "Francia",
+            "groupId": "Francia",
+            "attributes": {
+              "title": "saldo",
+              "description": null,
+              "color": "#666666",
+              "icon": null,
+              "type": "saldo",
+              "magnitude": null,
+              "composite": true,
+              "last-update": "2026-03-28T13:07:46.000+01:00",
+              "values": [
+                {
+                  "value": -1285827.0750000002,
+                  "percentage": 1,
+                  "datetime": "2025-03-01T00:00:00.000+01:00"
+                },
+                {
+                  "value": -854181.2170000001,
+                  "percentage": 1,
+                  "datetime": "2025-04-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": -360671.3159999999,
+                  "percentage": 1,
+                  "datetime": "2025-05-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": 591633.85,
+                  "percentage": 1,
+                  "datetime": "2025-06-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": 359748.1,
+                  "percentage": 1,
+                  "datetime": "2025-07-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": 755761.825,
+                  "percentage": 1,
+                  "datetime": "2025-08-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": 788996.85,
+                  "percentage": 1,
+                  "datetime": "2025-09-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": 563522.9,
+                  "percentage": 1,
+                  "datetime": "2025-10-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": -43825.01699999999,
+                  "percentage": 1,
+                  "datetime": "2025-11-01T00:00:00.000+01:00"
+                },
+                {
+                  "value": 759503.125,
+                  "percentage": 1,
+                  "datetime": "2025-12-01T00:00:00.000+01:00"
+                },
+                {
+                  "value": -533634.5999999999,
+                  "percentage": 1,
+                  "datetime": "2026-01-01T00:00:00.000+01:00"
+                },
+                {
+                  "value": -686393.125,
+                  "percentage": 1,
+                  "datetime": "2026-02-01T00:00:00.000+01:00"
+                },
+                {
+                  "value": -531432.8340000001,
+                  "percentage": 1,
+                  "datetime": "2026-03-01T00:00:00.000+01:00"
+                }
+              ],
+              "total": -476798.53399999987,
+              "total-percentage": 0
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "portugal",
+      "id": "Portugal",
+      "attributes": {
+        "title": "portugal",
+        "last-update": "2026-03-28T13:07:46.000+01:00",
+        "description": null,
+        "magnitude": null,
+        "content": [
+          {
+            "type": "Exportación",
+            "id": "103",
+            "groupId": "Portugal",
+            "attributes": {
+              "title": "Exportación",
+              "description": null,
+              "color": "#28b3da",
+              "icon": null,
+              "type": "export",
+              "magnitude": null,
+              "composite": false,
+              "last-update": "2026-03-28T13:07:46.000+01:00",
+              "values": [
+                {
+                  "value": -942476.375,
+                  "percentage": 0.5392491072628834,
+                  "datetime": "2025-03-01T00:00:00.000+01:00"
+                },
+                {
+                  "value": -909035.275,
+                  "percentage": 0.5181700698996555,
+                  "datetime": "2025-04-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": -674248.4,
+                  "percentage": 0.6213713881089602,
+                  "datetime": "2025-05-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": -1471575.325,
+                  "percentage": 0.8369071581927496,
+                  "datetime": "2025-06-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": -1628570.025,
+                  "percentage": 0.8461808915630092,
+                  "datetime": "2025-07-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": -1612717.2,
+                  "percentage": 0.8089339626100636,
+                  "datetime": "2025-08-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": -1519660.025,
+                  "percentage": 0.7851332475452252,
+                  "datetime": "2025-09-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": -1700270.35,
+                  "percentage": 0.8595437299234454,
+                  "datetime": "2025-10-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": -1178479.2,
+                  "percentage": 0.7671505230410338,
+                  "datetime": "2025-11-01T00:00:00.000+01:00"
+                },
+                {
+                  "value": -1187269.875,
+                  "percentage": 0.7251889548287225,
+                  "datetime": "2025-12-01T00:00:00.000+01:00"
+                },
+                {
+                  "value": -890637.35,
+                  "percentage": 0.6042409067032751,
+                  "datetime": "2026-01-01T00:00:00.000+01:00"
+                },
+                {
+                  "value": -337509.1,
+                  "percentage": 0.36372174409519054,
+                  "datetime": "2026-02-01T00:00:00.000+01:00"
+                },
+                {
+                  "value": -869623.95,
+                  "percentage": 0.6319214511877014,
+                  "datetime": "2026-03-01T00:00:00.000+01:00"
+                }
+              ],
+              "total": -14922072.449999997,
+              "total-percentage": 0
+            }
+          },
+          {
+            "type": "Importación",
+            "id": "99",
+            "groupId": "Portugal",
+            "attributes": {
+              "title": "Importación",
+              "description": null,
+              "color": "#00608a",
+              "icon": null,
+              "type": "import",
+              "magnitude": null,
+              "composite": false,
+              "last-update": "2026-03-28T13:07:46.000+01:00",
+              "values": [
+                {
+                  "value": 805280.575,
+                  "percentage": 0.46075089273711656,
+                  "datetime": "2025-03-01T00:00:00.000+01:00"
+                },
+                {
+                  "value": 845283.1,
+                  "percentage": 0.48182993010034453,
+                  "datetime": "2025-04-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": 410848.875,
+                  "percentage": 0.3786286118910399,
+                  "datetime": "2025-05-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": 286774.225,
+                  "percentage": 0.16309284180725045,
+                  "datetime": "2025-06-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": 296042.125,
+                  "percentage": 0.15381910843699081,
+                  "datetime": "2025-07-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": 380915.5,
+                  "percentage": 0.19106603738993647,
+                  "datetime": "2025-08-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": 415884.075,
+                  "percentage": 0.21486675245477488,
+                  "datetime": "2025-09-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": 277837.675,
+                  "percentage": 0.14045627007655456,
+                  "datetime": "2025-10-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": 357698.075,
+                  "percentage": 0.23284947695896624,
+                  "datetime": "2025-11-01T00:00:00.000+01:00"
+                },
+                {
+                  "value": 449917.05,
+                  "percentage": 0.2748110451712775,
+                  "datetime": "2025-12-01T00:00:00.000+01:00"
+                },
+                {
+                  "value": 583339.9,
+                  "percentage": 0.39575909329672493,
+                  "datetime": "2026-01-01T00:00:00.000+01:00"
+                },
+                {
+                  "value": 590423.05,
+                  "percentage": 0.6362782559048095,
+                  "datetime": "2026-02-01T00:00:00.000+01:00"
+                },
+                {
+                  "value": 506534.35,
+                  "percentage": 0.36807854881229873,
+                  "datetime": "2026-03-01T00:00:00.000+01:00"
+                }
+              ],
+              "total": 6206778.575,
+              "total-percentage": 0
+            }
+          },
+          {
+            "type": "saldo",
+            "id": "Portugal",
+            "groupId": "Portugal",
+            "attributes": {
+              "title": "saldo",
+              "description": null,
+              "color": "#666666",
+              "icon": null,
+              "type": "saldo",
+              "magnitude": null,
+              "composite": true,
+              "last-update": "2026-03-28T13:07:46.000+01:00",
+              "values": [
+                {
+                  "value": -137195.80000000005,
+                  "percentage": 1,
+                  "datetime": "2025-03-01T00:00:00.000+01:00"
+                },
+                {
+                  "value": -63752.17500000005,
+                  "percentage": 1,
+                  "datetime": "2025-04-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": -263399.525,
+                  "percentage": 1,
+                  "datetime": "2025-05-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": -1184801.1,
+                  "percentage": 1,
+                  "datetime": "2025-06-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": -1332527.9,
+                  "percentage": 1,
+                  "datetime": "2025-07-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": -1231801.7,
+                  "percentage": 1,
+                  "datetime": "2025-08-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": -1103775.95,
+                  "percentage": 1,
+                  "datetime": "2025-09-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": -1422432.675,
+                  "percentage": 1,
+                  "datetime": "2025-10-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": -820781.125,
+                  "percentage": 1,
+                  "datetime": "2025-11-01T00:00:00.000+01:00"
+                },
+                {
+                  "value": -737352.825,
+                  "percentage": 1,
+                  "datetime": "2025-12-01T00:00:00.000+01:00"
+                },
+                {
+                  "value": -307297.44999999995,
+                  "percentage": 1,
+                  "datetime": "2026-01-01T00:00:00.000+01:00"
+                },
+                {
+                  "value": 252913.95000000007,
+                  "percentage": 1,
+                  "datetime": "2026-02-01T00:00:00.000+01:00"
+                },
+                {
+                  "value": -363089.6,
+                  "percentage": 1,
+                  "datetime": "2026-03-01T00:00:00.000+01:00"
+                }
+              ],
+              "total": -8715293.875,
+              "total-percentage": 0
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "marruecos",
+      "id": "Marruecos",
+      "attributes": {
+        "title": "marruecos",
+        "last-update": "2026-03-28T13:07:46.000+01:00",
+        "description": null,
+        "magnitude": null,
+        "content": [
+          {
+            "type": "Exportación",
+            "id": "104",
+            "groupId": "Marruecos",
+            "attributes": {
+              "title": "Exportación",
+              "description": null,
+              "color": "#28b3da",
+              "icon": null,
+              "type": "export",
+              "magnitude": null,
+              "composite": false,
+              "last-update": "2026-03-28T13:07:46.000+01:00",
+              "values": [
+                {
+                  "value": -187142.6,
+                  "percentage": 0.9246532228020645,
+                  "datetime": "2025-03-01T00:00:00.000+01:00"
+                },
+                {
+                  "value": -237660.4,
+                  "percentage": 0.9531984595478913,
+                  "datetime": "2025-04-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": -449037.5,
+                  "percentage": 0.9987766563794589,
+                  "datetime": "2025-05-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": -402701,
+                  "percentage": 0.987614990521176,
+                  "datetime": "2025-06-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": -442163.9,
+                  "percentage": 0.9916934963862583,
+                  "datetime": "2025-07-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": -458820.083,
+                  "percentage": 0.9910147322687313,
+                  "datetime": "2025-08-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": -355594.9,
+                  "percentage": 0.9815479586628785,
+                  "datetime": "2025-09-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": -398877.35,
+                  "percentage": 0.98569176898783,
+                  "datetime": "2025-10-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": -334272.625,
+                  "percentage": 0.9693436986883427,
+                  "datetime": "2025-11-01T00:00:00.000+01:00"
+                },
+                {
+                  "value": -379763.6,
+                  "percentage": 0.9622430367834793,
+                  "datetime": "2025-12-01T00:00:00.000+01:00"
+                },
+                {
+                  "value": -241057.075,
+                  "percentage": 0.8926825601221463,
+                  "datetime": "2026-01-01T00:00:00.000+01:00"
+                },
+                {
+                  "value": -324037.175,
+                  "percentage": 0.9987149184803861,
+                  "datetime": "2026-02-01T00:00:00.000+01:00"
+                },
+                {
+                  "value": -229689.225,
+                  "percentage": 0.9579006478643954,
+                  "datetime": "2026-03-01T00:00:00.000+01:00"
+                }
+              ],
+              "total": -4440817.433,
+              "total-percentage": 0
+            }
+          },
+          {
+            "type": "Importación",
+            "id": "100",
+            "groupId": "Marruecos",
+            "attributes": {
+              "title": "Importación",
+              "description": null,
+              "color": "#00608a",
+              "icon": null,
+              "type": "import",
+              "magnitude": null,
+              "composite": false,
+              "last-update": "2026-03-24T04:53:08.000+01:00",
+              "values": [
+                {
+                  "value": 15249.6,
+                  "percentage": 0.07534677719793549,
+                  "datetime": "2025-03-01T00:00:00.000+01:00"
+                },
+                {
+                  "value": 11669,
+                  "percentage": 0.046801540452108735,
+                  "datetime": "2025-04-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": 550,
+                  "percentage": 0.0012233436205410515,
+                  "datetime": "2025-05-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": 5050,
+                  "percentage": 0.012385009478824087,
+                  "datetime": "2025-06-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": 3703.6,
+                  "percentage": 0.00830650361374175,
+                  "datetime": "2025-07-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": 4160,
+                  "percentage": 0.008985267731268691,
+                  "datetime": "2025-08-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": 6684.8,
+                  "percentage": 0.018452041337121566,
+                  "datetime": "2025-09-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": 5790.075,
+                  "percentage": 0.014308231012170056,
+                  "datetime": "2025-10-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": 10571.65,
+                  "percentage": 0.030656301311657266,
+                  "datetime": "2025-11-01T00:00:00.000+01:00"
+                },
+                {
+                  "value": 14901.35,
+                  "percentage": 0.03775696321652075,
+                  "datetime": "2025-12-01T00:00:00.000+01:00"
+                },
+                {
+                  "value": 28979.65,
+                  "percentage": 0.10731743987785364,
+                  "datetime": "2026-01-01T00:00:00.000+01:00"
+                },
+                {
+                  "value": 416.95,
+                  "percentage": 0.0012850815196139053,
+                  "datetime": "2026-02-01T00:00:00.000+01:00"
+                },
+                {
+                  "value": 10094.75,
+                  "percentage": 0.042099352135604555,
+                  "datetime": "2026-03-01T00:00:00.000+01:00"
+                }
+              ],
+              "total": 117821.425,
+              "total-percentage": 0
+            }
+          },
+          {
+            "type": "saldo",
+            "id": "Marruecos",
+            "groupId": "Marruecos",
+            "attributes": {
+              "title": "saldo",
+              "description": null,
+              "color": "#666666",
+              "icon": null,
+              "type": "saldo",
+              "magnitude": null,
+              "composite": true,
+              "last-update": "2026-03-28T13:07:46.000+01:00",
+              "values": [
+                {
+                  "value": -171893,
+                  "percentage": 1,
+                  "datetime": "2025-03-01T00:00:00.000+01:00"
+                },
+                {
+                  "value": -225991.4,
+                  "percentage": 1,
+                  "datetime": "2025-04-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": -448487.5,
+                  "percentage": 1,
+                  "datetime": "2025-05-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": -397651,
+                  "percentage": 1,
+                  "datetime": "2025-06-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": -438460.30000000005,
+                  "percentage": 1,
+                  "datetime": "2025-07-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": -454660.083,
+                  "percentage": 1,
+                  "datetime": "2025-08-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": -348910.10000000003,
+                  "percentage": 1,
+                  "datetime": "2025-09-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": -393087.27499999997,
+                  "percentage": 1,
+                  "datetime": "2025-10-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": -323700.975,
+                  "percentage": 1,
+                  "datetime": "2025-11-01T00:00:00.000+01:00"
+                },
+                {
+                  "value": -364862.25,
+                  "percentage": 1,
+                  "datetime": "2025-12-01T00:00:00.000+01:00"
+                },
+                {
+                  "value": -212077.42500000002,
+                  "percentage": 1,
+                  "datetime": "2026-01-01T00:00:00.000+01:00"
+                },
+                {
+                  "value": -323620.225,
+                  "percentage": 1,
+                  "datetime": "2026-02-01T00:00:00.000+01:00"
+                },
+                {
+                  "value": -219594.475,
+                  "percentage": 1,
+                  "datetime": "2026-03-01T00:00:00.000+01:00"
+                }
+              ],
+              "total": -4322996.007999999,
+              "total-percentage": 0
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "andorra",
+      "id": "Andorra",
+      "attributes": {
+        "title": "andorra",
+        "last-update": "2026-03-28T13:07:46.000+01:00",
+        "description": null,
+        "magnitude": null,
+        "content": [
+          {
+            "type": "Exportación",
+            "id": "105",
+            "groupId": "Andorra",
+            "attributes": {
+              "title": "Exportación",
+              "description": null,
+              "color": "#28b3da",
+              "icon": null,
+              "type": "export",
+              "magnitude": null,
+              "composite": false,
+              "last-update": "2026-03-28T13:07:46.000+01:00",
+              "values": [
+                {
+                  "value": -20845.175,
+                  "percentage": 1,
+                  "datetime": "2025-03-01T00:00:00.000+01:00"
+                },
+                {
+                  "value": -11694.15,
+                  "percentage": 1,
+                  "datetime": "2025-04-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": -6836.825,
+                  "percentage": 1,
+                  "datetime": "2025-05-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": -14539.25,
+                  "percentage": 1,
+                  "datetime": "2025-06-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": -19463.7,
+                  "percentage": 1,
+                  "datetime": "2025-07-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": -18693.9,
+                  "percentage": 1,
+                  "datetime": "2025-08-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": -17249.2,
+                  "percentage": 1,
+                  "datetime": "2025-09-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": -12337.7,
+                  "percentage": 1,
+                  "datetime": "2025-10-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": -12411,
+                  "percentage": 1,
+                  "datetime": "2025-11-01T00:00:00.000+01:00"
+                },
+                {
+                  "value": -24622.7,
+                  "percentage": 1,
+                  "datetime": "2025-12-01T00:00:00.000+01:00"
+                },
+                {
+                  "value": -40735.8,
+                  "percentage": 1,
+                  "datetime": "2026-01-01T00:00:00.000+01:00"
+                },
+                {
+                  "value": -25097.3,
+                  "percentage": 1,
+                  "datetime": "2026-02-01T00:00:00.000+01:00"
+                },
+                {
+                  "value": -21940.6,
+                  "percentage": 1,
+                  "datetime": "2026-03-01T00:00:00.000+01:00"
+                }
+              ],
+              "total": -246467.30000000002,
+              "total-percentage": 0
+            }
+          },
+          {
+            "type": "saldo",
+            "id": "Andorra",
+            "groupId": "Andorra",
+            "attributes": {
+              "title": "saldo",
+              "description": null,
+              "color": "#666666",
+              "icon": null,
+              "type": "saldo",
+              "magnitude": null,
+              "composite": true,
+              "last-update": "2026-03-28T13:07:46.000+01:00",
+              "values": [
+                {
+                  "value": -20845.175,
+                  "percentage": 1,
+                  "datetime": "2025-03-01T00:00:00.000+01:00"
+                },
+                {
+                  "value": -11694.15,
+                  "percentage": 1,
+                  "datetime": "2025-04-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": -6836.825,
+                  "percentage": 1,
+                  "datetime": "2025-05-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": -14539.25,
+                  "percentage": 1,
+                  "datetime": "2025-06-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": -19463.7,
+                  "percentage": 1,
+                  "datetime": "2025-07-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": -18693.9,
+                  "percentage": 1,
+                  "datetime": "2025-08-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": -17249.2,
+                  "percentage": 1,
+                  "datetime": "2025-09-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": -12337.7,
+                  "percentage": 1,
+                  "datetime": "2025-10-01T00:00:00.000+02:00"
+                },
+                {
+                  "value": -12411,
+                  "percentage": 1,
+                  "datetime": "2025-11-01T00:00:00.000+01:00"
+                },
+                {
+                  "value": -24622.7,
+                  "percentage": 1,
+                  "datetime": "2025-12-01T00:00:00.000+01:00"
+                },
+                {
+                  "value": -40735.8,
+                  "percentage": 1,
+                  "datetime": "2026-01-01T00:00:00.000+01:00"
+                },
+                {
+                  "value": -25097.3,
+                  "percentage": 1,
+                  "datetime": "2026-02-01T00:00:00.000+01:00"
+                },
+                {
+                  "value": -21940.6,
+                  "percentage": 1,
+                  "datetime": "2026-03-01T00:00:00.000+01:00"
+                }
+              ],
+              "total": -246467.30000000002,
+              "total-percentage": 0
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
