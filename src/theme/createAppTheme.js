@@ -211,6 +211,20 @@ export const createAppTheme = (mode = "light") => {
       MuiDialog: {
         styleOverrides: {
           paper: { borderRadius: radius.lg, backgroundImage: "none" },
+          // A pantalla completa no puede haber esquinas redondeadas: el
+          // override de `paper` pisaba el `borderRadius: 0` que MUI aplica a
+          // paperFullScreen, así que se veía el fondo de la página asomando
+          // por las cuatro esquinas.
+          paperFullScreen: {
+            borderRadius: 0,
+            // Zona segura del dispositivo (notch, barra de estado, barra de
+            // gestos). Vale 0 en navegador normal y solo entra en juego con
+            // `viewport-fit=cover` o con la app instalada como PWA.
+            paddingTop: "env(safe-area-inset-top)",
+            paddingBottom: "env(safe-area-inset-bottom)",
+            paddingLeft: "env(safe-area-inset-left)",
+            paddingRight: "env(safe-area-inset-right)",
+          },
         },
       },
 
