@@ -21,6 +21,8 @@ import {
   useTheme,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import AddIcon from "@mui/icons-material/Add";
+import RemoveIcon from "@mui/icons-material/Remove";
 
 import BestRangeCard from "./BestRangeCard";
 import DayTimeline from "./DayTimeline";
@@ -146,15 +148,15 @@ export function CheapRangesDialog({ open, onClose, energyCost, units, isToday })
         </IconButton>
       </DialogTitle>
 
-      <DialogContent dividers>
-        <Stack spacing={2.5}>
+      <DialogContent dividers sx={{ px: { xs: 2, sm: 3 } }}>
+        <Stack spacing={{ xs: 2, sm: 2.5 }}>
           {/* --- Controles --- */}
           <Box>
             <Stack
               direction="row"
               justifyContent="space-between"
-              alignItems="baseline"
-              sx={{ mb: 1 }}
+              alignItems="center"
+              sx={{ mb: 1, minHeight: 40 }}
             >
               <Typography
                 variant="subtitle2"
@@ -163,9 +165,42 @@ export function CheapRangesDialog({ open, onClose, energyCost, units, isToday })
               >
                 Duración
               </Typography>
-              <Typography className="tabular" sx={{ fontWeight: 700 }}>
-                {hours} h
-              </Typography>
+
+              {/* En móvil, un paso -/+ en vez del slider: arrastrar con el
+                  pulgar hasta una hora concreta es el peor control posible,
+                  y así la cifra y su ajuste comparten fila (sin gastar alto). */}
+              {fullScreen ? (
+                <Stack direction="row" alignItems="center" spacing={0.5}>
+                  <IconButton
+                    size="small"
+                    aria-label="Una hora menos"
+                    disabled={hours <= 1}
+                    onClick={() => setHours((h) => Math.max(1, h - 1))}
+                    sx={{ border: 1, borderColor: "divider" }}
+                  >
+                    <RemoveIcon fontSize="small" />
+                  </IconButton>
+                  <Typography
+                    className="tabular"
+                    sx={{ fontWeight: 700, minWidth: 44, textAlign: "center" }}
+                  >
+                    {hours} h
+                  </Typography>
+                  <IconButton
+                    size="small"
+                    aria-label="Una hora más"
+                    disabled={hours >= sliderMax}
+                    onClick={() => setHours((h) => Math.min(sliderMax, h + 1))}
+                    sx={{ border: 1, borderColor: "divider" }}
+                  >
+                    <AddIcon fontSize="small" />
+                  </IconButton>
+                </Stack>
+              ) : (
+                <Typography className="tabular" sx={{ fontWeight: 700 }}>
+                  {hours} h
+                </Typography>
+              )}
             </Stack>
 
             <ToggleButtonGroup
@@ -174,39 +209,55 @@ export function CheapRangesDialog({ open, onClose, energyCost, units, isToday })
               value={availablePresets.includes(hours) ? hours : null}
               aria-labelledby="duration-label"
               onChange={(_, value) => value && setHours(value)}
-              sx={{ flexWrap: "wrap", gap: 0.5, "& .MuiToggleButton-root": { border: 1 } }}
+              sx={{
+                flexWrap: "wrap",
+                gap: 0.5,
+                // Por defecto es inline-flex: en móvil dejaba hueco muerto a la
+                // derecha y encogía el área táctil de cada atajo.
+                display: "flex",
+                width: { xs: "100%", sm: "auto" },
+                "& .MuiToggleButton-root": {
+                  border: 1,
+                  flex: { xs: 1, sm: "0 0 auto" },
+                  minHeight: 44,
+                },
+              }}
             >
               {availablePresets.map((value) => (
-                <ToggleButton key={value} value={value} sx={{ px: 1.75 }}>
+                <ToggleButton key={value} value={value} sx={{ px: { xs: 1, sm: 1.75 } }}>
                   {value} h
                 </ToggleButton>
               ))}
             </ToggleButtonGroup>
 
-            <Slider
-              value={hours}
-              min={1}
-              max={sliderMax}
-              step={1}
-              valueLabelDisplay="auto"
-              aria-labelledby="duration-label"
-              onChange={(_, value) => setHours(value)}
-              sx={{ mt: 1 }}
-            />
+            {!fullScreen && (
+              <Slider
+                value={hours}
+                min={1}
+                max={sliderMax}
+                step={1}
+                valueLabelDisplay="auto"
+                aria-labelledby="duration-label"
+                onChange={(_, value) => setHours(value)}
+                sx={{ mt: 1 }}
+              />
+            )}
           </Box>
 
           <Stack
-            direction={{ xs: "column", sm: "row" }}
-            spacing={2}
-            alignItems={{ xs: "stretch", sm: "center" }}
+            direction="row"
+            spacing={1.5}
+            alignItems="center"
             justifyContent="space-between"
           >
             <TextField
-              label="Potencia del aparato"
+              label="Potencia"
               size="small"
               value={powerText}
               onChange={handlePowerChange}
-              sx={{ maxWidth: { sm: 190 } }}
+              // Un campo de 1-3 dígitos no necesita ancho completo: en móvil
+              // ocupaba toda la fila para escribir "2".
+              sx={{ width: 116, flexShrink: 0 }}
               // `inputMode` suelto en TextField acaba en el FormControl raíz,
               // no en el <input>: hay que pasarlo por inputProps para que el
               // móvil abra el teclado numérico.
@@ -225,6 +276,7 @@ export function CheapRangesDialog({ open, onClose, energyCost, units, isToday })
                 />
               }
               label={<Typography variant="body2">Solo desde ahora</Typography>}
+              sx={{ mr: 0 }}
             />
           </Stack>
 
@@ -240,6 +292,7 @@ export function CheapRangesDialog({ open, onClose, energyCost, units, isToday })
                 isToday={isToday}
                 onCopy={copyBest}
                 copied={copied}
+                compact={fullScreen}
               />
 
               <Box>
@@ -277,18 +330,22 @@ export function CheapRangesDialog({ open, onClose, energyCost, units, isToday })
                         <Typography className="tabular" sx={{ fontWeight: 600 }}>
                           {formatRangeLabel(range)}
                         </Typography>
-                        <Stack direction="row" spacing={2} alignItems="baseline">
+                        {/* Importe y media en columna a la derecha: en una sola
+                            fila se apretaban en pantallas estrechas, sobre todo
+                            en €/kWh (cinco decimales). */}
+                        <Box sx={{ textAlign: "right", flexShrink: 0 }}>
+                          <Typography className="tabular" sx={{ fontWeight: 600 }}>
+                            ≈ {formatEuros(euroCost(range.sumPrice, powerKw))}
+                          </Typography>
                           <Typography
                             variant="caption"
                             color="text.secondary"
                             className="tabular"
+                            display="block"
                           >
                             {formatPriceWithUnits(range.avgPrice, units)}
                           </Typography>
-                          <Typography className="tabular" sx={{ fontWeight: 600 }}>
-                            ≈ {formatEuros(euroCost(range.sumPrice, powerKw))}
-                          </Typography>
-                        </Stack>
+                        </Box>
                       </Stack>
                     ))}
                   </Stack>
@@ -304,9 +361,13 @@ export function CheapRangesDialog({ open, onClose, energyCost, units, isToday })
         </Stack>
       </DialogContent>
 
-      <DialogActions>
-        <Button onClick={onClose}>Cerrar</Button>
-      </DialogActions>
+      {/* A pantalla completa la X de la cabecera ya cierra: esta barra solo
+          duplicaba la acción y robaba ~70 px permanentes de alto útil. */}
+      {!fullScreen && (
+        <DialogActions>
+          <Button onClick={onClose}>Cerrar</Button>
+        </DialogActions>
+      )}
     </Dialog>
   );
 }
