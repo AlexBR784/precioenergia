@@ -1,0 +1,49 @@
+/*
+ * Solo lo que no cabe en el tema de MUI.
+ * El reset, los colores y la tipografía los aporta <CssBaseline /> + createAppTheme.
+ */
+
+:root {
+  color-scheme: light dark;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100vh;
+}
+
+/* Enlace de salto: invisible hasta que recibe el foco con el teclado. */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 1400;
+  padding: 0.75rem 1rem;
+  border-radius: 0 0 8px 0;
+  font: inherit;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.skip-link:focus {
+  left: 0;
+}
+
+/*
+ * La app tenía un parpadeo infinito de 1s y flechas animadas en bucle en el
+ * mapa, sin guarda alguna. Esto cubre el CSS; los gráficos lo consultan
+ * además desde JS (theme/echartsTheme.js).
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

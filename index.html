@@ -5,7 +5,13 @@
     <link rel="icon" href="/favicon.ico" sizes="any" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="manifest" href="/site.webmanifest" />
-    <title>Precio</title>
+    <meta
+      name="description"
+      content="Consulta el precio de la luz hora a hora en España, encuentra los tramos más baratos del día y revisa los intercambios de energía con los países frontera. Datos oficiales de Red Eléctrica."
+    />
+    <meta name="theme-color" content="#F8FAFC" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0B1220" media="(prefers-color-scheme: dark)" />
+    <title>Precio de la luz</title>
     <script>
       document.addEventListener("DOMContentLoaded", () => {
         const today = new Date();
@@ -13,7 +19,7 @@
         const formattedDate = today
           .toLocaleDateString("es-ES", options)
           .toUpperCase();
-        document.title = `Precio (${formattedDate})`;
+        document.title = `Precio de la luz · ${formattedDate}`;
       });
     </script>
   </head>

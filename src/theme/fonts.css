@@ -1,0 +1,27 @@
+/*
+ * IBM Plex Sans, autoalojada.
+ *
+ * Se declara el @font-face a mano en vez de importar
+ * `@fontsource-variable/ibm-plex-sans/wght.css` porque ese archivo declara
+ * todos los subconjuntos (cirílico, griego, vietnamita, latin-ext). El
+ * navegador solo descargaría el latino gracias a `unicode-range`, pero Vite
+ * empaqueta igualmente los ~15 .woff2 en dist/, que está commiteado en el
+ * repositorio. La app es solo en español: con el subconjunto latino basta.
+ *
+ * Es una fuente variable: un único archivo de ~45 KB cubre todo el eje de
+ * peso 100–700, así que los pesos 400/600/700 que usa la app no se sintetizan.
+ *
+ * Autoalojada, no vía CDN de Google: cargarla desde el CDN transmitiría la IP
+ * de cada visitante a un tercero (LG München I, 20/01/2022, 3 O 17493/20).
+ */
+@font-face {
+  font-family: "IBM Plex Sans Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 700;
+  src: url("@fontsource-variable/ibm-plex-sans/files/ibm-plex-sans-latin-wght-normal.woff2")
+    format("woff2-variations");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
