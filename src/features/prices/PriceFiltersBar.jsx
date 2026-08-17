@@ -8,9 +8,8 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import dayjs from "dayjs";
 import { ExcelIcon } from "../../assets/Excel";
+import DateField from "../../components/DateField";
 import { UNITS } from "./priceFormat";
 
 /**
@@ -47,14 +46,7 @@ export function PriceFiltersBar({
         flexWrap="wrap"
         useFlexGap
       >
-        <DatePicker
-          label="Fecha"
-          format="DD/MM/YYYY"
-          value={dayjs(date)}
-          maxDate={dayjs().add(1, "day")}
-          onChange={onDateChange}
-          slotProps={{ textField: { size: "small", sx: { minWidth: 170 } } }}
-        />
+        <DateField value={date} onChange={onDateChange} />
 
         <Box>
           <Typography

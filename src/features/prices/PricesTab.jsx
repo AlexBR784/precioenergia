@@ -9,7 +9,7 @@ import {
   useMediaQuery,
   useTheme,
 } from "@mui/material";
-import ScheduleIcon from "@mui/icons-material/ScheduleOutlined";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import TableChartIcon from "@mui/icons-material/TableChartOutlined";
 import dayjs from "dayjs";
 import * as XLSX from "xlsx";
@@ -19,7 +19,6 @@ import PriceSummaryCards from "./PriceSummaryCards";
 import PriceChartCard from "./PriceChartCard";
 import PriceTable from "./PriceTable";
 import PriceList from "./PriceList";
-import CheapRangesDialog from "./CheapRangesDialog";
 import CheapestHourBanner from "./CheapestHourBanner";
 import PricesSkeleton from "./PricesSkeleton";
 import { convertPrice, decimalsFor } from "./priceFormat";
@@ -40,12 +39,12 @@ export function PricesTab({
   onDateChange,
   units,
   onUnitsChange,
+  onNavigateToTips,
 }) {
   const theme = useTheme();
   const isCompact = useMediaQuery(theme.breakpoints.down("md"));
 
   const [order, setOrder] = useState("hour");
-  const [dialogOpen, setDialogOpen] = useState(false);
   const [showAllHours, setShowAllHours] = useState(false);
 
   const stats = usePriceStats(energyCost, date);
@@ -145,12 +144,20 @@ export function PricesTab({
               </Typography>
             </Stack>
 
+            {/* Aquí estaba el botón que abría la calculadora de tramos. Vive
+                ahora en la pestaña de consejos, que es donde encaja: esta
+                tarjeta enseña datos, no recomienda. Queda el camino, para que
+                quien lo buscara aquí no se encuentre un hueco. */}
             <Button
-              variant="outlined"
-              startIcon={<ScheduleIcon />}
-              onClick={() => setDialogOpen(true)}
+              size="small"
+              endIcon={<ArrowForwardIcon />}
+              onClick={onNavigateToTips}
+              // 44 px de objetivo táctil en móvil, como el resto de controles;
+              // en escritorio no hace falta y quedaría desproporcionado al lado
+              // del título.
+              sx={{ ml: { sm: 1 }, flexShrink: 0, minHeight: { xs: 44, sm: 36 } }}
             >
-              Calcular tramos baratos
+              Ver consejos del día
             </Button>
           </Stack>
 
@@ -167,14 +174,6 @@ export function PricesTab({
           )}
         </CardContent>
       </Card>
-
-      <CheapRangesDialog
-        open={dialogOpen}
-        onClose={() => setDialogOpen(false)}
-        energyCost={energyCost}
-        units={units}
-        isToday={stats.isToday}
-      />
     </Stack>
   );
 }

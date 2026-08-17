@@ -12,8 +12,12 @@ import {
 import BoltIcon from "@mui/icons-material/Bolt";
 import ThemeToggle from "./ThemeToggle";
 
+// La etiqueta es "Consejos" y no "Recomendaciones" por una razón medible: con
+// `variant="fullWidth"` las tres pestañas se reparten ~124 px en un móvil de
+// 390 px, y "Recomendaciones" partiría en dos líneas.
 const TABS = [
   { value: "prices", label: "Precios" },
+  { value: "tips", label: "Consejos" },
   { value: "interchanges", label: "Intercambios" },
 ];
 
@@ -68,7 +72,13 @@ export function AppHeader({ activeTab, onTabChange }) {
             sx={{
               minHeight: 44,
               "& .MuiTabs-flexContainer": { justifyContent: { sm: "flex-start" } },
-              "& .MuiTab-root": { minHeight: 44, maxWidth: { sm: 180 } },
+              // Con tres pestañas el padding por defecto (16 px por lado) deja
+              // "Intercambios" al filo en móvil.
+              "& .MuiTab-root": {
+                minHeight: 44,
+                maxWidth: { sm: 180 },
+                px: { xs: 1, sm: 2 },
+              },
               "& .MuiTabs-indicator": { height: 3, borderRadius: "3px 3px 0 0" },
             }}
           >

@@ -46,7 +46,16 @@ export const useEnergyCost = () => {
       return;
     }
 
-    const parsedData = response?.data?.included?.[0]?.attributes?.values;
+    // La respuesta trae dos series: PVPC (horaria) y "Precio mercado spot"
+    // (cuartohoraria, 96 valores). Coger `included[0]` a ciegas funcionaba solo
+    // por casualidad: para el día de mañana, hasta que se publica el PVPC sobre
+    // las 20:15, la única serie que llega es la spot — y la app la mostraba como
+    // si fueran precios horarios de PVPC, con 96 filas y tramos de 15 minutos
+    // disfrazados de horas.
+    const series = response?.data?.included?.find((item) =>
+      /pvpc/i.test(item?.type ?? item?.attributes?.title ?? "")
+    );
+    const parsedData = series?.attributes?.values;
 
     if (!parsedData?.length) {
       setNoData(true);

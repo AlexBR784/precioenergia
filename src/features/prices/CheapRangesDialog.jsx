@@ -25,7 +25,8 @@ import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 
 import BestRangeCard from "./BestRangeCard";
-import DayTimeline from "./DayTimeline";
+import DayTimeline from "../../components/DayTimeline";
+import { usePowerKw, readStoredPower } from "../../hooks/usePowerKw";
 import { findRanges, formatRangeLabel } from "./cheapRanges";
 import {
   euroCost,
@@ -34,17 +35,6 @@ import {
 } from "./priceFormat";
 
 const DURATION_PRESETS = [1, 2, 3, 4, 6, 8];
-const POWER_KEY = "precioenergia:power-kw";
-const DEFAULT_POWER = 2;
-
-const readStoredPower = () => {
-  try {
-    const stored = parseFloat(window.localStorage.getItem(POWER_KEY));
-    return Number.isFinite(stored) && stored > 0 ? stored : DEFAULT_POWER;
-  } catch {
-    return DEFAULT_POWER;
-  }
-};
 
 /**
  * Calculadora de tramos consecutivos más baratos.
@@ -58,9 +48,11 @@ export function CheapRangesDialog({ open, onClose, energyCost, units, isToday })
 
   const [hours, setHours] = useState(3);
   const [onlyFuture, setOnlyFuture] = useState(true);
-  const [powerKw, setPowerKw] = useState(readStoredPower);
+  // La potencia se comparte con la pestaña de consejos, así que vive en su
+  // propio hook en vez de en el estado local del diálogo.
+  const { powerKw, setPowerKw } = usePowerKw();
   const [powerText, setPowerText] = useState(() =>
-    String(readStoredPower()).replace(".", ",")
+    String(readStoredPower().value).replace(".", ",")
   );
   const [copied, setCopied] = useState(false);
 
@@ -81,6 +73,18 @@ export function CheapRangesDialog({ open, onClose, energyCost, units, isToday })
     if (hours > sliderMax) setHours(sliderMax);
   }, [sliderMax, hours]);
 
+  // La potencia es compartida y puede cambiar desde fuera de este componente
+  // (otra pestaña del navegador escribiendo en localStorage), así que al abrir
+  // se trae el valor vigente: el campo no puede enseñar un número distinto del
+  // que se está usando para calcular.
+  //
+  // Se lee de localStorage y depende solo de `open`: con `powerKw` en las
+  // dependencias, cada pulsación válida reescribiría el campo y se comería la
+  // coma a medio escribir ("1," -> "1").
+  useEffect(() => {
+    if (open) setPowerText(String(readStoredPower().value).replace(".", ","));
+  }, [open]);
+
   const { best, worst } = useMemo(
     () =>
       findRanges(energyCost, {
@@ -98,15 +102,9 @@ export function CheapRangesDialog({ open, onClose, energyCost, units, isToday })
     const text = event.target.value;
     setPowerText(text);
 
+    // El hook ya persiste y avisa a quien más esté usando la potencia.
     const parsed = parseFloat(text.replace(",", "."));
-    if (Number.isFinite(parsed) && parsed > 0) {
-      setPowerKw(parsed);
-      try {
-        window.localStorage.setItem(POWER_KEY, String(parsed));
-      } catch {
-        // Persistir es opcional; el valor sigue vivo en esta sesión.
-      }
-    }
+    if (Number.isFinite(parsed) && parsed > 0) setPowerKw(parsed);
   };
 
   const copyBest = () => {

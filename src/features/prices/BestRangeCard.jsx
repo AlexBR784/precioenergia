@@ -75,7 +75,7 @@ function Cost({ cost, hours, powerKw, compact }) {
         por {hours} h a {powerKw.toLocaleString("es-ES")} kW
         {/* En móvil la advertencia se abrevia: la nota completa ya está en el
             pie de la página y aquí robaba tres líneas de alto. */}
-        {!compact && " · solo energía, sin peajes ni impuestos"}
+        {!compact && " · término de energía PVPC, sin impuestos"}
       </Typography>
     </Box>
   );

@@ -44,7 +44,9 @@ export const formatHour = (hour) => (hour ? `${hour} h` : "—");
  * distintas horas y los etiquetaba como si el resultado siguiera siendo un
  * precio: dimensionalmente no significaba nada.
  *
- * Precio de mercado mayorista: no incluye peajes, cargos ni impuestos.
+ * La serie que consume la app es la PVPC (tarifa regulada), que ya incluye
+ * peajes y cargos; lo que queda fuera es el IVA, el impuesto eléctrico y el
+ * término fijo de potencia.
  */
 export const euroCost = (sumPriceMWh, powerKw) => {
   if (!Number.isFinite(sumPriceMWh) || !Number.isFinite(powerKw)) return null;

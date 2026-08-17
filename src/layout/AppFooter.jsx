@@ -28,7 +28,8 @@ export function AppFooter() {
             </Link>
           </Typography>
           <Typography variant="caption" color="text.secondary">
-            Precios del mercado mayorista. No incluyen peajes ni impuestos.
+            Precio PVPC (tarifa regulada). No incluye IVA, impuesto eléctrico
+            ni el término fijo de potencia.
           </Typography>
         </Stack>
       </Container>

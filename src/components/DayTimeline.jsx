@@ -2,8 +2,8 @@
 import { useMemo } from "react";
 import { Box, Typography } from "@mui/material";
 import { alpha } from "@mui/material/styles";
-import { getPriceTier, PRICE_TIER_LABELS } from "../../theme/tokens";
-import { hourOf } from "../../hooks/usePriceStats";
+import { getPriceTier, PRICE_TIER_LABELS } from "../theme/tokens";
+import { hourOf } from "../hooks/usePriceStats";
 
 const TICKS = [0, 6, 12, 18, 24];
 

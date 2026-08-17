@@ -3,9 +3,11 @@ import dayjs from "dayjs";
 
 import AppShell from "./layout/AppShell";
 import PricesTab from "./features/prices/PricesTab";
+import RecommendationsTab from "./features/recommendations/RecommendationsTab";
 import InterchangesTab from "./features/interchanges/InterchangesTab";
 import { UNITS } from "./features/prices/priceFormat";
 import { useEnergyCost } from "./hooks/useEnergyCost";
+import { useDailyBaseline } from "./hooks/useDailyBaseline";
 import { useInterchanges } from "./hooks/useInterchanges";
 
 function App() {
@@ -23,6 +25,21 @@ function App() {
     setSelectedDate(date);
     fetchEnergyCost(date);
   };
+
+  // --- Consejos ---
+  // La referencia de "caro o barato" es una petición extra, así que solo se
+  // pide cuando el usuario entra en la pestaña (igual que los intercambios).
+  const [tipsLoaded, setTipsLoaded] = useState(false);
+
+  useEffect(() => {
+    if (activeTab === "tips" && !tipsLoaded) setTipsLoaded(true);
+  }, [activeTab, tipsLoaded]);
+
+  const {
+    baseline,
+    sampleDays,
+    loading: baselineLoading,
+  } = useDailyBaseline(selectedDate, { enabled: tipsLoaded });
 
   // --- Intercambios ---
   const {
@@ -65,7 +82,7 @@ function App() {
 
   return (
     <AppShell activeTab={activeTab} onTabChange={setActiveTab}>
-      {activeTab === "prices" ? (
+      {activeTab === "prices" && (
         <PricesTab
           energyCost={energyCost}
           loading={loading}
@@ -76,8 +93,27 @@ function App() {
           onDateChange={handleDateChange}
           units={units}
           onUnitsChange={setUnits}
+          onNavigateToTips={() => setActiveTab("tips")}
         />
-      ) : (
+      )}
+
+      {activeTab === "tips" && (
+        <RecommendationsTab
+          energyCost={energyCost}
+          loading={loading}
+          timeoutFlag={timeoutFlag}
+          noData={noData}
+          fetchEnergyCost={fetchEnergyCost}
+          date={selectedDate}
+          onDateChange={handleDateChange}
+          units={units}
+          baseline={baseline}
+          sampleDays={sampleDays}
+          baselineLoading={baselineLoading}
+        />
+      )}
+
+      {activeTab === "interchanges" && (
         <InterchangesTab
           data={interchangesData}
           loading={interchangesLoading}
