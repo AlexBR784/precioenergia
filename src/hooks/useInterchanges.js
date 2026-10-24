@@ -135,7 +135,7 @@ export const useInterchanges = () => {
     } catch (requestError) {
       const errorMessage =
         requestError?.response?.data?.errors?.[0]?.detail ||
-        "No se pudieron cargar los intercambios. Inténtalo de nuevo.";
+        "No se han podido cargar los intercambios. Inténtalo de nuevo.";
       setError(errorMessage);
       setInterchangesData([]);
     } finally {

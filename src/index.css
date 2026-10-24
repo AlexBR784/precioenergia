@@ -15,6 +15,23 @@ body {
   min-height: 100vh;
 }
 
+/*
+ * Sin palabras sueltas en la última línea: los títulos reparten sus líneas
+ * por igual y los párrafos evitan dejar una palabra huérfana ("medio.",
+ * "€/MWh)."). Navegadores sin soporte simplemente lo ignoran.
+ */
+h1,
+h2,
+h3,
+h4 {
+  text-wrap: balance;
+}
+
+p,
+li {
+  text-wrap: pretty;
+}
+
 /* Enlace de salto: invisible hasta que recibe el foco con el teclado. */
 .skip-link {
   position: absolute;

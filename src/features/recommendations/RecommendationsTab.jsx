@@ -101,7 +101,7 @@ export function RecommendationsTab({
         {dateControl}
         <ErrorState
           title="No se han podido cargar los precios"
-          description="La API de Red Eléctrica no ha respondido a tiempo."
+          description="Red Eléctrica no ha respondido a tiempo. Puedes volver a intentarlo."
           onRetry={() => fetchEnergyCost(date)}
         />
       </Stack>

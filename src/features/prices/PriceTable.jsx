@@ -47,7 +47,7 @@ export function PriceTable({ rows, units }) {
                     label="Ahora"
                     size="small"
                     color="primary"
-                    sx={{ ml: 1, height: 20, fontSize: "0.6875rem" }}
+                    sx={{ ml: 1, height: 20, fontSize: "0.75rem" }}
                   />
                 )}
               </TableCell>

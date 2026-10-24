@@ -59,7 +59,7 @@ export function PriceList({ rows, units, showAll, onToggleShowAll, canFilter }) 
                   label="Ahora"
                   size="small"
                   color="primary"
-                  sx={{ height: 20, fontSize: "0.6875rem" }}
+                  sx={{ height: 20, fontSize: "0.75rem" }}
                 />
               )}
             </Stack>

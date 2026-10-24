@@ -164,7 +164,7 @@ function RangeTrack({ total, best, worst, isToday }) {
               left: `${(tick / 24) * 100}%`,
               transform: tick === 0 ? "none" : tick === 24 ? "translateX(-100%)" : "translateX(-50%)",
               color: "text.secondary",
-              fontSize: "0.6875rem",
+              fontSize: "0.75rem",
             }}
           >
             {String(tick).padStart(2, "0")}:00
@@ -425,7 +425,7 @@ export function WhenToRun({ energyCost, units, isToday }) {
                     size="small"
                     label={status.label}
                     variant="outlined"
-                    sx={{ height: 22, fontSize: "0.6875rem", color: status.color, borderColor: "divider" }}
+                    sx={{ height: 22, fontSize: "0.75rem", color: status.color, borderColor: "divider" }}
                   />
                 )}
               </Stack>
