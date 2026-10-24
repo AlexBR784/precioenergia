@@ -8,7 +8,7 @@ import SavingsIcon from "@mui/icons-material/SavingsOutlined";
 import { formatPrice, formatHour } from "./priceFormat";
 import PriceTierBadge from "../../components/PriceTierBadge";
 
-function KpiCard({ label, value, units, context, icon, tier, highlight }) {
+export function KpiCard({ label, value, units, context, icon, tier, highlight }) {
   return (
     <Card
       sx={{

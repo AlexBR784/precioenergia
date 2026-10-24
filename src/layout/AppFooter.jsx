@@ -26,10 +26,21 @@ export function AppFooter() {
             >
               Red Eléctrica de España — apidatos.ree.es
             </Link>
+            {" · "}
+            <Link
+              href="https://geoportalgasolineras.es/"
+              target="_blank"
+              rel="noopener noreferrer"
+              underline="hover"
+              color="inherit"
+              sx={{ fontWeight: 600 }}
+            >
+              Geoportal Gasolineras (MITECO)
+            </Link>
           </Typography>
           <Typography variant="caption" color="text.secondary">
-            Precio PVPC (tarifa regulada). No incluye IVA, impuesto eléctrico
-            ni el término fijo de potencia.
+            Luz: precio PVPC (tarifa regulada). No incluye IVA, impuesto
+            eléctrico ni el término fijo de potencia.
           </Typography>
         </Stack>
       </Container>

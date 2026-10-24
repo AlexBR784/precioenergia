@@ -24,16 +24,25 @@ programados de energía con los países frontera, usando la API pública de
   electrodoméstico, con coste estimado en euros según su potencia (kW). La potencia se guarda
   (`usePowerKw`) y los consejos la reutilizan para hablar en euros de *tu* aparato.
 
+**Carburantes**
+- Precio de Gasolina 95, Gasóleo A y GLP (y Gasolina 98, 95 Premium y Gasóleo Premium) en las
+  gasolineras de tu zona: por provincia/municipio, o «Cerca de mí» con radio configurable.
+- Veredicto con la gasolinera más barata, precio medio, más cara y cuánto cuesta llenar el depósito
+  (litros editables y guardados) frente a un precio medio.
+- Ranking con tramo de precio, distancia, horario («abierta ahora», mejor esfuerzo según el texto
+  del Ministerio) y enlace «Cómo llegar». Filtros por marca y «solo abiertas ahora».
+- La ubicación solo se usa en el navegador: no se envía ni se guarda.
+
 **Intercambios**
 - Mapa de flujos de importación/exportación entre España y Francia, Portugal, Andorra y Marruecos
   para un rango de fechas.
 - Totales agregados y desglose por frontera.
 
-Las tres vistas soportan modo claro / oscuro / según el sistema (persistido en `localStorage`).
+Las cuatro vistas soportan modo claro / oscuro / según el sistema (persistido en `localStorage`).
 
 ## Stack técnico
 
-- **React 18** + **Vite** — sin router ni gestor de estado global, tres pestañas con estado en `App.jsx`.
+- **React 18** + **Vite** — sin router ni gestor de estado global, cuatro pestañas con estado en `App.jsx`.
 - **MUI v5** como sistema de componentes, con un tema propio (`src/theme/`) que centraliza paleta,
   tipografía y overrides; sin librerías de estilos adicionales.
 - **ECharts** (`echarts-for-react`) para el gráfico de precios y el mapa de intercambios.
@@ -50,10 +59,13 @@ src/
     prices/         pestaña de precios: KPIs, filtros, tabla, gráfico; y la calculadora de tramos,
                     que se abre desde la pestaña de consejos
     recommendations/ pestaña de consejos: motor de reglas (dayInsights.js) y su presentación
+    fuel/            pestaña de carburantes: lógica pura (fuelData.js), provincias, filtros,
+                     veredicto, KPIs y ranking de gasolineras
     interchanges/    pestaña de intercambios: mapa, filtros, totales
   components/        piezas compartidas entre pestañas (línea de tiempo, selector de fecha,
                      gráfico de distribución, estados vacío/error…)
-  hooks/              useEnergyCost, useDailyBaseline, usePowerKw, useInterchanges, usePriceStats
+  hooks/              useEnergyCost, useDailyBaseline, usePowerKw, useInterchanges, usePriceStats,
+                      useFuelPrices, useFuelPrefs, useGeolocation
   assets/             iconos e imágenes propias
 ```
 
@@ -82,7 +94,12 @@ npm run deploy
 
 ## Fuente de datos
 
-Toda la información proviene de la API pública de REE (`apidatos.ree.es`), sin autenticación.
+La luz y los intercambios provienen de la API pública de REE (`apidatos.ree.es`), sin
+autenticación. Los carburantes, del servicio REST público del Ministerio para la Transición
+Ecológica (`sedeaplicaciones.minetur.gob.es/ServiciosRESTCarburantes`, el de
+[geoportalgasolineras.es](https://geoportalgasolineras.es/)), también sin clave y con CORS abierto.
+Como el listado de toda España pesa unos 12 MB, solo se pide la provincia elegida (≈0,3–1 MB) y se
+cachea 15 minutos; con «Cerca de mí» se piden las dos provincias más próximas a tu ubicación.
 
 El endpoint `precios-mercados-tiempo-real` devuelve **dos** series: `PVPC` (horaria) y
 `Precio mercado spot` (cuartohoraria). La app consume la primera, así que los precios que muestra

@@ -8,16 +8,21 @@ import {
   Tabs,
   Toolbar,
   Typography,
+  useMediaQuery,
 } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
 import BoltIcon from "@mui/icons-material/Bolt";
 import ThemeToggle from "./ThemeToggle";
 
 // La etiqueta es "Consejos" y no "Recomendaciones" por una razón medible: con
 // `variant="fullWidth"` las tres pestañas se reparten ~124 px en un móvil de
-// 390 px, y "Recomendaciones" partiría en dos líneas.
+// 390 px, y "Recomendaciones" partiría en dos líneas. Con cuatro pestañas ya no
+// caben ni así (~92 px para "Intercambios"), por eso en móvil la barra
+// desplaza; desde `sm` vuelven a repartirse el ancho.
 const TABS = [
   { value: "prices", label: "Precios" },
   { value: "tips", label: "Consejos" },
+  { value: "fuel", label: "Carburantes" },
   { value: "interchanges", label: "Intercambios" },
 ];
 
@@ -27,6 +32,9 @@ const TABS = [
  * sin <header> ni <h1>: el primer encabezado del documento era un h6.
  */
 export function AppHeader({ activeTab, onTabChange }) {
+  const theme = useTheme();
+  const isPhone = useMediaQuery(theme.breakpoints.down("sm"));
+
   return (
     <AppBar
       component="header"
@@ -68,7 +76,9 @@ export function AppHeader({ activeTab, onTabChange }) {
             value={activeTab}
             onChange={(_, value) => onTabChange(value)}
             aria-label="Secciones de la aplicación"
-            variant="fullWidth"
+            variant={isPhone ? "scrollable" : "fullWidth"}
+            scrollButtons="auto"
+            allowScrollButtonsMobile
             sx={{
               minHeight: 44,
               "& .MuiTabs-flexContainer": { justifyContent: { sm: "flex-start" } },

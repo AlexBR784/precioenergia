@@ -5,6 +5,7 @@ import AppShell from "./layout/AppShell";
 import PricesTab from "./features/prices/PricesTab";
 import RecommendationsTab from "./features/recommendations/RecommendationsTab";
 import InterchangesTab from "./features/interchanges/InterchangesTab";
+import FuelTab from "./features/fuel/FuelTab";
 import { UNITS } from "./features/prices/priceFormat";
 import { useEnergyCost } from "./hooks/useEnergyCost";
 import { useDailyBaseline } from "./hooks/useDailyBaseline";
@@ -112,6 +113,10 @@ function App() {
           baselineLoading={baselineLoading}
         />
       )}
+
+      {/* Carga diferida sin flag: los datos se piden al montar la pestaña y
+          useFuelPrices los cachea, así que volver a ella no los repite. */}
+      {activeTab === "fuel" && <FuelTab />}
 
       {activeTab === "interchanges" && (
         <InterchangesTab
