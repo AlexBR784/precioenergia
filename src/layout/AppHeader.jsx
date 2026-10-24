@@ -11,7 +11,7 @@ import {
   useMediaQuery,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import BoltIcon from "@mui/icons-material/Bolt";
+import Mascot from "../components/Mascot";
 import ThemeToggle from "./ThemeToggle";
 
 // La etiqueta es "Consejos" y no "Recomendaciones" por una razón medible: con
@@ -62,7 +62,8 @@ export function AppHeader({ activeTab, onTabChange }) {
             alignItems="center"
             sx={{ flexGrow: 1, minWidth: 0 }}
           >
-            <BoltIcon sx={{ color: "secondary.main" }} aria-hidden="true" />
+            {/* Reacciona al cambiar de pestaña: vuelve a saltar y a dar el pulgar. */}
+            <Mascot size={{ xs: 40, sm: 48 }} playKey={activeTab} />
             <Typography variant="h1" noWrap sx={{ fontSize: { xs: "1rem", sm: "1.25rem" } }}>
               Precio de la luz
             </Typography>
