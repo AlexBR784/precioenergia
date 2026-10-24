@@ -10,7 +10,7 @@ import {
   Typography,
   useMediaQuery,
 } from "@mui/material";
-import { useTheme } from "@mui/material/styles";
+import { alpha, useTheme } from "@mui/material/styles";
 import Mascot from "../components/Mascot";
 import ThemeToggle from "./ThemeToggle";
 
@@ -45,16 +45,13 @@ export function AppHeader({ activeTab, onTabChange }) {
         top: 0,
         borderBottom: 1,
         borderColor: "divider",
-        backgroundColor: (theme) =>
-          theme.palette.mode === "dark"
-            ? "rgba(19, 28, 46, 0.85)"
-            : "rgba(255, 255, 255, 0.85)",
+        backgroundColor: (theme) => alpha(theme.palette.background.paper, 0.85),
         backdropFilter: "blur(8px)",
       }}
     >
       <Container maxWidth="lg" disableGutters>
         <Toolbar
-          sx={{ gap: 1, minHeight: { xs: 56, sm: 64 }, px: { xs: 2, sm: 3 } }}
+          sx={{ gap: 1, minHeight: { xs: 60, sm: 68 }, px: { xs: 2, sm: 3 } }}
         >
           <Stack
             direction="row"
@@ -62,8 +59,10 @@ export function AppHeader({ activeTab, onTabChange }) {
             alignItems="center"
             sx={{ flexGrow: 1, minWidth: 0 }}
           >
-            {/* Reacciona al cambiar de pestaña: vuelve a saltar y a dar el pulgar. */}
-            <Mascot size={{ xs: 40, sm: 48 }} playKey={activeTab} />
+            {/* Reacciona al cambiar de pestaña: vuelve a saltar y a dar el pulgar.
+                El salto sube ~16 % de su alto y gira un poco, así que la barra
+                deja holgura por encima (12 px) para que no se salga de la página. */}
+            <Mascot size={{ xs: 36, sm: 44 }} playKey={activeTab} />
             <Typography variant="h1" noWrap sx={{ fontSize: { xs: "1rem", sm: "1.25rem" } }}>
               Precio de la luz
             </Typography>

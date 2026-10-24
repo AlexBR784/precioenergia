@@ -35,7 +35,7 @@ export function PriceList({ rows, units, showAll, onToggleShowAll, canFilter }) 
             border: 1,
             borderColor: row.isNow ? "primary.main" : "divider",
             bgcolor: row.isNow
-              ? (theme) => alpha(theme.palette.primary.main, theme.palette.mode === "dark" ? 0.16 : 0.06)
+              ? (theme) => alpha(theme.palette.secondary.main, theme.palette.mode === "dark" ? 0.1 : 0.14)
               : "background.paper",
           }}
         >

@@ -42,7 +42,10 @@ function DistributionChart({ data, units }) {
       pieces.push({
         gt: i - 1,
         lte: i,
-        color: isJump ? palette.price.high : palette.price.cheapest,
+        // La línea es de marca; el color semántico queda para lo que avisa
+        // (la subida brusca). Antes toda la línea era "verde = barato" aunque
+        // fuese la hora más cara del día.
+        color: isJump ? palette.price.high : palette.primary.main,
       });
       if (isJump) {
         markAreas.push([{ xAxis: categories[i - 1] }, { xAxis: categories[i] }]);
@@ -121,7 +124,7 @@ function DistributionChart({ data, units }) {
         show: false,
         dimension: 0,
         pieces,
-        outOfRange: { color: palette.price.cheapest },
+        outOfRange: { color: palette.primary.main },
       },
       series: [
         {
@@ -131,9 +134,11 @@ function DistributionChart({ data, units }) {
           showSymbol: false,
           data: values,
           lineStyle: { width: 2.5 },
+          // Relleno azul pizarra muy tenue: da volumen sin competir con la
+          // línea ni con el rojo de las subidas bruscas.
           areaStyle: {
-            opacity: 0.12,
-            color: palette.primary.main,
+            opacity: palette.mode === "dark" ? 0.16 : 0.1,
+            color: palette.info.main,
           },
           markArea: {
             silent: true,

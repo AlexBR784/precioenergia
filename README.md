@@ -20,9 +20,10 @@ programados de energía con los países frontera, usando la API pública de
   diferencia real en euros, horas casi regaladas, qué parte del día sale mejor, y qué hacer ahora
   mismo. Cada regla tiene condición, así que un día plano y un día con pico de tarde producen
   consejos distintos.
-- Calculadora de tramos baratos: la mejor ventana de N horas consecutivas para poner un
-  electrodoméstico, con coste estimado en euros según su potencia (kW). La potencia se guarda
-  (`usePowerKw`) y los consejos la reutilizan para hablar en euros de *tu* aparato.
+- «¿Cuándo lo enciendo?»: eliges un aparato (lavadora, lavavajillas, coche eléctrico…) o ajustas
+  horas y potencia, y te da el mejor momento del día con su coste en euros, el ahorro frente al
+  peor tramo y otras opciones. Un gráfico de barras del día marca tu franja en vivo. La potencia se
+  guarda (`usePowerKw`) y los consejos la reutilizan para hablar en euros de *tu* aparato.
 
 **Carburantes**
 - Precio de Gasolina 95, Gasóleo A y GLP (y Gasolina 98, 95 Premium y Gasóleo Premium) en las
@@ -56,9 +57,10 @@ src/
   theme/            tokens de color/tipografía, tema MUI, modo claro/oscuro, tema de ECharts
   layout/           cabecera, pie, contenedor de página, selector de tema
   features/
-    prices/         pestaña de precios: KPIs, filtros, tabla, gráfico; y la calculadora de tramos,
-                    que se abre desde la pestaña de consejos
-    recommendations/ pestaña de consejos: motor de reglas (dayInsights.js) y su presentación
+    prices/         pestaña de precios: KPIs, filtros, tabla, gráfico; y la búsqueda de tramos
+                    baratos (cheapRanges.js) que usa la pestaña de consejos
+    recommendations/ pestaña de consejos: motor de reglas (dayInsights.js), su presentación y
+                     la calculadora «¿Cuándo lo enciendo?» (WhenToRun.jsx)
     fuel/            pestaña de carburantes: lógica pura (fuelData.js), provincias, filtros,
                      veredicto, KPIs y ranking de gasolineras
     interchanges/    pestaña de intercambios: mapa, filtros, totales

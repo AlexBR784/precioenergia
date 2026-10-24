@@ -36,7 +36,7 @@ export function PriceTable({ rows, units }) {
               key={row.datetime}
               sx={{
                 bgcolor: row.isNow
-                  ? (theme) => alpha(theme.palette.primary.main, theme.palette.mode === "dark" ? 0.18 : 0.08)
+                  ? (theme) => alpha(theme.palette.secondary.main, theme.palette.mode === "dark" ? 0.1 : 0.14)
                   : "transparent",
               }}
             >

@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 /**
  * Potencia del aparato (kW), compartida por toda la app y persistida.
  *
- * Vivía dentro de `CheapRangesDialog`, pero la pestaña de consejos necesita el
+ * Vivía dentro de la calculadora de tramos, pero los consejos necesitan el
  * mismo dato: una vez le has dicho a la calculadora que tu coche son 7,4 kW, no
  * tiene sentido que el consejo del día siga hablando de una lavadora.
  *

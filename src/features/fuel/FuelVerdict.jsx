@@ -36,7 +36,7 @@ export function FuelVerdict({ fuelLabel, stats, liters, scopeLabel }) {
       sx={{
         p: { xs: 2, sm: 2.5 },
         borderRadius: 3,
-        borderWidth: 2,
+        borderWidth: { xs: 1, sm: 2 },
         borderColor: "price.cheapest",
         bgcolor: "priceSoft.cheapest",
       }}
@@ -44,7 +44,7 @@ export function FuelVerdict({ fuelLabel, stats, liters, scopeLabel }) {
       <Stack
         direction={{ xs: "column", sm: "row" }}
         spacing={{ xs: 1.5, sm: 3 }}
-        alignItems={{ xs: "flex-start", sm: "center" }}
+        alignItems={{ xs: "stretch", sm: "center" }}
         justifyContent="space-between"
       >
         <Stack direction="row" spacing={1.5} alignItems="flex-start" sx={{ minWidth: 0 }}>
@@ -83,18 +83,50 @@ export function FuelVerdict({ fuelLabel, stats, liters, scopeLabel }) {
           </Box>
         </Stack>
 
-        <Box sx={{ textAlign: { xs: "left", sm: "right" }, flexShrink: 0 }}>
-          <Typography variant="subtitle2" color="text.secondary">
-            Precio medio
-          </Typography>
+        {/* Mismo pie que el veredicto de la luz: en móvil, una fila con la
+            etiqueta a la izquierda y la cifra a la derecha. */}
+        <Box
+          sx={{
+            flexShrink: 0,
+            display: "flex",
+            flexDirection: { xs: "row", sm: "column" },
+            alignItems: { xs: "baseline", sm: "flex-end" },
+            justifyContent: "space-between",
+            gap: { xs: 1, sm: 0 },
+            pt: { xs: 1.5, sm: 0 },
+            borderTop: { xs: 1, sm: 0 },
+            borderColor: "divider",
+          }}
+        >
+          <Box>
+            <Typography variant="subtitle2" color="text.secondary">
+              Precio medio
+            </Typography>
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ display: { xs: "block", sm: "none" } }}
+            >
+              {count.toLocaleString("es-ES")} gasolineras
+            </Typography>
+          </Box>
+          <Stack direction="row" spacing={0.5} alignItems="baseline">
+            <Typography
+              className="tabular"
+              sx={{ fontSize: { xs: "1.25rem", sm: "1.75rem" }, fontWeight: 700, lineHeight: 1.1 }}
+            >
+              {formatLiterPrice(average)}
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              {LITER_UNITS}
+            </Typography>
+          </Stack>
           <Typography
-            className="tabular"
-            sx={{ fontSize: { xs: "1.5rem", sm: "1.75rem" }, fontWeight: 700, lineHeight: 1.1 }}
+            variant="caption"
+            color="text.secondary"
+            sx={{ display: { xs: "none", sm: "block" } }}
           >
-            {formatLiterPrice(average)}
-          </Typography>
-          <Typography variant="caption" color="text.secondary">
-            {LITER_UNITS} · {count.toLocaleString("es-ES")} gasolineras
+            {count.toLocaleString("es-ES")} gasolineras
           </Typography>
         </Box>
       </Stack>

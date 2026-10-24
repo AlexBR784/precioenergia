@@ -8,13 +8,6 @@ export function RecommendationsSkeleton() {
 
       <Skeleton variant="rounded" height={104} sx={{ borderRadius: 3 }} />
 
-      <Card>
-        <CardContent>
-          <Skeleton variant="text" width={200} height={28} />
-          <Skeleton variant="rounded" height={52} sx={{ mt: 2 }} />
-        </CardContent>
-      </Card>
-
       <Box
         sx={{
           display: "grid",
@@ -26,6 +19,14 @@ export function RecommendationsSkeleton() {
           <Skeleton key={index} variant="rounded" height={116} />
         ))}
       </Box>
+
+      <Card>
+        <CardContent>
+          <Skeleton variant="text" width={220} height={28} />
+          <Skeleton variant="rounded" height={36} sx={{ mt: 2 }} />
+          <Skeleton variant="rounded" height={180} sx={{ mt: 3 }} />
+        </CardContent>
+      </Card>
     </Stack>
   );
 }

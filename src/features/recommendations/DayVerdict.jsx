@@ -17,8 +17,8 @@ const LEVELS = {
  * El titular de la pestaña: la lectura del día en una frase, con la media
  * como cifra de apoyo.
  *
- * Sigue el patrón destacado de `BestRangeCard` (Paper con borde de 2 px y
- * fondo tenue), pero el color lo marca el veredicto, no la marca.
+ * Paper destacado con borde de 2 px y fondo tenue; el color lo marca el
+ * veredicto, no la marca.
  */
 export function DayVerdict({ verdict, units, loadingBaseline }) {
   if (!verdict) return null;
@@ -34,7 +34,7 @@ export function DayVerdict({ verdict, units, loadingBaseline }) {
       sx={{
         p: { xs: 2, sm: 2.5 },
         borderRadius: 3,
-        borderWidth: 2,
+        borderWidth: { xs: 1, sm: 2 },
         borderColor: level.border,
         bgcolor: level.bg,
       }}
@@ -42,7 +42,7 @@ export function DayVerdict({ verdict, units, loadingBaseline }) {
       <Stack
         direction={{ xs: "column", sm: "row" }}
         spacing={{ xs: 1.5, sm: 3 }}
-        alignItems={{ xs: "flex-start", sm: "center" }}
+        alignItems={{ xs: "stretch", sm: "center" }}
         justifyContent="space-between"
       >
         <Stack direction="row" spacing={1.5} alignItems="flex-start" sx={{ minWidth: 0 }}>
@@ -81,23 +81,40 @@ export function DayVerdict({ verdict, units, loadingBaseline }) {
           </Box>
         </Stack>
 
-        <Box sx={{ textAlign: { xs: "left", sm: "right" }, flexShrink: 0 }}>
+        {/* En móvil, una fila al pie (etiqueta a la izquierda, cifra a la
+            derecha) separada por una línea: apilada debajo del texto, la cifra
+            grande quedaba suelta y el bloque parecía otra tarjeta. */}
+        <Box
+          sx={{
+            flexShrink: 0,
+            display: "flex",
+            flexDirection: { xs: "row", sm: "column" },
+            alignItems: { xs: "baseline", sm: "flex-end" },
+            justifyContent: "space-between",
+            gap: { xs: 1, sm: 0 },
+            pt: { xs: 1.5, sm: 0 },
+            borderTop: { xs: 1, sm: 0 },
+            borderColor: "divider",
+          }}
+        >
           <Typography variant="subtitle2" color="text.secondary">
             Media del día
           </Typography>
-          <Typography
-            className="tabular"
-            sx={{
-              fontSize: { xs: "1.5rem", sm: "1.75rem" },
-              fontWeight: 700,
-              lineHeight: 1.1,
-            }}
-          >
-            {formatPrice(verdict.average, units)}
-          </Typography>
-          <Typography variant="caption" color="text.secondary">
-            {units}
-          </Typography>
+          <Stack direction="row" spacing={0.5} alignItems="baseline">
+            <Typography
+              className="tabular"
+              sx={{
+                fontSize: { xs: "1.25rem", sm: "1.75rem" },
+                fontWeight: 700,
+                lineHeight: 1.1,
+              }}
+            >
+              {formatPrice(verdict.average, units)}
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              {units}
+            </Typography>
+          </Stack>
         </Box>
       </Stack>
     </Paper>

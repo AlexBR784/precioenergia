@@ -12,6 +12,9 @@ export const createAppTheme = (mode = "light") => {
   const t = palette[mode] ?? palette.light;
   const isDark = mode === "dark";
   const shadows = isDark ? shadow.dark : shadow.light;
+  // Texto sobre amarillo (botón principal en oscuro, "secondary" en ambos):
+  // la tinta del contorno de la mascota, no un negro puro.
+  const ink = palette.light.primaryDark;
 
   const theme = createTheme({
     palette: {
@@ -20,17 +23,17 @@ export const createAppTheme = (mode = "light") => {
         main: t.primary,
         dark: t.primaryDark,
         light: t.primaryLight,
-        contrastText: "#FFFFFF",
+        contrastText: isDark ? ink : "#FFFFFF",
       },
       secondary: {
         main: t.accent,
         dark: t.accentDark,
-        contrastText: isDark ? "#0B1220" : "#3A2C10",
+        contrastText: ink,
       },
       success: { main: t.price.cheapest },
       warning: { main: t.price.medium },
       error: { main: t.price.high },
-      info: { main: t.primary },
+      info: { main: t.info },
       background: {
         default: t.bg,
         paper: t.paper,
@@ -149,7 +152,7 @@ export const createAppTheme = (mode = "light") => {
         styleOverrides: {
           root: {
             transition: "background-color .15s ease",
-            "&:hover": { backgroundColor: alpha(t.primary, isDark ? 0.1 : 0.04) },
+            "&:hover": { backgroundColor: alpha(t.primary, isDark ? 0.06 : 0.035) },
             "&:last-child td, &:last-child th": { border: 0 },
           },
         },
@@ -169,10 +172,13 @@ export const createAppTheme = (mode = "light") => {
             textTransform: "none",
             fontWeight: 600,
             borderColor: t.divider,
+            // Selección sobria: fondo tenue y texto en el color de acción.
             "&.Mui-selected": {
-              backgroundColor: alpha(t.primary, isDark ? 0.22 : 0.1),
+              backgroundColor: isDark ? alpha(t.primary, 0.14) : t.primarySoft,
               color: isDark ? t.primaryLight : t.primaryDark,
-              "&:hover": { backgroundColor: alpha(t.primary, isDark ? 0.3 : 0.16) },
+              "&:hover": {
+                backgroundColor: alpha(t.primary, isDark ? 0.2 : 0.1),
+              },
             },
           },
         },

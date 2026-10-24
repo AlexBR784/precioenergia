@@ -1,29 +1,18 @@
 /* eslint-disable react/prop-types */
 import { useEffect, useMemo, useState } from "react";
 import dayjs from "dayjs";
-import {
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Paper,
-  Stack,
-  Typography,
-} from "@mui/material";
+import { Box, Stack, Typography } from "@mui/material";
 import TipsIcon from "@mui/icons-material/EmojiObjectsOutlined";
-import ScheduleIcon from "@mui/icons-material/ScheduleOutlined";
 
 import DateField from "../../components/DateField";
-import DayTimeline from "../../components/DayTimeline";
 import { EmptyState, ErrorState } from "../../components/StateViews";
 import { usePriceStats } from "../../hooks/usePriceStats";
 import { usePowerKw } from "../../hooks/usePowerKw";
-import { findRanges } from "../prices/cheapRanges";
-import CheapRangesDialog from "../prices/CheapRangesDialog";
 import { buildInsights } from "./dayInsights";
 import DayVerdict from "./DayVerdict";
 import InsightCard from "./InsightCard";
 import RecommendationsSkeleton from "./RecommendationsSkeleton";
+import WhenToRun from "./WhenToRun";
 
 /** Cada cuánto se refresca el reloj que alimenta los consejos horarios. */
 const TICK_MS = 60_000;
@@ -50,7 +39,6 @@ export function RecommendationsTab({
   // El reloj entra por estado, no se lee dentro de la lógica: con la pestaña
   // abierta un rato, "ahora mismo estás en una hora cara" dejaría de ser cierto.
   const [now, setNow] = useState(() => new Date());
-  const [dialogOpen, setDialogOpen] = useState(false);
 
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), TICK_MS);
@@ -85,13 +73,6 @@ export function RecommendationsTab({
       powerIsCustom,
       now,
     ]
-  );
-
-  // La franja recomendada que se recuadra en la línea de tiempo es la misma
-  // que menciona el consejo "Mejor franja".
-  const valley = useMemo(
-    () => findRanges(energyCost, { hours: 3, topN: 1 }).best[0] ?? null,
-    [energyCost]
   );
 
   // Sin icono al lado: el propio DatePicker ya trae uno de calendario, y dos
@@ -139,24 +120,6 @@ export function RecommendationsTab({
         loadingBaseline={baselineLoading}
       />
 
-      <Card component="section" aria-labelledby="timeline-heading">
-        <CardContent>
-          <Typography variant="h2" component="h2" id="timeline-heading">
-            El día de un vistazo
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-            Cada segmento es una hora, con la misma escala de color que la tabla
-            de precios. El recuadro marca la mejor franja de 3 horas seguidas.
-          </Typography>
-
-          <DayTimeline
-            energyCost={energyCost}
-            range={valley}
-            isToday={stats.isToday}
-          />
-        </CardContent>
-      </Card>
-
       <Box component="section" aria-labelledby="tips-heading">
         <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1.5 }}>
           <TipsIcon fontSize="small" color="primary" aria-hidden="true" />
@@ -185,53 +148,11 @@ export function RecommendationsTab({
         )}
       </Box>
 
-      {/* Los consejos de arriba dan por supuesta una tarea genérica. Quien
-          tenga una concreta ("seis horas de carga a 7,4 kW") necesita la
-          calculadora, y este es el sitio donde surge esa pregunta: es su única
-          entrada, desde la pestaña de precios solo se enlaza aquí. */}
-      <Paper
-        component="section"
-        aria-labelledby="tune-heading"
-        variant="outlined"
-        sx={{ p: { xs: 2, sm: 2.5 }, borderRadius: 3, bgcolor: "surfaceMuted" }}
-      >
-        <Stack
-          direction={{ xs: "column", sm: "row" }}
-          spacing={2}
-          alignItems={{ xs: "stretch", sm: "center" }}
-          justifyContent="space-between"
-        >
-          <Box sx={{ minWidth: 0 }}>
-            <Typography variant="h3" component="h2" id="tune-heading">
-              ¿Tienes una tarea concreta?
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25 }}>
-              Ajusta cuántas horas seguidas necesitas y la potencia de tu aparato
-              {powerIsCustom
-                ? ` (ahora mismo, ${powerKw.toLocaleString("es-ES")} kW)`
-                : ""}
-              , y te dice el mejor momento con su coste.
-            </Typography>
-          </Box>
-
-          <Button
-            variant="outlined"
-            startIcon={<ScheduleIcon />}
-            onClick={() => setDialogOpen(true)}
-            sx={{ flexShrink: 0, minHeight: 44 }}
-          >
-            Calcular tramos baratos
-          </Button>
-        </Stack>
-      </Paper>
-
-      <CheapRangesDialog
-        open={dialogOpen}
-        onClose={() => setDialogOpen(false)}
-        energyCost={energyCost}
-        units={units}
-        isToday={stats.isToday}
-      />
+      {/* Los consejos de arriba dan por supuesta una tarea genérica; esta
+          sección responde a la concreta ("mi coche, 4 h a 7,4 kW"). Sustituye
+          al antiguo diálogo de la calculadora y al gráfico "El día de un
+          vistazo", que repetía la pestaña de precios. */}
+      <WhenToRun energyCost={energyCost} units={units} isToday={stats.isToday} />
     </Stack>
   );
 }

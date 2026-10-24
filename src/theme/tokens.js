@@ -41,92 +41,117 @@ export const getPriceTier = (price, minPrice, maxPrice) => {
   return "high";
 };
 
+/**
+ * Paleta sobria con la mascota como único acento.
+ *
+ * Regla 60-30-10: superficies neutras (gris frío casi blanco / gris pizarra
+ * oscuro) para el 60 %, la tinta azul marino del contorno de la mascota para
+ * texto y acciones (30 %) y el dorado como acento puntual (10 %): banda de la
+ * mejor franja, foco en oscuro, el propio personaje. Nada de fondos amarillos
+ * grandes ni tonos saturados: una herramienta de precios tiene que transmitir
+ * fiabilidad, y el color llamativo se reserva para lo que pide atención.
+ *
+ * El amarillo puro de la mascota (#FFD60A) no aparece en la interfaz: se usa
+ * un dorado apagado de la misma familia, para que el personaje sea lo único
+ * que brilla.
+ *
+ * Los tramos de precio van de frío a caliente (verde azulado → azul acero →
+ * ocre → teja), desaturados para que se lean sin gritar y sin pasar por el
+ * verde lima, que choca con el amarillo de la mascota. Lo que significa cada
+ * tramo lo dice siempre su etiqueta, no el color.
+ */
 export const palette = {
   light: {
-    primary: "#0B5FFF",
-    primaryDark: "#0A47B8",
-    primaryLight: "#5B8DEF",
-    primarySoft: "#E8F0FF",
+    primary: "#1F2A3C",
+    primaryDark: "#121A27",
+    primaryLight: "#475569",
+    /** Gris azulado muy tenue: tarjeta destacada y selección. */
+    primarySoft: "#EEF1F5",
 
-    accent: "#FFB020",
-    accentDark: "#B87A08",
-    accentSoft: "#FFF4E0",
+    accent: "#D9A92E",
+    accentDark: "#B8891A",
+    accentSoft: "#FBF3DC",
 
-    bg: "#F8FAFC",
+    info: "#3C5A85",
+
+    bg: "#F6F7F9",
     paper: "#FFFFFF",
-    paperMuted: "#F1F5F9",
+    paperMuted: "#F1F3F5",
 
-    text: "#0B1220",
-    textMuted: "#52606D",
-    divider: "#E2E8F0",
+    text: "#161B22",
+    textMuted: "#5A6472",
+    divider: "#E3E6EA",
 
     price: {
-      cheapest: "#059669",
-      low: "#65A30D",
-      medium: "#D97706",
-      high: "#DC2626",
+      cheapest: "#2B7A78",
+      low: "#4A7BA7",
+      medium: "#B7791F",
+      high: "#B83A3A",
     },
     /** Fondo tenue del mismo tramo, para chips y barras. */
     priceSoft: {
-      cheapest: "#D1FAE5",
-      low: "#ECFCCB",
-      medium: "#FEF3C7",
-      high: "#FEE2E2",
+      cheapest: "#E3F0EF",
+      low: "#E6EEF6",
+      medium: "#F7EEDD",
+      high: "#F7E4E2",
     },
 
     flow: {
-      export: "#0B5FFF",
-      import: "#D97706",
+      export: "#3C5A85",
+      import: "#B7791F",
     },
     /** Relleno de los países del mapa de intercambios. */
     map: {
-      land: "#E9EEF5",
-      landBorder: "#CBD5E1",
-      spain: "#DCE8FF",
-      spainBorder: "#0B5FFF",
+      land: "#ECEFF3",
+      landBorder: "#CDD3DB",
+      spain: "#F3E9CC",
+      spainBorder: "#1F2A3C",
     },
   },
 
   dark: {
-    primary: "#5B8DEF",
-    primaryDark: "#3B6FD4",
-    primaryLight: "#93B4F7",
-    primarySoft: "#152A52",
+    // En oscuro el dorado sí contrasta (10:1) y es el color de acción.
+    primary: "#E2C25B",
+    primaryDark: "#C9A845",
+    primaryLight: "#EED68A",
+    primarySoft: "#20252D",
 
-    accent: "#FFC24D",
-    accentDark: "#FFB020",
-    accentSoft: "#3A2C10",
+    accent: "#D9B44A",
+    accentDark: "#C29B33",
+    accentSoft: "#2A2619",
 
-    bg: "#0B1220",
-    paper: "#131C2E",
-    paperMuted: "#1B2740",
+    info: "#8FA9CC",
 
-    text: "#E8EDF5",
-    textMuted: "#9AA7BA",
-    divider: "#26334D",
+    bg: "#0F1216",
+    paper: "#161A20",
+    paperMuted: "#1D222A",
+
+    text: "#E7E9EC",
+    textMuted: "#9AA3AF",
+    divider: "#2A3039",
 
     price: {
-      cheapest: "#34D399",
-      low: "#A3E635",
-      medium: "#FBBF24",
-      high: "#F87171",
+      cheapest: "#5FB3AD",
+      low: "#7FA6CC",
+      medium: "#D9A55A",
+      high: "#D97A73",
     },
     priceSoft: {
-      cheapest: "#0C3D2E",
-      low: "#2A3B10",
-      medium: "#3F2E0A",
-      high: "#43191B",
+      cheapest: "#17302F",
+      low: "#1A2735",
+      medium: "#33291A",
+      high: "#362020",
     },
 
     flow: {
-      export: "#7EA8FF",
-      import: "#FFC24D",
+      export: "#8FA9CC",
+      import: "#D9A55A",
     },
     map: {
-      land: "#1B2740",
-      landBorder: "#33415C",
-      spain: "#1E3363",
-      spainBorder: "#5B8DEF",
+      land: "#1D222A",
+      landBorder: "#343B46",
+      spain: "#2E2A1E",
+      spainBorder: "#D9B44A",
     },
   },
 };
@@ -144,9 +169,9 @@ export const radius = {
  */
 export const shadow = {
   light: {
-    sm: "0 1px 2px rgba(11, 18, 32, 0.06)",
-    md: "0 4px 16px rgba(11, 18, 32, 0.08)",
-    lg: "0 12px 32px rgba(11, 18, 32, 0.12)",
+    sm: "0 1px 2px rgba(22, 27, 34, 0.07)",
+    md: "0 4px 16px rgba(22, 27, 34, 0.09)",
+    lg: "0 12px 32px rgba(22, 27, 34, 0.14)",
   },
   dark: {
     sm: "0 1px 2px rgba(0, 0, 0, 0.4)",
