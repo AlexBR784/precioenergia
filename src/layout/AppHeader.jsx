@@ -8,22 +8,21 @@ import {
   Tabs,
   Toolbar,
   Typography,
-  useMediaQuery,
 } from "@mui/material";
-import { alpha, useTheme } from "@mui/material/styles";
+import { alpha } from "@mui/material/styles";
 import Mascot from "../components/Mascot";
 import ThemeToggle from "./ThemeToggle";
 
 // La etiqueta es "Consejos" y no "Recomendaciones" por una razón medible: con
 // `variant="fullWidth"` las tres pestañas se reparten ~124 px en un móvil de
-// 390 px, y "Recomendaciones" partiría en dos líneas. Con cuatro pestañas ya no
-// caben ni así (~92 px para "Intercambios"), por eso en móvil la barra
-// desplaza; desde `sm` vuelven a repartirse el ancho.
+// 390 px, y "Recomendaciones" partiría en dos líneas. Hubo una cuarta,
+// "Intercambios" (mapa de importaciones y exportaciones con otros países), que
+// se quitó: no ayudaba a un particular a gastar menos y obligaba a desplazar
+// la barra en móvil.
 const TABS = [
   { value: "prices", label: "Precios" },
   { value: "tips", label: "Consejos" },
   { value: "fuel", label: "Carburantes" },
-  { value: "interchanges", label: "Intercambios" },
 ];
 
 /**
@@ -32,9 +31,6 @@ const TABS = [
  * sin <header> ni <h1>: el primer encabezado del documento era un h6.
  */
 export function AppHeader({ activeTab, onTabChange }) {
-  const theme = useTheme();
-  const isPhone = useMediaQuery(theme.breakpoints.down("sm"));
-
   return (
     <AppBar
       component="header"
@@ -76,14 +72,12 @@ export function AppHeader({ activeTab, onTabChange }) {
             value={activeTab}
             onChange={(_, value) => onTabChange(value)}
             aria-label="Secciones de la aplicación"
-            variant={isPhone ? "scrollable" : "fullWidth"}
-            scrollButtons="auto"
-            allowScrollButtonsMobile
+            variant="fullWidth"
             sx={{
               minHeight: 44,
               "& .MuiTabs-flexContainer": { justifyContent: { sm: "flex-start" } },
-              // Con tres pestañas el padding por defecto (16 px por lado) deja
-              // "Intercambios" al filo en móvil.
+              // El padding por defecto (16 px por lado) deja "Carburantes" al
+              // filo en un móvil de 375 px.
               "& .MuiTab-root": {
                 minHeight: 44,
                 maxWidth: { sm: 180 },

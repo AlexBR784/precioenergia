@@ -95,18 +95,6 @@ export const palette = {
       medium: "#F7EEDD",
       high: "#F7E4E2",
     },
-
-    flow: {
-      export: "#3C5A85",
-      import: "#B7791F",
-    },
-    /** Relleno de los países del mapa de intercambios. */
-    map: {
-      land: "#ECEFF3",
-      landBorder: "#CDD3DB",
-      spain: "#F3E9CC",
-      spainBorder: "#1F2A3C",
-    },
   },
 
   dark: {
@@ -143,16 +131,6 @@ export const palette = {
       high: "#362020",
     },
 
-    flow: {
-      export: "#8FA9CC",
-      import: "#D9A55A",
-    },
-    map: {
-      land: "#1D222A",
-      landBorder: "#343B46",
-      spain: "#2E2A1E",
-      spainBorder: "#D9B44A",
-    },
   },
 };
 

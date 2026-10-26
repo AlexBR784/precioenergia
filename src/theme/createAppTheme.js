@@ -4,7 +4,7 @@ import { palette, radius, shadow, fontFamily } from "./tokens";
 /**
  * Construye el tema de MUI para un modo concreto.
  *
- * Además de la paleta estándar expone dos claves propias, `price` y `flow`,
+ * Además de la paleta estándar expone claves propias, como `price`,
  * de modo que los componentes puedan escribir `sx={{ color: 'price.high' }}`
  * en vez de literales hex.
  */
@@ -47,8 +47,6 @@ export const createAppTheme = (mode = "light") => {
       // Claves propias
       price: t.price,
       priceSoft: t.priceSoft,
-      flow: t.flow,
-      map: t.map,
       surfaceMuted: t.paperMuted,
       primarySoft: t.primarySoft,
       accentSoft: t.accentSoft,

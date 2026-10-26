@@ -7,7 +7,7 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 export default [
   // Bloque de ignorados global: con `ignores` junto a `files` la exclusión solo
   // aplicaba a ese bloque, así que el bundle de dist/ se estaba analizando.
-  { ignores: ['dist/**', 'examples/**'] },
+  { ignores: ['dist/**'] },
   {
     files: ['**/*.{js,jsx}'],
     languageOptions: {

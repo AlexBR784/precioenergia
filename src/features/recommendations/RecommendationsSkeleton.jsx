@@ -6,19 +6,20 @@ export function RecommendationsSkeleton() {
     <Stack spacing={3} aria-busy="true" aria-label="Cargando consejos">
       <Skeleton variant="rounded" width={170} height={40} />
 
-      <Skeleton variant="rounded" height={104} sx={{ borderRadius: 3 }} />
-
-      <Box
-        sx={{
-          display: "grid",
-          gap: 2,
-          gridTemplateColumns: { xs: "1fr", sm: "repeat(2, minmax(0, 1fr))" },
-        }}
-      >
-        {Array.from({ length: 4 }).map((_, index) => (
-          <Skeleton key={index} variant="rounded" height={116} />
-        ))}
-      </Box>
+      <Card>
+        <CardContent>
+          <Stack direction="row" spacing={1.75} alignItems="center">
+            <Skeleton variant="circular" width={52} height={52} />
+            <Box sx={{ flexGrow: 1 }}>
+              <Skeleton variant="text" width={120} />
+              <Skeleton variant="text" width="45%" height={32} />
+              <Skeleton variant="text" width="65%" />
+            </Box>
+          </Stack>
+          <Skeleton variant="rounded" height={76} sx={{ mt: 2.5 }} />
+          <Skeleton variant="rounded" height={110} sx={{ mt: 3 }} />
+        </CardContent>
+      </Card>
 
       <Card>
         <CardContent>

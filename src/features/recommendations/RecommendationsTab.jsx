@@ -9,7 +9,6 @@ import { usePriceStats } from "../../hooks/usePriceStats";
 import { useNow } from "../../hooks/useNow";
 import { buildInsights } from "./dayInsights";
 import DayPlan from "./DayPlan";
-import DayVerdict from "./DayVerdict";
 import RecommendationsSkeleton from "./RecommendationsSkeleton";
 import WhenToRun from "./WhenToRun";
 
@@ -100,15 +99,11 @@ export function RecommendationsTab({
     <Stack spacing={3}>
       {dateControl}
 
-      <DayVerdict
-        verdict={verdict}
-        units={units}
-        loadingBaseline={baselineLoading}
-      />
-
       <DayPlan
         insights={insights}
         whenLabel={stats.isToday ? "hoy" : isFuture ? "mañana" : "ese día"}
+        verdict={verdict}
+        loadingBaseline={baselineLoading}
       />
 
       {/* Los consejos de arriba dan por supuesta una tarea genérica; esta

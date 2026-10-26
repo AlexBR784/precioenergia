@@ -4,12 +4,10 @@ import dayjs from "dayjs";
 import AppShell from "./layout/AppShell";
 import PricesTab from "./features/prices/PricesTab";
 import RecommendationsTab from "./features/recommendations/RecommendationsTab";
-import InterchangesTab from "./features/interchanges/InterchangesTab";
 import FuelTab from "./features/fuel/FuelTab";
 import { UNITS } from "./features/prices/priceFormat";
 import { useEnergyCost } from "./hooks/useEnergyCost";
 import { useDailyBaseline } from "./hooks/useDailyBaseline";
-import { useInterchanges } from "./hooks/useInterchanges";
 import { useNow } from "./hooks/useNow";
 
 const UNITS_KEY = "precioenergia:units";
@@ -79,45 +77,6 @@ function App() {
     loading: baselineLoading,
   } = useDailyBaseline(selectedDate, { enabled: tipsLoaded });
 
-  // --- Intercambios ---
-  const {
-    interchangesData,
-    loading: interchangesLoading,
-    error: interchangesError,
-    lastUpdate: interchangesLastUpdate,
-    fetchInterchanges,
-  } = useInterchanges();
-
-  const [startDate, setStartDate] = useState(() => dayjs().subtract(12, "month"));
-  const [endDate, setEndDate] = useState(() => dayjs());
-  const [rangeError, setRangeError] = useState("");
-  const [interchangesLoaded, setInterchangesLoaded] = useState(false);
-
-  const loadInterchanges = useCallback(
-    (start, end) => {
-      if (!start?.isValid?.() || !end?.isValid?.()) {
-        setRangeError("Selecciona fechas válidas.");
-        return;
-      }
-      if (start.isAfter(end, "day")) {
-        setRangeError("La fecha de inicio no puede ser posterior a la de fin.");
-        return;
-      }
-
-      setRangeError("");
-      fetchInterchanges(start.toDate(), end.toDate());
-      setInterchangesLoaded(true);
-    },
-    [fetchInterchanges]
-  );
-
-  // Carga diferida: los intercambios solo se piden al abrir su pestaña.
-  useEffect(() => {
-    if (activeTab === "interchanges" && !interchangesLoaded) {
-      loadInterchanges(startDate, endDate);
-    }
-  }, [activeTab, interchangesLoaded, loadInterchanges, startDate, endDate]);
-
   return (
     <AppShell activeTab={activeTab} onTabChange={setActiveTab}>
       {activeTab === "prices" && (
@@ -154,21 +113,6 @@ function App() {
       {/* Carga diferida sin flag: los datos se piden al montar la pestaña y
           useFuelPrices los cachea, así que volver a ella no los repite. */}
       {activeTab === "fuel" && <FuelTab />}
-
-      {activeTab === "interchanges" && (
-        <InterchangesTab
-          data={interchangesData}
-          loading={interchangesLoading}
-          error={interchangesError}
-          lastUpdate={interchangesLastUpdate}
-          startDate={startDate}
-          endDate={endDate}
-          onStartDateChange={setStartDate}
-          onEndDateChange={setEndDate}
-          onSubmit={() => loadInterchanges(startDate, endDate)}
-          rangeError={rangeError}
-        />
-      )}
     </AppShell>
   );
 }

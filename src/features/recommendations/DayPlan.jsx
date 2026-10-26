@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { Box, Card, CardContent, Chip, Divider, Stack, Typography } from "@mui/material";
+import { Box, Card, CardContent, Chip, Divider, Skeleton, Stack, Typography } from "@mui/material";
 import TipsIcon from "@mui/icons-material/EmojiObjectsOutlined";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import BlockIcon from "@mui/icons-material/Block";
@@ -11,6 +11,7 @@ import EventIcon from "@mui/icons-material/EventOutlined";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 
 import { EmptyState } from "../../components/StateViews";
+import MoodFace from "./MoodFace";
 
 /**
  * El mapa de iconos vive aquí y no en `dayInsights.js`: la lógica solo emite
@@ -175,8 +176,9 @@ function FactRow({ insight }) {
 }
 
 /**
- * "Qué hacer hoy" como un plan en tres niveles, en una sola tarjeta:
+ * "Qué hacer hoy" como un plan en una sola tarjeta, de lo general a lo concreto:
  *
+ *  0. Cabecera: cómo es el día frente a la semana anterior, con la carita.
  *  1. Ahora: lo que conviene hacer en este momento (si se mira hoy).
  *  2. Momentos del día: las franjas concretas, con la hora como protagonista.
  *  3. Para tener en cuenta: el contexto, en filas compactas.
@@ -185,7 +187,45 @@ function FactRow({ insight }) {
  * las alturas no casaban y el título repetía la hora que había que buscar
  * dentro del texto. Ordenar por "cuándo actúo" deja claro qué leer primero.
  */
-export function DayPlan({ insights, whenLabel }) {
+/** Humor de la carita según el veredicto del día. */
+const MOOD_BY_LEVEL = { cheap: "happy", expensive: "sad", normal: "neutral", unknown: "unknown" };
+
+/**
+ * Cabecera del plan: cómo es el día frente a la semana anterior, con la carita.
+ *
+ * Antes era una tarjeta suelta encima del plan, con la media del día en grande
+ * (la misma cifra que la cabecera de Precios). Aquí abre el plan: primero cómo
+ * es el día y después qué hacer, en una sola tarjeta.
+ */
+function VerdictHeader({ verdict, whenLabel, loadingBaseline }) {
+  return (
+    <Stack direction="row" spacing={1.75} alignItems="center" sx={{ mb: 2.5 }}>
+      {/* key: al cambiar de veredicto (otro día) la carita vuelve a animarse */}
+      <MoodFace key={verdict.level} mood={MOOD_BY_LEVEL[verdict.level] ?? "unknown"} size={52} />
+      <Box sx={{ minWidth: 0 }}>
+        <Stack direction="row" spacing={0.75} alignItems="center" sx={{ color: "text.secondary" }}>
+          <TipsIcon sx={{ fontSize: 16 }} aria-hidden="true" />
+          <Typography variant="subtitle2" sx={{ color: "inherit" }}>
+            Qué hacer {whenLabel}
+          </Typography>
+        </Stack>
+        <Typography
+          variant="h2"
+          component="h2"
+          id="tips-heading"
+          sx={{ fontSize: { xs: "1.25rem", sm: "1.375rem" }, mt: 0.25 }}
+        >
+          {verdict.title}
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25 }}>
+          {loadingBaseline ? <Skeleton width={260} /> : verdict.body}
+        </Typography>
+      </Box>
+    </Stack>
+  );
+}
+
+export function DayPlan({ insights, whenLabel, verdict, loadingBaseline }) {
   const now = insights.find((insight) => insight.kind === "now");
   const moments = insights.filter((insight) => insight.kind === "moment");
   const facts = insights.filter((insight) => insight.kind === "fact");
@@ -193,12 +233,16 @@ export function DayPlan({ insights, whenLabel }) {
   return (
     <Card component="section" aria-labelledby="tips-heading">
       <CardContent>
-        <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2 }}>
-          <TipsIcon fontSize="small" color="primary" aria-hidden="true" />
-          <Typography variant="h2" component="h2" id="tips-heading">
-            Qué hacer {whenLabel}
-          </Typography>
-        </Stack>
+        {verdict ? (
+          <VerdictHeader verdict={verdict} whenLabel={whenLabel} loadingBaseline={loadingBaseline} />
+        ) : (
+          <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2 }}>
+            <TipsIcon fontSize="small" color="primary" aria-hidden="true" />
+            <Typography variant="h2" component="h2" id="tips-heading">
+              Qué hacer {whenLabel}
+            </Typography>
+          </Stack>
+        )}
 
         {!insights.length ? (
           <EmptyState
