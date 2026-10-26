@@ -1,21 +1,17 @@
 /* eslint-disable react/prop-types */
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import dayjs from "dayjs";
-import { Box, Stack, Typography } from "@mui/material";
-import TipsIcon from "@mui/icons-material/EmojiObjectsOutlined";
+import { Box, Stack } from "@mui/material";
 
-import DateField from "../../components/DateField";
+import DaySelector from "../../components/DaySelector";
 import { EmptyState, ErrorState } from "../../components/StateViews";
 import { usePriceStats } from "../../hooks/usePriceStats";
-import { usePowerKw } from "../../hooks/usePowerKw";
+import { useNow } from "../../hooks/useNow";
 import { buildInsights } from "./dayInsights";
+import DayPlan from "./DayPlan";
 import DayVerdict from "./DayVerdict";
-import InsightCard from "./InsightCard";
 import RecommendationsSkeleton from "./RecommendationsSkeleton";
 import WhenToRun from "./WhenToRun";
-
-/** Cada cuánto se refresca el reloj que alimenta los consejos horarios. */
-const TICK_MS = 60_000;
 
 /**
  * Lectura del día: qué hacer y qué evitar según los precios publicados.
@@ -38,14 +34,8 @@ export function RecommendationsTab({
 }) {
   // El reloj entra por estado, no se lee dentro de la lógica: con la pestaña
   // abierta un rato, "ahora mismo estás en una hora cara" dejaría de ser cierto.
-  const [now, setNow] = useState(() => new Date());
+  const now = useNow();
 
-  useEffect(() => {
-    const id = setInterval(() => setNow(new Date()), TICK_MS);
-    return () => clearInterval(id);
-  }, []);
-
-  const { powerKw, isCustom: powerIsCustom } = usePowerKw();
   const stats = usePriceStats(energyCost, date);
   const isFuture = useMemo(() => dayjs(date).isAfter(dayjs(), "day"), [date]);
 
@@ -58,8 +48,6 @@ export function RecommendationsTab({
         sampleDays,
         units,
         isFuture,
-        powerKw,
-        powerIsCustom,
         now,
       }),
     [
@@ -69,17 +57,15 @@ export function RecommendationsTab({
       sampleDays,
       units,
       isFuture,
-      powerKw,
-      powerIsCustom,
       now,
     ]
   );
 
-  // Sin icono al lado: el propio DatePicker ya trae uno de calendario, y dos
-  // seguidos solo hacían ruido.
+  // El mismo selector de día que en la pestaña de precios: el día es común a
+  // las dos, así que cambiarlo aquí o allí da igual.
   const dateControl = (
     <Box component="section" aria-label="Fecha">
-      <DateField value={date} onChange={onDateChange} label="Día" />
+      <DaySelector value={date} onChange={onDateChange} />
     </Box>
   );
 
@@ -120,33 +106,10 @@ export function RecommendationsTab({
         loadingBaseline={baselineLoading}
       />
 
-      <Box component="section" aria-labelledby="tips-heading">
-        <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1.5 }}>
-          <TipsIcon fontSize="small" color="primary" aria-hidden="true" />
-          <Typography variant="h2" component="h2" id="tips-heading">
-            Qué hacer {stats.isToday ? "hoy" : isFuture ? "mañana" : "ese día"}
-          </Typography>
-        </Stack>
-
-        {insights.length ? (
-          <Box
-            sx={{
-              display: "grid",
-              gap: 2,
-              gridTemplateColumns: { xs: "1fr", sm: "repeat(2, minmax(0, 1fr))" },
-            }}
-          >
-            {insights.map((insight) => (
-              <InsightCard key={insight.id} insight={insight} />
-            ))}
-          </Box>
-        ) : (
-          <EmptyState
-            title="Nada que destacar"
-            description="Los precios de este día no dan pie a ninguna recomendación concreta."
-          />
-        )}
-      </Box>
+      <DayPlan
+        insights={insights}
+        whenLabel={stats.isToday ? "hoy" : isFuture ? "mañana" : "ese día"}
+      />
 
       {/* Los consejos de arriba dan por supuesta una tarea genérica; esta
           sección responde a la concreta ("mi coche, 4 h a 7,4 kW"). Sustituye

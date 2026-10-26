@@ -16,17 +16,7 @@ export function PricesSkeleton() {
         <Skeleton variant="rounded" width={130} height={36} />
       </Stack>
 
-      <Box
-        sx={{
-          display: "grid",
-          gap: 1.5,
-          gridTemplateColumns: { xs: "repeat(2, 1fr)", md: "repeat(5, 1fr)" },
-        }}
-      >
-        {Array.from({ length: 5 }).map((_, i) => (
-          <Skeleton key={i} variant="rounded" height={110} />
-        ))}
-      </Box>
+      <Skeleton variant="rounded" height={112} sx={{ borderRadius: 3 }} />
 
       <Card>
         <CardContent>
@@ -38,11 +28,22 @@ export function PricesSkeleton() {
       <Card>
         <CardContent>
           <Skeleton variant="text" width={200} height={28} />
-          <Stack spacing={1} sx={{ mt: 2 }}>
-            {Array.from({ length: 8 }).map((_, i) => (
-              <Skeleton key={i} variant="rounded" height={40} />
+          <Box
+            sx={{
+              display: "grid",
+              gap: 3,
+              mt: 2,
+              gridTemplateColumns: { xs: "1fr", md: "repeat(3, minmax(0, 1fr))" },
+            }}
+          >
+            {Array.from({ length: 3 }).map((_, column) => (
+              <Stack key={column} spacing={0.75}>
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <Skeleton key={i} variant="rounded" height={30} />
+                ))}
+              </Stack>
             ))}
-          </Stack>
+          </Box>
         </CardContent>
       </Card>
     </Stack>

@@ -2,8 +2,10 @@
  * Formateo de precios en un solo sitio.
  *
  * El número de decimales depende de la unidad: 2 en €/MWh (valores de ~100)
- * y 5 en €/kWh (valores de ~0,1). Antes se llamaba a `.toFixed(4)` o
- * `.toFixed(5)` a mano en cada punto de uso, con resultados inconsistentes.
+ * y 3 en €/kWh (valores de ~0,1), como en las facturas: "0,282 €/kWh". Con 5
+ * ("0,28177") se leía peor y aparentaba una precisión que al usuario no le
+ * sirve. Antes se llamaba a `.toFixed(4)` o `.toFixed(5)` a mano en cada
+ * punto de uso, con resultados inconsistentes.
  */
 
 export const UNITS = {
@@ -11,7 +13,10 @@ export const UNITS = {
   KWH: "€/kWh",
 };
 
-export const decimalsFor = (units) => (units === UNITS.MWH ? 2 : 5);
+export const decimalsFor = (units) => (units === UNITS.MWH ? 2 : 3);
+
+/** Decimales para exportar: el CSV conserva la precisión completa de REE. */
+export const exportDecimalsFor = (units) => (units === UNITS.MWH ? 2 : 5);
 
 /** Convierte de €/MWh (unidad de la API) a la unidad elegida. */
 export const convertPrice = (price, units) =>

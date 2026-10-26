@@ -9,21 +9,23 @@ programados de energía con los países frontera, usando la API pública de
 ## Funcionalidad
 
 **Precios**
-- Precio horario del día seleccionado (€/MWh o €/kWh), con gráfico de evolución y tabla ordenable.
-- KPIs del día: precio actual, mínimo, máximo, media y ahorro potencial.
-- Exportación a Excel.
+- Selector de día («‹ Hoy ›» con accesos a Hoy y Mañana) y unidad (€/kWh por defecto, recordada).
+- Cabecera con el precio de ahora, su tramo y su diferencia con la media, más mínimo, máximo y media.
+- Gráfica de línea escalonada con degradado térmico (de barato a caro), media, hora actual y extremos.
+- Precio hora a hora en tres franjas del día, con barra frente a la media y el coste de cada hora a
+  tu potencia; ordenable por hora o de más barata a más cara, y exportable a Excel.
+- Todo lo que depende de la hora actual avanza solo (reloj compartido `useNow`), también al cruzar
+  la medianoche.
 
 **Consejos**
 - Veredicto del día: si sale caro, normal o barato comparado con la media de los 7 días anteriores.
-- Línea de tiempo de 24 h con la mejor franja de 3 horas seguidas recuadrada.
-- Consejos generados por reglas sobre los precios de ese día — mejor franja, franja a evitar,
-  diferencia real en euros, horas casi regaladas, qué parte del día sale mejor, y qué hacer ahora
-  mismo. Cada regla tiene condición, así que un día plano y un día con pico de tarde producen
-  consejos distintos.
+- «Qué hacer hoy»: lo que conviene ahora mismo, las franjas a evitar o casi gratis y el contexto del
+  día, generado por reglas (`dayInsights.js`): un día plano y uno con pico de tarde dan consejos
+  distintos.
 - «¿Cuándo lo enciendo?»: eliges un aparato (lavadora, lavavajillas, coche eléctrico…) o ajustas
   horas y potencia, y te da el mejor momento del día con su coste en euros, el ahorro frente al
-  peor tramo y otras opciones. Un gráfico de barras del día marca tu franja en vivo. La potencia se
-  guarda (`usePowerKw`) y los consejos la reutilizan para hablar en euros de *tu* aparato.
+  peor tramo y otras opciones, situados en una pista de 24 h. La potencia se guarda (`usePowerKw`)
+  y el desglose hora a hora de Precios la usa para el coste de cada hora.
 
 **Carburantes**
 - Precio de Gasolina 95, Gasóleo A y GLP (y Gasolina 98, 95 Premium y Gasóleo Premium) en las

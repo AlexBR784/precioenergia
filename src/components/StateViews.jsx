@@ -5,7 +5,7 @@ import InboxIcon from "@mui/icons-material/InboxOutlined";
 
 /**
  * Estados vacío y de error compartidos. Sustituyen a los <Alert> sueltos y al
- * <div> sin estilo que devolvía DistributionChart cuando no había datos.
+ * <div> sin estilo que devolvía el gráfico de precios cuando no había datos.
  */
 function StateView({ icon, title, description, action, tone = "muted" }) {
   return (

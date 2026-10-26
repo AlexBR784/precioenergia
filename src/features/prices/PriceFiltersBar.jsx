@@ -1,110 +1,42 @@
 /* eslint-disable react/prop-types */
-import {
-  Box,
-  Button,
-  Stack,
-  ToggleButton,
-  ToggleButtonGroup,
-  Tooltip,
-  Typography,
-} from "@mui/material";
-import { ExcelIcon } from "../../assets/Excel";
-import DateField from "../../components/DateField";
+import { Stack, ToggleButton, ToggleButtonGroup } from "@mui/material";
+import DaySelector from "../../components/DaySelector";
 import { UNITS } from "./priceFormat";
 
 /**
- * Agrupa en una sola barra los cuatro controles que antes estaban repartidos
- * por la página (fecha y unidades arriba, orden a media altura, descarga al
- * final del Card). El contenedor anterior era un <div> con `space-between`
- * sin `flex-wrap` ni `gap`, así que los controles se solapaban al estrecharse.
+ * Ajustes de la pestaña: qué día y en qué unidad.
+ *
+ * Ambos controles van en una sola línea, sin etiquetas encima: el selector de
+ * día se explica solo ("Hoy · 26 oct") y la unidad también. Antes la fecha
+ * llevaba la etiqueta incrustada y la unidad una etiqueta encima, así que no
+ * quedaban alineadas. El orden de las horas vive en "Precio hora a hora" y la
+ * descarga (CSV) junto a esa misma tabla, que es lo que descarga.
  */
-export function PriceFiltersBar({
-  date,
-  onDateChange,
-  units,
-  onUnitsChange,
-  order,
-  onOrderChange,
-  onExport,
-  canExport,
-}) {
+export function PriceFiltersBar({ date, onDateChange, units, onUnitsChange }) {
   return (
     <Stack
       component="section"
-      aria-label="Filtros"
-      direction={{ xs: "column", md: "row" }}
-      spacing={2}
-      alignItems={{ xs: "stretch", md: "flex-end" }}
+      aria-label="Ajustes"
+      direction="row"
+      spacing={1.5}
+      alignItems="center"
       justifyContent="space-between"
       flexWrap="wrap"
       useFlexGap
     >
-      <Stack
-        direction={{ xs: "column", sm: "row" }}
-        spacing={2}
-        alignItems={{ xs: "stretch", sm: "flex-end" }}
-        flexWrap="wrap"
-        useFlexGap
+      <DaySelector value={date} onChange={onDateChange} />
+
+      <ToggleButtonGroup
+        size="small"
+        exclusive
+        value={units}
+        aria-label="Unidad de precio"
+        onChange={(_, value) => value && onUnitsChange(value)}
+        sx={{ "& .MuiToggleButton-root": { minHeight: 40, px: 1.5 } }}
       >
-        <DateField value={date} onChange={onDateChange} />
-
-        <Box>
-          <Typography
-            variant="caption"
-            component="div"
-            id="units-label"
-            color="text.secondary"
-            sx={{ mb: 0.5, fontWeight: 600 }}
-          >
-            Unidades
-          </Typography>
-          <ToggleButtonGroup
-            size="small"
-            exclusive
-            value={units}
-            aria-labelledby="units-label"
-            onChange={(_, value) => value && onUnitsChange(value)}
-          >
-            <ToggleButton value={UNITS.MWH}>{UNITS.MWH}</ToggleButton>
-            <ToggleButton value={UNITS.KWH}>{UNITS.KWH}</ToggleButton>
-          </ToggleButtonGroup>
-        </Box>
-
-        <Box>
-          <Typography
-            variant="caption"
-            component="div"
-            id="order-label"
-            color="text.secondary"
-            sx={{ mb: 0.5, fontWeight: 600 }}
-          >
-            Ordenar por
-          </Typography>
-          <ToggleButtonGroup
-            size="small"
-            exclusive
-            value={order}
-            aria-labelledby="order-label"
-            onChange={(_, value) => value && onOrderChange(value)}
-          >
-            <ToggleButton value="hour">Hora</ToggleButton>
-            <ToggleButton value="price">Precio</ToggleButton>
-          </ToggleButtonGroup>
-        </Box>
-      </Stack>
-
-      <Tooltip title="Descargar los precios del día en Excel">
-        <span>
-          <Button
-            onClick={onExport}
-            disabled={!canExport}
-            variant="outlined"
-            startIcon={<ExcelIcon />}
-          >
-            Descargar
-          </Button>
-        </span>
-      </Tooltip>
+        <ToggleButton value={UNITS.KWH}>{UNITS.KWH}</ToggleButton>
+        <ToggleButton value={UNITS.MWH}>{UNITS.MWH}</ToggleButton>
+      </ToggleButtonGroup>
     </Stack>
   );
 }

@@ -1,9 +1,5 @@
 import { findRanges, formatRangeLabel } from "../prices/cheapRanges";
-import {
-  euroCost,
-  formatEuros,
-  formatPriceWithUnits,
-} from "../prices/priceFormat";
+import { formatPriceWithUnits } from "../prices/priceFormat";
 import { hourOf } from "../../hooks/usePriceStats";
 import { PRICE_TIER_LABELS } from "../../theme/tokens";
 
@@ -17,21 +13,21 @@ import { PRICE_TIER_LABELS } from "../../theme/tokens";
  *
  * Los iconos se nombran con una clave, no con un componente, para que la
  * lógica quede independiente de la capa visual.
+ *
+ * Cada consejo lleva además un `kind` que decide dónde se pinta:
+ *  - "now": lo que conviene hacer ahora mismo (el titular de la sección).
+ *  - "moment": una franja horaria concreta, con `label`, `when` (la hora, que
+ *    es lo que se escanea), `detail` y opcionalmente `status`.
+ *
+ * "La mejor franja" y "lo que cambia en euros" ya no son reglas: los responde
+ * la calculadora "¿Cuándo lo enciendo?", y repetirlos aquí daba la misma
+ * respuesta dos veces en la misma pantalla.
+ *  - "fact": contexto que no pide acción inmediata (euros, partes del día…).
+ * `title` y `body` se mantienen como versión en prosa del mismo consejo.
  */
 
 /** Ventana de referencia para "la mejor franja del día". */
 const VALLEY_HOURS = 3;
-
-/**
- * Carga tangible con la que poner una cifra absoluta al lado de los %.
- *
- * Se usa mientras el usuario no haya fijado su propia potencia en la
- * calculadora: una lavadora es reconocible, "2 kW" no.
- */
-const LAUNDRY = { hours: 2, kw: 1.5, label: "Una lavadora de 2 h (1,5 kW)" };
-
-const formatKw = (kw) =>
-  kw.toLocaleString("es-ES", { maximumFractionDigits: 2 });
 
 /**
  * Por debajo de esta variación relativa ((max - min) / media), elegir la hora
@@ -108,6 +104,14 @@ const averageOfBlock = (energyCost, { from, to }) => {
   return inBlock.reduce((sum, item) => sum + item.value, 0) / inBlock.length;
 };
 
+/** "En curso" / "Empieza en 3 h" / "Ya ha pasado", o null si no es hoy. */
+const windowStatus = (range, currentHour, isToday) => {
+  if (!isToday || !range) return null;
+  if (range.endHour <= currentHour) return "Ya ha pasado";
+  if (range.startHour <= currentHour) return "En curso";
+  return `Empieza en ${range.startHour - currentHour} h`;
+};
+
 // --- Reglas -----------------------------------------------------------------
 // Cada una devuelve un Insight o null. Devolver null es lo normal.
 
@@ -115,6 +119,7 @@ const flatDay = ({ isFlat, spread, units }) => {
   if (!isFlat) return null;
   return {
     id: "flat-day",
+    kind: "fact",
     tone: "info",
     icon: "flat",
     title: "La hora apenas importa",
@@ -141,6 +146,8 @@ const rightNow = ({ stats, units, currentHour, energyCost }) => {
   if (cheap) {
     return {
       id: "now",
+      kind: "now",
+      kicker: `Ahora · ${current.datetime} h`,
       tone: "success",
       icon: "clock",
       title: "Buen momento para consumir",
@@ -170,6 +177,8 @@ const rightNow = ({ stats, units, currentHour, energyCost }) => {
 
   return {
     id: "now",
+    kind: "now",
+    kicker: `Ahora · ${current.datetime} h`,
     tone: tier === "high" ? "danger" : "warning",
     icon: "clock",
     title: "Ahora mismo no es buen momento",
@@ -177,52 +186,8 @@ const rightNow = ({ stats, units, currentHour, energyCost }) => {
   };
 };
 
-const bestWindow = ({ valley, units, energyCost, currentHour, stats }) => {
-  const best = valley.best[0];
-  if (!best) return null;
 
-  let body = `Media de ${formatPriceWithUnits(
-    best.avgPrice,
-    units
-  )}: es el tramo de ${VALLEY_HOURS} horas seguidas más barato del día.`;
-
-  // Si ya ha pasado, la recomendación es inservible tal cual: se añade la mejor
-  // ventana de lo que queda de día.
-  if (stats.isToday && best.endHour <= currentHour) {
-    const remaining = findRanges(energyCost, {
-      hours: VALLEY_HOURS,
-      onlyFuture: true,
-      currentHour,
-      topN: 1,
-    }).best[0];
-
-    // A última hora "lo mejor que queda" puede ser justamente el tramo que la
-    // regla de al lado manda evitar. Recomendarlo sería contradecirse: cuando
-    // lo que resta no mejora al peor tramo del día, se dice y punto.
-    const worthIt =
-      remaining &&
-      (!valley.worst || remaining.avgPrice < valley.worst.avgPrice * 0.95);
-
-    if (worthIt) {
-      body += ` Ya ha pasado; de lo que queda de día lo mejor es ${formatRangeLabel(
-        remaining
-      )}, a ${formatPriceWithUnits(remaining.avgPrice, units)}.`;
-    } else {
-      body +=
-        " Ya ha pasado, y lo que queda de día está entre lo más caro: si puedes, deja el consumo para mañana.";
-    }
-  }
-
-  return {
-    id: "best-window",
-    tone: "success",
-    icon: "best",
-    title: `Mejor franja: ${formatRangeLabel(best)}`,
-    body,
-  };
-};
-
-const worstWindow = ({ valley, isFlat, units }) => {
+const worstWindow = ({ valley, isFlat, units, currentHour, stats }) => {
   const best = valley.best[0];
   const { worst } = valley;
   if (isFlat || !best || !worst) return null;
@@ -237,45 +202,23 @@ const worstWindow = ({ valley, isFlat, units }) => {
 
   return {
     id: "worst-window",
+    kind: "moment",
     tone: "danger",
     icon: "avoid",
+    label: "Evita",
+    when: formatRangeLabel(worst),
+    detail:
+      ratio !== null
+        ? `${formatPriceWithUnits(worst.avgPrice, units)} de media · ${formatMultiplier(
+            ratio
+          )} veces la franja más barata`
+        : `${formatPriceWithUnits(worst.avgPrice, units)} de media`,
+    status: windowStatus(worst, currentHour, stats.isToday),
     title: `Evita ${formatRangeLabel(worst)}`,
     body: `Media de ${formatPriceWithUnits(worst.avgPrice, units)}, ${comparison}`,
   };
 };
 
-const realCost = ({ laundry, isFlat, powerKw, powerIsCustom }) => {
-  const best = laundry.best[0];
-  const { worst } = laundry;
-  if (isFlat || !best || !worst) return null;
-
-  // Si el usuario ya le dijo su potencia a la calculadora, el consejo habla de
-  // su aparato en vez de seguir con la lavadora de ejemplo.
-  const kw = powerIsCustom ? powerKw : LAUNDRY.kw;
-  const subject = powerIsCustom
-    ? `${LAUNDRY.hours} horas a ${formatKw(kw)} kW cuestan`
-    : `${LAUNDRY.label} cuesta`;
-
-  const cheapCost = euroCost(best.sumPrice, kw);
-  const expensiveCost = euroCost(worst.sumPrice, kw);
-  if (cheapCost === null || expensiveCost === null) return null;
-
-  const disclaimer =
-    "Término de energía PVPC. No incluye el término fijo de potencia, el IVA ni el impuesto eléctrico.";
-
-  return {
-    id: "real-cost",
-    tone: "info",
-    icon: "money",
-    title: "Lo que cambia en euros",
-    body: `${subject} ≈ ${formatEuros(cheapCost)} empezando a las ${padHour(
-      best.startHour
-    )} y ≈ ${formatEuros(expensiveCost)} a las ${padHour(worst.startHour)}.`,
-    note: powerIsCustom
-      ? `Potencia tomada de la calculadora de tramos. ${disclaimer}`
-      : disclaimer,
-  };
-};
 
 const freeHours = ({ energyCost, units }) => {
   const cheapEnough = energyCost.filter((item) => item.value <= ALMOST_FREE);
@@ -288,8 +231,12 @@ const freeHours = ({ energyCost, units }) => {
 
   return {
     id: "free-hours",
+    kind: "moment",
     tone: "success",
     icon: "solar",
+    label: hours.length === 1 ? "Casi gratis (1 h)" : `Casi gratis (${hours.length} h)`,
+    when: describeHourGroups(hours),
+    detail: `Hasta ${formatPriceWithUnits(peak, units)} · suele ser excedente solar`,
     title:
       hours.length === 1
         ? "Una hora casi regalada"
@@ -320,6 +267,7 @@ const dayBlocks = ({ energyCost, isFlat, units }) => {
 
   return {
     id: "blocks",
+    kind: "fact",
     tone: "info",
     icon: "info",
     title: `${cheapest.subject} es la parte más barata del día`,
@@ -336,6 +284,7 @@ const tomorrow = ({ isFuture }) => {
   if (!isFuture) return null;
   return {
     id: "tomorrow",
+    kind: "fact",
     tone: "info",
     icon: "calendar",
     title: "Estás viendo precios de mañana",
@@ -348,9 +297,7 @@ const tomorrow = ({ isFuture }) => {
 const RULES = [
   flatDay,
   rightNow,
-  bestWindow,
   worstWindow,
-  realCost,
   freeHours,
   dayBlocks,
   tomorrow,
@@ -435,8 +382,6 @@ const buildVerdict = ({ stats, baseline, sampleDays, units, when }) => {
  * @param {number} params.sampleDays días que componen el baseline
  * @param {string} params.units unidad de visualización (UNITS.MWH | UNITS.KWH)
  * @param {boolean} params.isFuture la fecha mostrada es posterior a hoy
- * @param {number} params.powerKw potencia elegida en la calculadora
- * @param {boolean} params.powerIsCustom si esa potencia la ha fijado el usuario
  * @param {Date} params.now reloj inyectado, para que el texto no envejezca solo
  * @returns {{verdict: object|null, insights: Array}}
  */
@@ -447,8 +392,6 @@ export const buildInsights = ({
   sampleDays = 0,
   units,
   isFuture = false,
-  powerKw = LAUNDRY.kw,
-  powerIsCustom = false,
   now = new Date(),
 }) => {
   if (!energyCost?.length || !stats?.min || !stats?.max) {
@@ -466,13 +409,10 @@ export const buildInsights = ({
     units,
     isFuture,
     when: stats.isToday ? "today" : isFuture ? "future" : "past",
-    powerKw,
-    powerIsCustom,
     currentHour,
     spread,
     isFlat: stats.average > 0 && spread / stats.average < FLAT_THRESHOLD,
     valley: findRanges(energyCost, { hours: VALLEY_HOURS, topN: 1 }),
-    laundry: findRanges(energyCost, { hours: LAUNDRY.hours, topN: 1 }),
   };
 
   return {

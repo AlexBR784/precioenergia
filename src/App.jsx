@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import dayjs from "dayjs";
 
 import AppShell from "./layout/AppShell";
@@ -10,6 +10,19 @@ import { UNITS } from "./features/prices/priceFormat";
 import { useEnergyCost } from "./hooks/useEnergyCost";
 import { useDailyBaseline } from "./hooks/useDailyBaseline";
 import { useInterchanges } from "./hooks/useInterchanges";
+import { useNow } from "./hooks/useNow";
+
+const UNITS_KEY = "precioenergia:units";
+
+const readStoredUnits = () => {
+  try {
+    const stored = window.localStorage.getItem(UNITS_KEY);
+    if (Object.values(UNITS).includes(stored)) return stored;
+  } catch {
+    // Sin localStorage (modo privado, permisos): valor por defecto.
+  }
+  return UNITS.KWH;
+};
 
 function App() {
   const [activeTab, setActiveTab] = useState("prices");
@@ -17,7 +30,17 @@ function App() {
   // --- Precios ---
   const { energyCost, loading, timeoutFlag, noData, fetchEnergyCost } =
     useEnergyCost();
-  const [units, setUnits] = useState(UNITS.MWH);
+  // €/kWh por defecto: es la unidad de la factura de un particular (€/MWh es
+  // la del mercado mayorista). La elección se recuerda entre visitas.
+  const [units, setUnitsState] = useState(readStoredUnits);
+  const setUnits = useCallback((value) => {
+    setUnitsState(value);
+    try {
+      window.localStorage.setItem(UNITS_KEY, value);
+    } catch {
+      // Persistir es opcional; la unidad sigue viva en esta sesión.
+    }
+  }, []);
   const [selectedDate, setSelectedDate] = useState(() => dayjs().toDate());
 
   const handleDateChange = (value) => {
@@ -26,6 +49,20 @@ function App() {
     setSelectedDate(date);
     fetchEnergyCost(date);
   };
+
+  // Pasada la medianoche, quien estaba mirando "hoy" pasa al nuevo hoy (con
+  // sus precios); quien había elegido otro día se queda en él.
+  const now = useNow();
+  const todayKey = dayjs(now).format("YYYY-MM-DD");
+  const previousToday = useRef(todayKey);
+  useEffect(() => {
+    if (previousToday.current === todayKey) return;
+    const wasViewingToday =
+      dayjs(selectedDate).format("YYYY-MM-DD") === previousToday.current;
+    previousToday.current = todayKey;
+    if (wasViewingToday) handleDateChange(dayjs(now));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [todayKey]);
 
   // --- Consejos ---
   // La referencia de "caro o barato" es una petición extra, así que solo se

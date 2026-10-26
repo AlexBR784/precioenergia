@@ -5,6 +5,7 @@ import { EmptyState, ErrorState } from "../../components/StateViews";
 import { useFuelPrefs, MODES } from "../../hooks/useFuelPrefs";
 import { useFuelPrices } from "../../hooks/useFuelPrices";
 import { useGeolocation, useGeolocationGranted } from "../../hooks/useGeolocation";
+import { useNow } from "../../hooks/useNow";
 import {
   FUELS,
   SORTS,
@@ -18,12 +19,8 @@ import { formatUpdated } from "./fuelFormat";
 import { provinceName } from "./provinces";
 import FuelFiltersBar from "./FuelFiltersBar";
 import FuelSkeleton from "./FuelSkeleton";
-import FuelSummaryCards from "./FuelSummaryCards";
-import FuelVerdict from "./FuelVerdict";
+import FuelHero from "./FuelHero";
 import StationList from "./StationList";
-
-/** Cada cuánto se refresca el reloj que decide si una gasolinera está abierta. */
-const TICK_MS = 60_000;
 
 const sortedUnique = (values) => [...new Set(values)].sort((a, b) => a.localeCompare(b, "es"));
 
@@ -44,11 +41,7 @@ export function FuelTab() {
   const [onlyOpen, setOnlyOpen] = useState(false);
   const [sort, setSort] = useState(SORTS.PRICE);
 
-  const [now, setNow] = useState(() => new Date());
-  useEffect(() => {
-    const id = setInterval(() => setNow(new Date()), TICK_MS);
-    return () => clearInterval(id);
-  }, []);
+  const now = useNow();
 
   // Si el usuario ya dio permiso en otra visita, "Cerca de mí" se recupera solo
   // al volver; si no, se espera a que lo pida (el navegador preguntaría de golpe).
@@ -166,13 +159,13 @@ export function FuelTab() {
   } else {
     body = (
       <>
-        <FuelVerdict
+        <FuelHero
           fuelLabel={fuelLabel}
-          stats={stats}
-          liters={prefs.liters}
           scopeLabel={scopeLabel}
+          stats={stats}
+          stations={visible}
+          liters={prefs.liters}
         />
-        <FuelSummaryCards stats={stats} liters={prefs.liters} />
         <StationList
           stations={visible}
           stats={stats}

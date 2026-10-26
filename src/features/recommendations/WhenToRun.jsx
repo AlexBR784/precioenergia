@@ -28,6 +28,7 @@ import WaterHeaterIcon from "@mui/icons-material/HotTubOutlined";
 import CarIcon from "@mui/icons-material/ElectricCarOutlined";
 
 import { usePowerKw, readStoredPower } from "../../hooks/usePowerKw";
+import { useNow } from "../../hooks/useNow";
 import { hourOf } from "../../hooks/usePriceStats";
 import {
   findRanges,
@@ -215,7 +216,7 @@ export function WhenToRun({ energyCost, units, isToday }) {
     String(readStoredPower().value).replace(".", ",")
   );
 
-  const currentHour = new Date().getHours();
+  const currentHour = useNow().getHours();
   const applyFutureFilter = onlyFuture && isToday;
 
   const maxHours = useMemo(() => {

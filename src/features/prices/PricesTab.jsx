@@ -1,29 +1,16 @@
 /* eslint-disable react/prop-types */
-import { useMemo, useState } from "react";
-import {
-  Button,
-  Card,
-  CardContent,
-  Stack,
-  Typography,
-  useMediaQuery,
-  useTheme,
-} from "@mui/material";
-import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
-import TableChartIcon from "@mui/icons-material/TableChartOutlined";
+import { Stack } from "@mui/material";
 import dayjs from "dayjs";
-import * as XLSX from "xlsx";
 
 import PriceFiltersBar from "./PriceFiltersBar";
-import PriceSummaryCards from "./PriceSummaryCards";
+import PriceHeadline from "./PriceHeadline";
 import PriceChartCard from "./PriceChartCard";
-import PriceTable from "./PriceTable";
-import PriceList from "./PriceList";
-import CheapestHourBanner from "./CheapestHourBanner";
+import HourlyBreakdown from "./HourlyBreakdown";
 import PricesSkeleton from "./PricesSkeleton";
-import { convertPrice, decimalsFor } from "./priceFormat";
+import { convertPrice, exportDecimalsFor } from "./priceFormat";
 import { EmptyState, ErrorState } from "../../components/StateViews";
 import { usePriceStats, hourOf } from "../../hooks/usePriceStats";
+import { downloadCsv } from "../../utils/downloadCsv";
 
 /**
  * Pestaña de precios. Sustituye a los ternarios anidados que antes decidían
@@ -41,69 +28,57 @@ export function PricesTab({
   onUnitsChange,
   onNavigateToTips,
 }) {
-  const theme = useTheme();
-  const isCompact = useMediaQuery(theme.breakpoints.down("md"));
-
-  const [order, setOrder] = useState("hour");
-  const [showAllHours, setShowAllHours] = useState(false);
-
   const stats = usePriceStats(energyCost, date);
 
-  const sortedRows = useMemo(() => {
-    const rows = [...stats.hours];
-    if (order === "price") {
-      rows.sort((a, b) => a.value - b.value);
-    } else {
-      rows.sort((a, b) => hourOf(a.datetime) - hourOf(b.datetime));
-    }
-    return rows;
-  }, [stats.hours, order]);
-
-  // En móvil se muestran por defecto solo las horas que quedan por delante.
-  const canFilterPastHours = isCompact && stats.isToday && order === "hour";
-  const visibleRows = useMemo(() => {
-    if (!canFilterPastHours || showAllHours) return sortedRows;
-    const nowHour = new Date().getHours();
-    return sortedRows.filter((row) => hourOf(row.datetime) >= nowHour);
-  }, [sortedRows, canFilterPastHours, showAllHours]);
-
-  const exportToExcel = () => {
+  const exportToCsv = () => {
     if (!energyCost?.length) return;
-    const decimals = decimalsFor(units);
-    const exportData = [...energyCost]
+    const decimals = exportDecimalsFor(units);
+    const rows = [...energyCost]
       .sort((a, b) => hourOf(a.datetime) - hourOf(b.datetime))
-      .map((item) => ({
-        Hora: item.datetime,
-        [`Precio (${units})`]: Number(
-          convertPrice(item.value, units).toFixed(decimals)
-        ),
-      }));
+      .map((item) => [
+        item.datetime,
+        Number(convertPrice(item.value, units).toFixed(decimals)),
+      ]);
 
-    const worksheet = XLSX.utils.json_to_sheet(exportData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Precios");
-    XLSX.writeFile(
-      workbook,
-      `Precios luz ${dayjs(date).format("DD-MM-YYYY")}.xlsx`
-    );
+    downloadCsv(`Precios luz ${dayjs(date).format("DD-MM-YYYY")}.csv`, [
+      ["Hora", `Precio (${units})`],
+      ...rows,
+    ]);
   };
+
+  // Los ajustes se quedan visibles también sin datos o con error: si no, al
+  // elegir "Mañana" antes de las 20:15 no habría forma de volver a hoy.
+  const filters = (
+    <PriceFiltersBar
+      date={date}
+      onDateChange={onDateChange}
+      units={units}
+      onUnitsChange={onUnitsChange}
+    />
+  );
 
   if (noData) {
     return (
-      <EmptyState
-        title="No hay datos para esta fecha"
-        description="Red Eléctrica todavía no ha publicado los precios de ese día. Prueba con otra fecha."
-      />
+      <Stack spacing={3}>
+        {filters}
+        <EmptyState
+          title="Todavía no hay precios para este día"
+          description="Red Eléctrica publica los precios del día siguiente sobre las 20:15 h. Prueba con otra fecha."
+        />
+      </Stack>
     );
   }
 
   if (timeoutFlag) {
     return (
-      <ErrorState
-        title="No se han podido cargar los precios"
-        description="Red Eléctrica no ha respondido a tiempo. Puedes volver a intentarlo."
-        onRetry={() => fetchEnergyCost(date)}
-      />
+      <Stack spacing={3}>
+        {filters}
+        <ErrorState
+          title="No se han podido cargar los precios"
+          description="Red Eléctrica no ha respondido a tiempo. Puedes volver a intentarlo."
+          onRetry={() => fetchEnergyCost(date)}
+        />
+      </Stack>
     );
   }
 
@@ -111,69 +86,20 @@ export function PricesTab({
 
   return (
     <Stack spacing={3}>
-      <PriceFiltersBar
-        date={date}
-        onDateChange={onDateChange}
+      {filters}
+
+      <PriceHeadline stats={stats} units={units} />
+
+      <PriceChartCard data={energyCost} units={units} isToday={stats.isToday} />
+
+      <HourlyBreakdown
+        hours={stats.hours}
         units={units}
-        onUnitsChange={onUnitsChange}
-        order={order}
-        onOrderChange={setOrder}
-        onExport={exportToExcel}
-        canExport={Boolean(energyCost?.length)}
+        average={stats.average}
+        isToday={stats.isToday}
+        onNavigateToTips={onNavigateToTips}
+        onExport={energyCost?.length ? exportToCsv : null}
       />
-
-      <PriceSummaryCards stats={stats} units={units} />
-
-      <CheapestHourBanner min={stats.min} units={units} isToday={stats.isToday} />
-
-      <PriceChartCard data={energyCost} units={units} />
-
-      <Card component="section" aria-labelledby="hours-heading">
-        <CardContent>
-          <Stack
-            direction={{ xs: "column", sm: "row" }}
-            spacing={1.5}
-            alignItems={{ xs: "flex-start", sm: "center" }}
-            justifyContent="space-between"
-            sx={{ mb: 2 }}
-          >
-            <Stack direction="row" spacing={1} alignItems="center">
-              <TableChartIcon fontSize="small" color="primary" aria-hidden="true" />
-              <Typography variant="h2" component="h2" id="hours-heading">
-                Precio hora a hora
-              </Typography>
-            </Stack>
-
-            {/* Aquí estaba el botón que abría la calculadora de tramos. Vive
-                ahora en la pestaña de consejos, que es donde encaja: esta
-                tarjeta enseña datos, no recomienda. Queda el camino, para que
-                quien lo buscara aquí no se encuentre un hueco. */}
-            <Button
-              size="small"
-              endIcon={<ArrowForwardIcon />}
-              onClick={onNavigateToTips}
-              // 44 px de objetivo táctil en móvil, como el resto de controles;
-              // en escritorio no hace falta y quedaría desproporcionado al lado
-              // del título.
-              sx={{ ml: { sm: 1 }, flexShrink: 0, minHeight: { xs: 44, sm: 36 } }}
-            >
-              Ver consejos del día
-            </Button>
-          </Stack>
-
-          {isCompact ? (
-            <PriceList
-              rows={visibleRows}
-              units={units}
-              showAll={showAllHours}
-              canFilter={canFilterPastHours}
-              onToggleShowAll={() => setShowAllHours((prev) => !prev)}
-            />
-          ) : (
-            <PriceTable rows={visibleRows} units={units} />
-          )}
-        </CardContent>
-      </Card>
     </Stack>
   );
 }

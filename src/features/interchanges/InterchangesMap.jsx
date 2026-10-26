@@ -1,7 +1,8 @@
 /* eslint-disable react/prop-types */
 import { useMemo } from "react";
-import ReactECharts from "echarts-for-react";
-import * as echarts from "echarts";
+import ReactECharts from "echarts-for-react/lib/core";
+import echarts from "../../theme/echarts";
+import { escapeHtml } from "../../utils/escapeHtml";
 import {
   Box,
   Chip,
@@ -125,7 +126,8 @@ export function InterchangesMap({ flows = [], lastUpdate }) {
               : "Importación frontera → España";
 
           return [
-            `<b>${data.frontera}</b>`,
+            // El nombre viene de la API de REE: se escapa antes de meterlo en HTML.
+            `<b>${escapeHtml(data.frontera)}</b>`,
             direction,
             `Importación: ${formatPercent(data.importPct)}`,
             `Exportación: ${formatPercent(data.exportPct)}`,
@@ -224,6 +226,7 @@ export function InterchangesMap({ flows = [], lastUpdate }) {
       </Stack>
 
       <ReactECharts
+        echarts={echarts}
         option={chartOption}
         notMerge
         style={{
