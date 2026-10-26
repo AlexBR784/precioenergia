@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="es">
   <head>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://apidatos.ree.es https://sedeaplicaciones.minetur.gob.es; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Precio de la luz</title>
@@ -44,18 +47,8 @@
     />
     <meta name="twitter:image" content="https://alexbr784.github.io/precioenergia/og-image.png" />
 
-    <script>
-      // Fecha en minúsculas, como se escribe en español ("24 de octubre").
-      document.addEventListener("DOMContentLoaded", () => {
-        const formattedDate = new Date().toLocaleDateString("es-ES", {
-          month: "long",
-          day: "numeric",
-        });
-        document.title = `Precio de la luz · ${formattedDate}`;
-      });
-    </script>
-    <script type="module" crossorigin src="/precioenergia/assets/index-hq-qmP_F.js"></script>
-    <link rel="stylesheet" crossorigin href="/precioenergia/assets/index-CV0YgzUK.css">
+    <script type="module" crossorigin src="/precioenergia/assets/index-D_ammYpM.js"></script>
+    <link rel="stylesheet" crossorigin href="/precioenergia/assets/index-QCA8m7cz.css">
   </head>
   <body>
     <div id="root"></div>
