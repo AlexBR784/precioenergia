@@ -2,17 +2,28 @@
 import { Box, Container } from "@mui/material";
 import AppHeader from "./AppHeader";
 import AppFooter from "./AppFooter";
+import { BottomNav } from "./SectionNav";
 import { t } from "../i18n";
 
 /**
- * Estructura semántica de la página: enlace de salto, <header>, <main> y <footer>,
- * con el contenido acotado a un ancho legible. Antes no había landmarks y el
- * contenido se estiraba de borde a borde en pantallas grandes.
+ * Estructura semántica de la página: enlace de salto, <header>, <main>, <footer>
+ * y, en móvil, la barra de navegación inferior.
+ *
+ * `<main>` lleva el nombre de la sección y se puede enfocar: al cambiar de
+ * sección, App le pasa el foco para que un lector de pantalla anuncie dónde se
+ * está ("Factura, principal") y el teclado siga desde el contenido nuevo.
  */
-export function AppShell({ activeTab, onTabChange, children }) {
+export function AppShell({ section, sectionLabel, children }) {
   return (
     <Box
-      sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}
+      sx={{
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        // Hueco para la barra inferior fija (68 px + borde) y la barra de
+        // inicio del iPhone.
+        pb: { xs: "calc(72px + env(safe-area-inset-bottom))", md: 0 },
+      }}
     >
       <Box
         component="a"
@@ -23,18 +34,21 @@ export function AppShell({ activeTab, onTabChange, children }) {
         {t("layout.skipLink")}
       </Box>
 
-      <AppHeader activeTab={activeTab} onTabChange={onTabChange} />
+      <AppHeader section={section} />
 
       <Container
         component="main"
         id="contenido"
+        tabIndex={-1}
+        aria-label={sectionLabel}
         maxWidth="lg"
-        sx={{ flexGrow: 1, py: { xs: 2, sm: 3 } }}
+        sx={{ flexGrow: 1, py: { xs: 2, sm: 3 }, "&:focus": { outline: "none" } }}
       >
         {children}
       </Container>
 
       <AppFooter />
+      <BottomNav section={section} />
     </Box>
   );
 }

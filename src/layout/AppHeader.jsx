@@ -1,36 +1,24 @@
 /* eslint-disable react/prop-types */
-import {
-  AppBar,
-  Box,
-  Container,
-  Stack,
-  Tab,
-  Tabs,
-  Toolbar,
-  Typography,
-} from "@mui/material";
+import { AppBar, Container, Stack, Toolbar, Typography } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import Mascot from "../components/Mascot";
 import ThemeToggle from "./ThemeToggle";
 import InstallButton from "./InstallButton";
 import LanguageMenu from "./LanguageMenu";
 import AdminButton from "./AdminButton";
+import { HeaderNav } from "./SectionNav";
 import { t } from "../i18n";
 
-// La etiqueta es "Consejos" y no "Recomendaciones" por una razón medible: con
-// `variant="fullWidth"` las tres pestañas se reparten ~124 px en un móvil de
-// 390 px, y "Recomendaciones" partiría en dos líneas. Hubo una cuarta,
-// "Intercambios" (mapa de importaciones y exportaciones con otros países), que
-// se quitó: no ayudaba a un particular a gastar menos y obligaba a desplazar
-// la barra en móvil.
-const TABS = ["prices", "tips", "bill", "fuel"];
-
 /**
- * Cabecera fija con la marca, la navegación entre pestañas y el selector de tema.
- * Antes la app arrancaba directamente con unos Tabs pegados al borde superior,
- * sin <header> ni <h1>: el primer encabezado del documento era un h6.
+ * Cabecera fija con la marca, la navegación (en escritorio) y los ajustes
+ * generales. En móvil la navegación va abajo (`BottomNav`), al alcance del
+ * pulgar, y la cabecera se queda en una sola fila.
+ *
+ * Antes eran pestañas (`role="tablist"`) en una segunda fila: semántica de
+ * paneles de un mismo contenido, sin dirección propia por sección y, en móvil,
+ * 44 px más de cabecera en la zona más difícil de alcanzar.
  */
-export function AppHeader({ activeTab, onTabChange }) {
+export function AppHeader({ section }) {
   return (
     <AppBar
       component="header"
@@ -46,58 +34,29 @@ export function AppHeader({ activeTab, onTabChange }) {
       }}
     >
       <Container maxWidth="lg" disableGutters>
-        <Toolbar
-          sx={{ gap: 1, minHeight: { xs: 60, sm: 68 }, px: { xs: 2, sm: 3 } }}
-        >
+        <Toolbar sx={{ gap: 1, minHeight: { xs: 60, sm: 68 }, px: { xs: 2, sm: 3 } }}>
           <Stack
             direction="row"
             spacing={1}
             alignItems="center"
-            sx={{ flexGrow: 1, minWidth: 0 }}
+            sx={{ flexGrow: { xs: 1, md: 0 }, flexShrink: 0, minWidth: 0 }}
           >
-            {/* Reacciona al cambiar de pestaña: vuelve a saltar y a dar el pulgar.
+            {/* Reacciona al cambiar de sección: vuelve a saltar y a dar el pulgar.
                 El salto sube ~16 % de su alto y gira un poco, así que la barra
                 deja holgura por encima (12 px) para que no se salga de la página. */}
-            <Mascot size={{ xs: 36, sm: 44 }} playKey={activeTab} />
+            <Mascot size={{ xs: 36, sm: 44 }} playKey={section} />
             <Typography variant="h1" noWrap sx={{ fontSize: { xs: "1rem", sm: "1.25rem" } }}>
               {t("common.appName")}
             </Typography>
           </Stack>
+
+          <HeaderNav section={section} />
 
           <AdminButton />
           <InstallButton />
           <LanguageMenu />
           <ThemeToggle />
         </Toolbar>
-
-        <Box sx={{ px: { xs: 1, sm: 2 } }}>
-          <Tabs
-            value={activeTab}
-            onChange={(_, value) => onTabChange(value)}
-            aria-label={t("layout.sections")}
-            variant="fullWidth"
-            sx={{
-              minHeight: 44,
-              "& .MuiTabs-flexContainer": { justifyContent: { sm: "flex-start" } },
-              // El padding por defecto (16 px por lado) deja "Carburantes" al
-              // filo en un móvil de 375 px.
-              // Con cuatro pestañas en 375 px tocan a ~86 px: sin el mínimo de
-              // 90 px de MUI y con letra algo menor, "Carburantes" cabe entera.
-              "& .MuiTab-root": {
-                minHeight: 44,
-                minWidth: 0,
-                maxWidth: { sm: 180 },
-                px: { xs: 0.5, sm: 2 },
-                fontSize: { xs: "0.8125rem", sm: "0.875rem" },
-              },
-              "& .MuiTabs-indicator": { height: 3, borderRadius: "3px 3px 0 0" },
-            }}
-          >
-            {TABS.map((value) => (
-              <Tab key={value} value={value} label={t(`layout.tabs.${value}`)} />
-            ))}
-          </Tabs>
-        </Box>
       </Container>
     </AppBar>
   );

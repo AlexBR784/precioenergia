@@ -36,22 +36,24 @@ const setPriceIcon = (color) => {
  * @param energyCost precios del día que se está viendo (los que se enseñan)
  * @param isToday si ese día es hoy
  * @param now reloj compartido (cambia de hora sola)
+ * @param prefix nombre de la sección, delante del título ("Factura · …"), o null
  */
-export const useLiveTitle = (energyCost, isToday, now) => {
+export const useLiveTitle = (energyCost, isToday, now, prefix = null) => {
   const hour = now.getHours();
 
   useEffect(() => {
     const current = isToday ? energyCost?.find((item) => Number(item.datetime.slice(0, 2)) === hour) : null;
+    const withPrefix = (title) => (prefix ? `${prefix} · ${title}` : title);
     if (!current) {
-      document.title = t("common.dateTitle", { app: t("common.appName"), date: dateLabel() });
+      document.title = withPrefix(t("common.dateTitle", { app: t("common.appName"), date: dateLabel() }));
       setPriceIcon(null);
       return;
     }
     const values = energyCost.map((item) => item.value);
     const tier = getPriceTier(current.value, Math.min(...values), Math.max(...values));
-    document.title = t("common.liveTitle", { price: fixed(current.value / 1000, 3), app: t("common.appName") });
+    document.title = withPrefix(t("common.liveTitle", { price: fixed(current.value / 1000, 3), app: t("common.appName") }));
     setPriceIcon(palette.light.price[tier]);
-  }, [energyCost, isToday, hour]);
+  }, [energyCost, isToday, hour, prefix]);
 };
 
 export default useLiveTitle;

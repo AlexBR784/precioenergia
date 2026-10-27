@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import dayjs from "dayjs";
 
 import AppShell from "./layout/AppShell";
@@ -8,6 +8,8 @@ import FuelTab from "./features/fuel/FuelTab";
 import BillTab from "./features/bill/BillTab";
 import MaintenancePage from "./features/admin/MaintenancePage";
 import { useAdmin } from "./hooks/useAdmin";
+import { useSection } from "./hooks/useSection";
+import { t } from "./i18n";
 import { UNITS } from "./features/prices/priceFormat";
 import { useEnergyCost } from "./hooks/useEnergyCost";
 import { useDailyBaseline } from "./hooks/useDailyBaseline";
@@ -29,7 +31,11 @@ const readStoredUnits = () => {
 };
 
 function App() {
-  const [activeTab, setActiveTab] = useState("prices");
+  // La sección va en la URL (`#/factura`): recargar, "atrás" y compartir funcionan.
+  const { section: activeTab, navigate } = useSection();
+  // El contenido cambia con un instante de retraso a propósito: la navegación
+  // marca la sección nueva al momento y la sección, que pesa, se pinta después.
+  const shownTab = useDeferredValue(activeTab);
   // Consumo importado en Factura: aquí para que no se pierda al cambiar de pestaña.
   const [usage, setUsage] = useState(null);
 
@@ -97,21 +103,36 @@ function App() {
   );
   const baseline = rawBaseline == null ? rawBaseline : rawBaseline * factor;
 
-  useLiveTitle(shownCost, dayjs(selectedDate).isSame(now, "day"), now);
+  // `#mantenimiento`: la página del admin sustituye a la sección; los enlaces de
+  // la navegación cambian el hash y la cierran solos.
+  const { open: maintenanceOpen } = useAdmin();
+  const sectionLabel = maintenanceOpen ? "Mantenimiento" : t(`layout.tabs.${activeTab}`);
 
-  // `#mantenimiento`: la página del admin sustituye a la pestaña activa; al
-  // pulsar una pestaña se sale de ella.
-  const { open: maintenanceOpen, close: closeMaintenance } = useAdmin();
-  const changeTab = (value) => {
-    closeMaintenance();
-    setActiveTab(value);
-  };
+  // Título de la pestaña del navegador: la sección delante (salvo en Precios,
+  // que ya lleva el precio de ahora).
+  useLiveTitle(
+    shownCost,
+    dayjs(selectedDate).isSame(now, "day"),
+    now,
+    maintenanceOpen || activeTab !== "prices" ? sectionLabel : null
+  );
+
+  // Al cambiar de sección (no al cargar): arriba del todo y el foco en <main>,
+  // que lleva el nombre de la sección, para que se anuncie el cambio.
+  const viewKey = maintenanceOpen ? "maintenance" : activeTab;
+  const previousView = useRef(viewKey);
+  useEffect(() => {
+    if (previousView.current === viewKey) return;
+    previousView.current = viewKey;
+    window.scrollTo({ top: 0 });
+    document.getElementById("contenido")?.focus({ preventScroll: true });
+  }, [viewKey]);
 
   return (
-    <AppShell activeTab={maintenanceOpen ? false : activeTab} onTabChange={changeTab}>
+    <AppShell section={maintenanceOpen ? null : activeTab} sectionLabel={sectionLabel}>
       {maintenanceOpen && <MaintenancePage />}
 
-      {!maintenanceOpen && activeTab === "prices" && (
+      {!maintenanceOpen && shownTab === "prices" && (
         <PricesTab
           energyCost={shownCost}
           loading={loading}
@@ -122,11 +143,11 @@ function App() {
           onDateChange={handleDateChange}
           units={units}
           onUnitsChange={setUnits}
-          onNavigateToTips={() => setActiveTab("tips")}
+          onNavigateToTips={() => navigate("tips")}
         />
       )}
 
-      {!maintenanceOpen && activeTab === "tips" && (
+      {!maintenanceOpen && shownTab === "tips" && (
         <RecommendationsTab
           energyCost={shownCost}
           loading={loading}
@@ -139,15 +160,15 @@ function App() {
           baseline={baseline}
           sampleDays={sampleDays}
           baselineLoading={baselineLoading}
-          onOpenBill={() => setActiveTab("bill")}
+          onOpenBill={() => navigate("bill")}
         />
       )}
 
-      {!maintenanceOpen && activeTab === "bill" && <BillTab usage={usage} onUsage={setUsage} />}
+      {!maintenanceOpen && shownTab === "bill" && <BillTab usage={usage} onUsage={setUsage} />}
 
       {/* Carga diferida sin flag: los datos se piden al montar la pestaña y
           useFuelPrices los cachea, así que volver a ella no los repite. */}
-      {!maintenanceOpen && activeTab === "fuel" && <FuelTab energyCost={shownCost} />}
+      {!maintenanceOpen && shownTab === "fuel" && <FuelTab energyCost={shownCost} />}
     </AppShell>
   );
 }
