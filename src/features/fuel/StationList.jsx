@@ -12,18 +12,19 @@ import {
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import DirectionsIcon from "@mui/icons-material/DirectionsOutlined";
+import StarIcon from "@mui/icons-material/Star";
+import StarBorderIcon from "@mui/icons-material/StarBorder";
 
 import { getPriceTier } from "../../theme/tokens";
 import { formatEuros } from "../prices/priceFormat";
 import { fillCost, isOpenNow } from "./fuelData";
 import { directionsUrl, formatDistance, formatLiterPrice, LITER_UNITS } from "./fuelFormat";
+import { t } from "../../i18n";
+import { fixed, formatNumber } from "../../i18n/format";
 
 const PAGE_SIZE = 10;
 
-const deltaFormat = new Intl.NumberFormat("es-ES", {
-  minimumFractionDigits: 3,
-  maximumFractionDigits: 3,
-});
+const deltaFormat = { format: (value) => fixed(value, 3) };
 
 /** Abierta / cerrada con punto de color y texto; nada si el horario no se entiende. */
 function OpenState({ open }) {
@@ -40,7 +41,7 @@ function OpenState({ open }) {
           bgcolor: open ? "price.cheapest" : "text.disabled",
         }}
       />
-      <span>{open ? "Abierta" : "Cerrada"}</span>
+      <span>{open ? t("fuel.list.open") : t("fuel.list.closed")}</span>
     </Stack>
   );
 }
@@ -64,13 +65,13 @@ function DeltaBar({ delta, span, tier }) {
         />
       </Box>
       <Typography variant="caption" color="text.secondary" className="tabular" sx={{ mt: 0.5, display: "block" }}>
-        {delta <= 0 ? "La más barata" : `+${deltaFormat.format(delta)} ${LITER_UNITS}`}
+        {delta <= 0 ? t("fuel.list.cheapest") : `+${deltaFormat.format(delta)} ${LITER_UNITS}`}
       </Typography>
     </Box>
   );
 }
 
-function StationRow({ station, rank, min, span, tier, liters, open, showDistance }) {
+function StationRow({ station, rank, min, span, tier, liters, open, showDistance, favorite, onToggleFavorite }) {
   const delta = station.price - min;
   const meta = [
     station.schedule || null,
@@ -121,9 +122,22 @@ function StationRow({ station, rank, min, span, tier, liters, open, showDistance
       </Box>
 
       <Box sx={{ gridArea: "info", minWidth: 0 }}>
-        <Typography sx={{ fontWeight: 600 }} noWrap>
-          {station.brand}
-        </Typography>
+        <Stack direction="row" spacing={0.5} alignItems="center" sx={{ minWidth: 0 }}>
+          <Typography sx={{ fontWeight: 600 }} noWrap>
+            {station.brand}
+          </Typography>
+          {onToggleFavorite && (
+            <IconButton
+              size="small"
+              onClick={() => onToggleFavorite(station.id)}
+              aria-pressed={favorite}
+              aria-label={t(favorite ? "fuel.list.unsave" : "fuel.list.save", { brand: station.brand })}
+              sx={{ p: 0.25, color: favorite ? "secondary.main" : "text.disabled" }}
+            >
+              {favorite ? <StarIcon sx={{ fontSize: 18 }} /> : <StarBorderIcon sx={{ fontSize: 18 }} />}
+            </IconButton>
+          )}
+        </Stack>
         <Typography
           variant="body2"
           color="text.secondary"
@@ -163,20 +177,25 @@ function StationRow({ station, rank, min, span, tier, liters, open, showDistance
             {LITER_UNITS}
           </Typography>
         </Typography>
-        <Typography variant="caption" color="text.secondary" className="tabular">
-          {formatEuros(fillCost(station.price, liters))} · {liters.toLocaleString("es-ES")} L
+        <Typography variant="caption" color="text.secondary" className="tabular" component="p">
+          {formatEuros(fillCost(station.price, liters))} · {formatNumber(liters)} L
         </Typography>
+        {station.listPrice != null && (
+          <Typography variant="caption" className="tabular" component="p" sx={{ color: "price.cheapest", fontWeight: 600 }}>
+            {t("fuel.list.discounted", { price: formatLiterPrice(station.listPrice) })}
+          </Typography>
+        )}
       </Box>
 
       <Box sx={{ gridArea: "go", justifySelf: "end" }}>
-        <Tooltip title="Cómo llegar">
+        <Tooltip title={t("fuel.list.directions")}>
           <span>
             <IconButton
               component="a"
               href={directionsUrl(station)}
               target="_blank"
               rel="noopener noreferrer"
-              aria-label={`Cómo llegar a ${station.brand}, ${station.address}, ${station.locality}`}
+              aria-label={t("fuel.list.directionsAria", { brand: station.brand, address: station.address, locality: station.locality })}
               disabled={station.lat == null || station.lon == null}
               sx={{ border: 1, borderColor: "divider", width: 40, height: 40 }}
             >
@@ -199,7 +218,7 @@ function StationRow({ station, rank, min, span, tier, liters, open, showDistance
  * llegar" a un botón de icono: antes eran una pastilla verde y un botón con
  * texto repetidos diez veces, y pesaban más que los precios.
  */
-export function StationList({ stations, stats, liters, showDistance, now, resetKey }) {
+export function StationList({ stations, stats, liters, showDistance, now, resetKey, favorites = [], onToggleFavorite }) {
   const [visible, setVisible] = useState(PAGE_SIZE);
 
   // Al cambiar de combustible, zona o filtro se vuelve al principio del ranking.
@@ -217,10 +236,10 @@ export function StationList({ stations, stats, liters, showDistance, now, resetK
         sx={{ px: { xs: 2, sm: 2.5 }, pt: 2.5, pb: 1.5 }}
       >
         <Typography variant="h2" component="h2" id="ranking-heading">
-          Las más baratas
+          {t("fuel.list.title")}
         </Typography>
         <Typography variant="caption" color="text.secondary">
-          {Math.min(visible, stations.length)} de {stations.length}
+          {t("fuel.list.count", { shown: Math.min(visible, stations.length), total: stations.length })}
         </Typography>
       </Stack>
       <Divider />
@@ -237,6 +256,8 @@ export function StationList({ stations, stats, liters, showDistance, now, resetK
             liters={liters}
             open={isOpenNow(station.schedule, now)}
             showDistance={showDistance}
+            favorite={favorites.includes(station.id)}
+            onToggleFavorite={onToggleFavorite}
           />
         ))}
       </Stack>
@@ -246,7 +267,7 @@ export function StationList({ stations, stats, liters, showDistance, now, resetK
           <Divider />
           <Box sx={{ textAlign: "center", py: 1.5 }}>
             <Button onClick={() => setVisible((count) => count + PAGE_SIZE)} sx={{ minHeight: 44 }}>
-              Ver {Math.min(PAGE_SIZE, stations.length - visible)} más
+              {t("fuel.list.more", { count: Math.min(PAGE_SIZE, stations.length - visible) })}
             </Button>
           </Box>
         </>

@@ -2,6 +2,7 @@
 import { Box, Button, Stack, Typography } from "@mui/material";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import InboxIcon from "@mui/icons-material/InboxOutlined";
+import { t } from "../i18n";
 
 /**
  * Estados vacío y de error compartidos. Sustituyen a los <Alert> sueltos y al
@@ -61,7 +62,7 @@ export function EmptyState({ title, description, action }) {
   );
 }
 
-export function ErrorState({ title, description, onRetry, retryLabel = "Reintentar" }) {
+export function ErrorState({ title, description, onRetry, retryLabel = t("common.actions.retry") }) {
   return (
     <StateView
       tone="error"

@@ -1,7 +1,16 @@
 import { Box, Container, Link, Stack, Typography } from "@mui/material";
+import { REGIONS } from "../data/spain";
+import { useEnergyPrefs } from "../hooks/useEnergyPrefs";
+import { t } from "../i18n";
+import { formatNumber } from "../i18n/format";
+
+const percent = (rate) => `${formatNumber(rate * 100, { maximumFractionDigits: 2 })} %`;
 
 /** Pie con la atribución a la fuente de datos. Antes no existía. */
 export function AppFooter() {
+  const { prefs, region } = useEnergyPrefs();
+  const { tax } = REGIONS[region];
+
   return (
     <Box
       component="footer"
@@ -15,7 +24,7 @@ export function AppFooter() {
           alignItems={{ xs: "flex-start", sm: "center" }}
         >
           <Typography variant="caption" color="text.secondary">
-            Datos:{" "}
+            {t("layout.footer.data")}{" "}
             <Link
               href="https://www.ree.es/es/apidatos"
               target="_blank"
@@ -24,7 +33,7 @@ export function AppFooter() {
               color="inherit"
               sx={{ fontWeight: 600 }}
             >
-              Red Eléctrica de España — apidatos.ree.es
+              {t("layout.footer.ree")}
             </Link>
             {" · "}
             <Link
@@ -35,12 +44,13 @@ export function AppFooter() {
               color="inherit"
               sx={{ fontWeight: 600 }}
             >
-              Geoportal Gasolineras (MITECO)
+              {t("layout.footer.fuel")}
             </Link>
           </Typography>
           <Typography variant="caption" color="text.secondary">
-            Luz: precio PVPC (tarifa regulada). No incluye IVA, impuesto
-            eléctrico ni el término fijo de potencia.
+            {prefs.withTaxes
+              ? t("layout.footer.withTaxes", { tax: tax.name, rate: percent(tax.rate) })
+              : t("layout.footer.withoutTaxes")}
           </Typography>
         </Stack>
       </Container>

@@ -1,14 +1,20 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dayjs from "dayjs";
 
 import AppShell from "./layout/AppShell";
 import PricesTab from "./features/prices/PricesTab";
 import RecommendationsTab from "./features/recommendations/RecommendationsTab";
 import FuelTab from "./features/fuel/FuelTab";
+import BillTab from "./features/bill/BillTab";
+import MaintenancePage from "./features/admin/MaintenancePage";
+import { useAdmin } from "./hooks/useAdmin";
 import { UNITS } from "./features/prices/priceFormat";
 import { useEnergyCost } from "./hooks/useEnergyCost";
 import { useDailyBaseline } from "./hooks/useDailyBaseline";
 import { useNow } from "./hooks/useNow";
+import { useEnergyPrefs } from "./hooks/useEnergyPrefs";
+import { taxFactor } from "./data/spain";
+import { useLiveTitle } from "./hooks/useLiveTitle";
 
 const UNITS_KEY = "precioenergia:units";
 
@@ -24,6 +30,8 @@ const readStoredUnits = () => {
 
 function App() {
   const [activeTab, setActiveTab] = useState("prices");
+  // Consumo importado en Factura: aquí para que no se pierda al cambiar de pestaña.
+  const [usage, setUsage] = useState(null);
 
   // --- Precios ---
   const { energyCost, loading, timeoutFlag, noData, fetchEnergyCost } =
@@ -72,16 +80,40 @@ function App() {
   }, [activeTab, tipsLoaded]);
 
   const {
-    baseline,
+    baseline: rawBaseline,
     sampleDays,
     loading: baselineLoading,
   } = useDailyBaseline(selectedDate, { enabled: tipsLoaded });
 
+  // "Con impuestos": se multiplican los precios una sola vez aquí, y gráfica,
+  // tablas, costes y comparaciones salen ya con lo que se paga de verdad. El
+  // factor es el mismo para todas las horas, así que los "más barato/caro" y
+  // los porcentajes no cambian.
+  const { prefs, region } = useEnergyPrefs();
+  const factor = prefs.withTaxes ? taxFactor(region) : 1;
+  const shownCost = useMemo(
+    () => (factor === 1 || !energyCost ? energyCost : energyCost.map((item) => ({ ...item, value: item.value * factor }))),
+    [energyCost, factor]
+  );
+  const baseline = rawBaseline == null ? rawBaseline : rawBaseline * factor;
+
+  useLiveTitle(shownCost, dayjs(selectedDate).isSame(now, "day"), now);
+
+  // `#mantenimiento`: la página del admin sustituye a la pestaña activa; al
+  // pulsar una pestaña se sale de ella.
+  const { open: maintenanceOpen, close: closeMaintenance } = useAdmin();
+  const changeTab = (value) => {
+    closeMaintenance();
+    setActiveTab(value);
+  };
+
   return (
-    <AppShell activeTab={activeTab} onTabChange={setActiveTab}>
-      {activeTab === "prices" && (
+    <AppShell activeTab={maintenanceOpen ? false : activeTab} onTabChange={changeTab}>
+      {maintenanceOpen && <MaintenancePage />}
+
+      {!maintenanceOpen && activeTab === "prices" && (
         <PricesTab
-          energyCost={energyCost}
+          energyCost={shownCost}
           loading={loading}
           timeoutFlag={timeoutFlag}
           noData={noData}
@@ -94,9 +126,9 @@ function App() {
         />
       )}
 
-      {activeTab === "tips" && (
+      {!maintenanceOpen && activeTab === "tips" && (
         <RecommendationsTab
-          energyCost={energyCost}
+          energyCost={shownCost}
           loading={loading}
           timeoutFlag={timeoutFlag}
           noData={noData}
@@ -107,12 +139,15 @@ function App() {
           baseline={baseline}
           sampleDays={sampleDays}
           baselineLoading={baselineLoading}
+          onOpenBill={() => setActiveTab("bill")}
         />
       )}
 
+      {!maintenanceOpen && activeTab === "bill" && <BillTab usage={usage} onUsage={setUsage} />}
+
       {/* Carga diferida sin flag: los datos se piden al montar la pestaña y
           useFuelPrices los cachea, así que volver a ella no los repite. */}
-      {activeTab === "fuel" && <FuelTab />}
+      {!maintenanceOpen && activeTab === "fuel" && <FuelTab energyCost={shownCost} />}
     </AppShell>
   );
 }

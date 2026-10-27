@@ -42,8 +42,8 @@ const pickPvpcSeries = (included = []) =>
   included.find((series) => /pvpc/i.test(series?.type ?? series?.attributes?.title ?? "")) ??
   included[0];
 
-/** Clave de día local ("2026-08-16") a partir del datetime ISO con offset. */
-const dayKeyOf = (isoDatetime) => formatDay(new Date(isoDatetime));
+/** Día publicado ("2026-08-16") del datetime ISO, sin convertir de zona horaria. */
+const dayKeyOf = (isoDatetime = "") => isoDatetime.slice(0, 10);
 
 /**
  * @param {Date} referenceDate día que se está mirando; la ventana son los N días previos

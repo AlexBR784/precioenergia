@@ -7,6 +7,9 @@ import LocalGasStationIcon from "@mui/icons-material/LocalGasStationOutlined";
 import { formatEuros } from "../prices/priceFormat";
 import { fillCost } from "./fuelData";
 import { formatDistance, formatLiterPrice, LITER_UNITS } from "./fuelFormat";
+import { t } from "../../i18n";
+import { formatMoney, formatNumber } from "../../i18n/format";
+import { rich } from "../../i18n/rich";
 
 const EASE = "cubic-bezier(0.2, 0.8, 0.2, 1)";
 
@@ -65,9 +68,13 @@ function PriceSpread({ prices, min, max, average }) {
     <Box sx={{ mt: 3 }}>
       <Box
         role="img"
-        aria-label={`${prices.length} gasolineras entre ${formatLiterPrice(min)} y ${formatLiterPrice(
-          max
-        )} ${LITER_UNITS}; media de ${formatLiterPrice(average)}.`}
+        aria-label={t("fuel.hero.spreadAria", {
+          count: prices.length,
+          min: formatLiterPrice(min),
+          max: formatLiterPrice(max),
+          units: LITER_UNITS,
+          average: formatLiterPrice(average),
+        })}
         sx={{ position: "relative", height: 44, mx: 0.5 }}
       >
         {/* Línea base */}
@@ -142,7 +149,7 @@ function PriceSpread({ prices, min, max, average }) {
       <Box sx={{ position: "relative", height: 36, mt: 0.5 }}>
         <Box sx={{ position: "absolute", left: 0 }}>
           <Typography variant="caption" color="text.secondary" display="block">
-            Más barata
+            {t("fuel.hero.cheapestLabel")}
           </Typography>
           <Typography variant="body2" className="tabular" sx={{ fontWeight: 700, color: "price.cheapest" }}>
             {formatLiterPrice(min)}
@@ -158,7 +165,7 @@ function PriceSpread({ prices, min, max, average }) {
           }}
         >
           <Typography variant="caption" color="text.secondary" display="block">
-            Media
+            {t("fuel.hero.averageLabel")}
           </Typography>
           <Typography variant="body2" className="tabular" sx={{ fontWeight: 700 }}>
             {formatLiterPrice(average)}
@@ -166,7 +173,7 @@ function PriceSpread({ prices, min, max, average }) {
         </Box>
         <Box sx={{ position: "absolute", right: 0, textAlign: "right" }}>
           <Typography variant="caption" color="text.secondary" display="block">
-            Más cara
+            {t("fuel.hero.priciestLabel")}
           </Typography>
           <Typography variant="body2" className="tabular" sx={{ fontWeight: 700 }}>
             {formatLiterPrice(max)}
@@ -196,7 +203,7 @@ export function FuelHero({ fuelLabel, scopeLabel, stats, stations, liters }) {
   const where = [
     cheapest.address,
     cheapest.locality,
-    cheapest.distanceKm != null ? `a ${formatDistance(cheapest.distanceKm)}` : null,
+    cheapest.distanceKm != null ? t("fuel.hero.distance", { distance: formatDistance(cheapest.distanceKm) }) : null,
   ]
     .filter(Boolean)
     .join(" · ");
@@ -214,7 +221,7 @@ export function FuelHero({ fuelLabel, scopeLabel, stats, stations, liters }) {
             <Stack direction="row" spacing={0.75} alignItems="center" sx={{ color: "price.cheapest" }}>
               <LocalGasStationIcon sx={{ fontSize: 18 }} aria-hidden="true" />
               <Typography variant="subtitle2" sx={{ color: "inherit" }}>
-                {fuelLabel} · {scopeLabel} · {count.toLocaleString("es-ES")} gasolineras
+                {t("fuel.hero.meta", { fuel: fuelLabel, scope: scopeLabel, count: formatNumber(count) })}
               </Typography>
             </Stack>
 
@@ -224,14 +231,20 @@ export function FuelHero({ fuelLabel, scopeLabel, stats, stations, liters }) {
               id="fuel-hero-heading"
               sx={{ mt: 1, fontSize: { xs: "1.375rem", sm: "1.625rem" }, lineHeight: 1.25 }}
             >
-              La más barata es{" "}
-              <Box component="span" sx={{ whiteSpace: "nowrap" }}>
-                {cheapest.brand}
-              </Box>
-              , a{" "}
-              <Box component="span" className="tabular" sx={{ whiteSpace: "nowrap", color: "price.cheapest" }}>
-                {formatLiterPrice(cheapest.price)} {LITER_UNITS}
-              </Box>
+              {rich(
+                t("fuel.hero.cheapest", {
+                  brand: (
+                    <Box component="span" sx={{ whiteSpace: "nowrap" }}>
+                      {cheapest.brand}
+                    </Box>
+                  ),
+                  price: (
+                    <Box component="span" className="tabular" sx={{ whiteSpace: "nowrap", color: "price.cheapest" }}>
+                      {formatLiterPrice(cheapest.price)} {LITER_UNITS}
+                    </Box>
+                  ),
+                })
+              )}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
               {where}
@@ -248,7 +261,7 @@ export function FuelHero({ fuelLabel, scopeLabel, stats, stations, liters }) {
             }}
           >
             <Typography variant="subtitle2" color="text.secondary">
-              Llenar {liters.toLocaleString("es-ES")} L allí
+              {t("fuel.hero.fill", { liters: formatNumber(liters) })}
             </Typography>
             <Typography className="tabular" sx={{ fontSize: "1.5rem", fontWeight: 700, lineHeight: 1.2 }}>
               {formatEuros(fillCost(cheapest.price, liters))}
@@ -256,8 +269,7 @@ export function FuelHero({ fuelLabel, scopeLabel, stats, stations, liters }) {
             {saving >= 0.01 && (
               <Typography variant="body2" className="tabular" sx={{ color: "price.cheapest", fontWeight: 600 }}>
                 {/* Dos decimales fijos: mientras cuenta, formatEuros cambiaría de 3 a 2. */}
-                {shownSaving.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €
-                menos que la media
+                {t("fuel.hero.saving", { amount: formatMoney(shownSaving, 2) })}
               </Typography>
             )}
           </Box>

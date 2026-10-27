@@ -1,9 +1,10 @@
 import { Card, CardContent, Skeleton, Stack } from "@mui/material";
+import { t } from "../../i18n";
 
 /** Cuerpo de la pestaña mientras se descargan las gasolineras (los filtros siguen visibles). */
 export function FuelSkeleton() {
   return (
-    <Stack spacing={3} aria-busy="true" aria-label="Cargando gasolineras">
+    <Stack spacing={3} aria-busy="true" aria-label={t("fuel.loading")}>
       <Card>
         <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
           <Skeleton variant="text" width={260} />

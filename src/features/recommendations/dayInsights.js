@@ -2,6 +2,8 @@ import { findRanges, formatRangeLabel } from "../prices/cheapRanges";
 import { formatPriceWithUnits } from "../prices/priceFormat";
 import { hourOf } from "../../hooks/usePriceStats";
 import { PRICE_TIER_LABELS } from "../../theme/tokens";
+import { t } from "../../i18n";
+import { fixed } from "../../i18n/format";
 
 /**
  * Traduce los precios de un día a frases accionables.
@@ -54,22 +56,18 @@ const BLOCK_RATIO = 0.85;
  */
 const ALMOST_FREE = 10;
 
+// Nombre de cada parte del día como sujeto ("La tarde es…") y como
+// complemento ("…de la tarde"): en otros idiomas cambian distinto.
 const DAY_BLOCKS = [
-  { key: "madrugada", from: 0, to: 7, subject: "La madrugada", object: "la madrugada" },
-  { key: "manana", from: 7, to: 14, subject: "La mañana", object: "la mañana" },
-  { key: "tarde", from: 14, to: 20, subject: "La tarde", object: "la tarde" },
-  { key: "noche", from: 20, to: 24, subject: "La noche", object: "la noche" },
+  { key: "madrugada", from: 0, to: 7 },
+  { key: "manana", from: 7, to: 14 },
+  { key: "tarde", from: 14, to: 20 },
+  { key: "noche", from: 20, to: 24 },
 ];
 
 const padHour = (hour) => `${String(hour).padStart(2, "0")}:00`;
 
-const formatMultiplier = (times) =>
-  times >= 10
-    ? `${Math.round(times)}`
-    : times.toLocaleString("es-ES", {
-        minimumFractionDigits: 1,
-        maximumFractionDigits: 1,
-      });
+const formatMultiplier = (times) => (times >= 10 ? `${Math.round(times)}` : fixed(times, 1));
 
 const formatPercent = (fraction) => `${Math.round(Math.abs(fraction) * 100)} %`;
 
@@ -92,7 +90,7 @@ const describeHourGroups = (hours) => {
 
   const labels = groups.map(([from, to]) => `${padHour(from)}–${padHour(to)}`);
   if (labels.length === 1) return labels[0];
-  return `${labels.slice(0, -1).join(", ")} y ${labels[labels.length - 1]}`;
+  return `${labels.slice(0, -1).join(", ")}${t("tips.insights.and")}${labels[labels.length - 1]}`;
 };
 
 const averageOfBlock = (energyCost, { from, to }) => {
@@ -107,9 +105,9 @@ const averageOfBlock = (energyCost, { from, to }) => {
 /** "En curso" / "Empieza en 3 h" / "Ya ha pasado", o null si no es hoy. */
 const windowStatus = (range, currentHour, isToday) => {
   if (!isToday || !range) return null;
-  if (range.endHour <= currentHour) return "Ya ha pasado";
-  if (range.startHour <= currentHour) return "En curso";
-  return `Empieza en ${range.startHour - currentHour} h`;
+  if (range.endHour <= currentHour) return t("tips.insights.status.past");
+  if (range.startHour <= currentHour) return t("tips.insights.status.running");
+  return t("tips.insights.status.startsIn", { hours: range.startHour - currentHour });
 };
 
 // --- Reglas -----------------------------------------------------------------
@@ -122,11 +120,8 @@ const flatDay = ({ isFlat, spread, units }) => {
     kind: "fact",
     tone: "info",
     icon: "flat",
-    title: "La hora apenas importa",
-    body: `Entre la hora más barata y la más cara solo hay ${formatPriceWithUnits(
-      spread,
-      units
-    )}. Mover los electrodomésticos de hora apenas cambia la factura.`,
+    title: t("tips.insights.flatTitle"),
+    body: t("tips.insights.flatBody", { spread: formatPriceWithUnits(spread, units) }),
   };
 };
 
@@ -147,13 +142,11 @@ const rightNow = ({ stats, units, currentHour, energyCost }) => {
     return {
       id: "now",
       kind: "now",
-      kicker: `Ahora · ${current.datetime} h`,
+      kicker: t("tips.insights.nowKicker", { hour: current.datetime }),
       tone: "success",
       icon: "clock",
-      title: "Buen momento para consumir",
-      body: `La hora actual está a ${price}, dentro del tramo ${PRICE_TIER_LABELS[
-        tier
-      ].toLowerCase()} del día.`,
+      title: t("tips.insights.goodNowTitle"),
+      body: t("tips.insights.goodNowBody", { price, tier: PRICE_TIER_LABELS[tier].toLowerCase() }),
     };
   }
 
@@ -167,22 +160,21 @@ const rightNow = ({ stats, units, currentHour, energyCost }) => {
     cheapest && current.value > 0 && cheapest.value < current.value * 0.9;
 
   const advice = worthWaiting
-    ? `A partir de las ${cheapest.datetime} baja a ${formatPriceWithUnits(
-        cheapest.value,
-        units
-      )}, un ${formatPercent(
-        (current.value - cheapest.value) / current.value
-      )} menos.`
-    : "No quedan horas apreciablemente más baratas hoy.";
+    ? t("tips.insights.waitAdvice", {
+        hour: cheapest.datetime,
+        price: formatPriceWithUnits(cheapest.value, units),
+        percent: formatPercent((current.value - cheapest.value) / current.value),
+      })
+    : t("tips.insights.noWaitAdvice");
 
   return {
     id: "now",
     kind: "now",
-    kicker: `Ahora · ${current.datetime} h`,
+    kicker: t("tips.insights.nowKicker", { hour: current.datetime }),
     tone: tier === "high" ? "danger" : "warning",
     icon: "clock",
-    title: "Ahora mismo no es buen momento",
-    body: `La hora actual está a ${price}. ${advice}`,
+    title: t("tips.insights.badNowTitle"),
+    body: t("tips.insights.badNowBody", { price, advice }),
   };
 };
 
@@ -197,25 +189,24 @@ const worstWindow = ({ valley, isFlat, units, currentHour, stats }) => {
 
   const comparison =
     ratio !== null
-      ? `${formatMultiplier(ratio)} veces lo que cuesta la franja más barata.`
-      : `frente a ${formatPriceWithUnits(best.avgPrice, units)} de la más barata.`;
+      ? t("tips.insights.avoidTimes", { times: formatMultiplier(ratio) })
+      : t("tips.insights.avoidVs", { price: formatPriceWithUnits(best.avgPrice, units) });
 
   return {
     id: "worst-window",
     kind: "moment",
     tone: "danger",
     icon: "avoid",
-    label: "Evita",
+    label: t("tips.insights.avoidLabel"),
     when: formatRangeLabel(worst),
     detail:
       ratio !== null
-        ? `${formatPriceWithUnits(worst.avgPrice, units)} de media · ${formatMultiplier(
-            ratio
-          )} veces la franja más barata`
-        : `${formatPriceWithUnits(worst.avgPrice, units)} de media`,
+        ? t("tips.insights.avoidDetail", { price: formatPriceWithUnits(worst.avgPrice, units), times: formatMultiplier(ratio) })
+        : t("tips.insights.avoidDetailShort", { price: formatPriceWithUnits(worst.avgPrice, units) }),
     status: windowStatus(worst, currentHour, stats.isToday),
-    title: `Evita ${formatRangeLabel(worst)}`,
-    body: `Media de ${formatPriceWithUnits(worst.avgPrice, units)}, ${comparison}`,
+    past: stats.isToday && worst.endHour <= currentHour,
+    title: t("tips.insights.avoidTitle", { range: formatRangeLabel(worst) }),
+    body: t("tips.insights.avoidBody", { price: formatPriceWithUnits(worst.avgPrice, units), comparison }),
   };
 };
 
@@ -234,17 +225,11 @@ const freeHours = ({ energyCost, units }) => {
     kind: "moment",
     tone: "success",
     icon: "solar",
-    label: hours.length === 1 ? "Casi gratis (1 h)" : `Casi gratis (${hours.length} h)`,
+    label: t("tips.insights.freeLabel", { hours: hours.length }),
     when: describeHourGroups(hours),
-    detail: `Hasta ${formatPriceWithUnits(peak, units)} · suele ser excedente solar`,
-    title:
-      hours.length === 1
-        ? "Una hora casi regalada"
-        : `${hours.length} horas casi regaladas`,
-    body: `De ${describeHourGroups(hours)} el precio no pasa de ${formatPriceWithUnits(
-      peak,
-      units
-    )}. Suele ser excedente solar: dentro de ese tramo da casi igual la hora que elijas.`,
+    detail: t("tips.insights.freeDetail", { price: formatPriceWithUnits(peak, units) }),
+    title: t("tips.insights.freeTitle", { hours: hours.length }),
+    body: t("tips.insights.freeBody", { hours: describeHourGroups(hours), price: formatPriceWithUnits(peak, units) }),
   };
 };
 
@@ -270,13 +255,12 @@ const dayBlocks = ({ energyCost, isFlat, units }) => {
     kind: "fact",
     tone: "info",
     icon: "info",
-    title: `${cheapest.subject} es la parte más barata del día`,
-    body: `Media de ${formatPriceWithUnits(
-      cheapest.average,
-      units
-    )}, frente a ${formatPriceWithUnits(expensive.average, units)} de ${
-      expensive.object
-    }.`,
+    title: t("tips.insights.blocksTitle", { subject: t(`tips.insights.blocks.${cheapest.key}.subject`) }),
+    body: t("tips.insights.blocksBody", {
+      cheap: formatPriceWithUnits(cheapest.average, units),
+      expensive: formatPriceWithUnits(expensive.average, units),
+      object: t(`tips.insights.blocks.${expensive.key}.object`),
+    }),
   };
 };
 
@@ -287,8 +271,8 @@ const tomorrow = ({ isFuture }) => {
     kind: "fact",
     tone: "info",
     icon: "calendar",
-    title: "Estás viendo precios de mañana",
-    body: "Los precios del día siguiente se publican sobre las 20:15 h, así que puedes planificar con ellos desde la tarde anterior.",
+    title: t("tips.insights.tomorrowTitle"),
+    body: t("tips.insights.tomorrowBody"),
   };
 };
 
@@ -308,27 +292,11 @@ const RULES = [
 const CHEAP_DELTA = -0.1;
 const EXPENSIVE_DELTA = 0.1;
 
-/**
+/*
  * El titular tiene que concordar con la fecha que se está mirando: decir "Hoy
  * es un día caro" mientras se consulta el martes pasado es sencillamente falso.
+ * Los títulos están en `tips.verdict.{nivel}.{today|past|future}`.
  */
-const VERDICT_TITLES = {
-  cheap: {
-    today: "Hoy es un día barato",
-    past: "Fue un día barato",
-    future: "Va a ser un día barato",
-  },
-  expensive: {
-    today: "Hoy es un día caro",
-    past: "Fue un día caro",
-    future: "Va a ser un día caro",
-  },
-  normal: {
-    today: "Hoy es un día normal",
-    past: "Fue un día normal",
-    future: "Va a ser un día normal",
-  },
-};
 
 const buildVerdict = ({ stats, baseline, sampleDays, units, when }) => {
   const average = stats.average;
@@ -338,16 +306,13 @@ const buildVerdict = ({ stats, baseline, sampleDays, units, when }) => {
       level: "unknown",
       average,
       deltaPct: null,
-      title: "Sin referencia para comparar",
-      body: "No se han podido cargar los precios de los días anteriores, así que no hay con qué compararlo.",
+      title: t("tips.verdict.noReference"),
+      body: t("tips.verdict.noReferenceBody"),
     };
   }
 
   const delta = (average - baseline) / baseline;
-  const reference = `la media de los ${sampleDays} días previos (${formatPriceWithUnits(
-    baseline,
-    units
-  )})`;
+  const reference = t("tips.verdict.reference", { days: sampleDays, price: formatPriceWithUnits(baseline, units) });
 
   const level =
     delta <= CHEAP_DELTA
@@ -358,16 +323,14 @@ const buildVerdict = ({ stats, baseline, sampleDays, units, when }) => {
 
   const body =
     level === "normal"
-      ? `Prácticamente igual que ${reference}.`
-      : `Un ${formatPercent(delta)} por ${
-          level === "cheap" ? "debajo" : "encima"
-        } de ${reference}.`;
+      ? t("tips.verdict.similar", { reference })
+      : t("tips.verdict.delta", { percent: formatPercent(delta), below: level === "cheap", reference });
 
   return {
     level,
     average,
     deltaPct: delta,
-    title: VERDICT_TITLES[level][when],
+    title: t(`tips.verdict.${level}.${when}`),
     body,
   };
 };

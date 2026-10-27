@@ -1,5 +1,8 @@
 /* eslint-disable react/prop-types */
-import { Box, Card, CardContent, Chip, Divider, Skeleton, Stack, Typography } from "@mui/material";
+import { useState } from "react";
+import { Box, Button, Card, CardContent, Chip, Divider, Skeleton, Stack, Typography } from "@mui/material";
+import ShareIcon from "@mui/icons-material/ShareOutlined";
+import CheckIcon from "@mui/icons-material/Check";
 import TipsIcon from "@mui/icons-material/EmojiObjectsOutlined";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import BlockIcon from "@mui/icons-material/Block";
@@ -12,6 +15,8 @@ import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 
 import { EmptyState } from "../../components/StateViews";
 import MoodFace from "./MoodFace";
+import { shareText } from "../../utils/share";
+import { t } from "../../i18n";
 
 /**
  * El mapa de iconos vive aquí y no en `dayInsights.js`: la lógica solo emite
@@ -96,7 +101,7 @@ function NowLead({ insight }) {
 function MomentTile({ insight }) {
   const tone = toneOf(insight);
   const Icon = iconOf(insight);
-  const past = insight.status === "Ya ha pasado";
+  const past = Boolean(insight.past);
   // Varios tramos sueltos ("01:00–04:00 y 13:00–16:00") no caben en grande.
   const longWhen = insight.when.length > 16;
 
@@ -197,7 +202,31 @@ const MOOD_BY_LEVEL = { cheap: "happy", expensive: "sad", normal: "neutral", unk
  * (la misma cifra que la cabecera de Precios). Aquí abre el plan: primero cómo
  * es el día y después qué hacer, en una sola tarjeta.
  */
-function VerdictHeader({ verdict, whenLabel, loadingBaseline }) {
+/**
+ * Compartir el resumen del día ("Hoy es un día caro. Evita 18:00 – 21:00…"):
+ * pensado para avisar a la familia por WhatsApp. En escritorio se copia.
+ */
+function ShareDayButton({ text }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <Button
+      size="small"
+      startIcon={copied ? <CheckIcon /> : <ShareIcon />}
+      onClick={async () => {
+        const result = await shareText({ title: t("tips.plan.shareTitle"), text });
+        if (result === "copied") {
+          setCopied(true);
+          setTimeout(() => setCopied(false), 1500);
+        }
+      }}
+      sx={{ flexShrink: 0, alignSelf: "flex-start" }}
+    >
+      {copied ? t("common.actions.copied") : t("common.actions.share")}
+    </Button>
+  );
+}
+
+function VerdictHeader({ verdict, whenLabel, loadingBaseline, share }) {
   return (
     <Stack direction="row" spacing={1.75} alignItems="center" sx={{ mb: 2.5 }}>
       {/* key: al cambiar de veredicto (otro día) la carita vuelve a animarse */}
@@ -206,7 +235,7 @@ function VerdictHeader({ verdict, whenLabel, loadingBaseline }) {
         <Stack direction="row" spacing={0.75} alignItems="center" sx={{ color: "text.secondary" }}>
           <TipsIcon sx={{ fontSize: 16 }} aria-hidden="true" />
           <Typography variant="subtitle2" sx={{ color: "inherit" }}>
-            Qué hacer {whenLabel}
+            {t(`tips.plan.title.${whenLabel}`)}
           </Typography>
         </Stack>
         <Typography
@@ -221,6 +250,11 @@ function VerdictHeader({ verdict, whenLabel, loadingBaseline }) {
           {loadingBaseline ? <Skeleton width={260} /> : verdict.body}
         </Typography>
       </Box>
+      {share && (
+        <Box sx={{ ml: "auto !important", display: { xs: "none", sm: "block" } }}>
+          <ShareDayButton text={share} />
+        </Box>
+      )}
     </Stack>
   );
 }
@@ -229,7 +263,7 @@ function VerdictHeader({ verdict, whenLabel, loadingBaseline }) {
  * `aside` es una fila extra al final de "Para tener en cuenta" (el apunte de
  * mañana); se pasa ya montada para que el plan no sepa de dónde sale.
  */
-export function DayPlan({ insights, whenLabel, verdict, loadingBaseline, aside = null }) {
+export function DayPlan({ insights, whenLabel, verdict, loadingBaseline, aside = null, share = null }) {
   const now = insights.find((insight) => insight.kind === "now");
   const moments = insights.filter((insight) => insight.kind === "moment");
   const facts = insights.filter((insight) => insight.kind === "fact");
@@ -238,20 +272,20 @@ export function DayPlan({ insights, whenLabel, verdict, loadingBaseline, aside =
     <Card component="section" aria-labelledby="tips-heading">
       <CardContent>
         {verdict ? (
-          <VerdictHeader verdict={verdict} whenLabel={whenLabel} loadingBaseline={loadingBaseline} />
+          <VerdictHeader verdict={verdict} whenLabel={whenLabel} loadingBaseline={loadingBaseline} share={share} />
         ) : (
           <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2 }}>
             <TipsIcon fontSize="small" color="primary" aria-hidden="true" />
             <Typography variant="h2" component="h2" id="tips-heading">
-              Qué hacer {whenLabel}
+              {t(`tips.plan.title.${whenLabel}`)}
             </Typography>
           </Stack>
         )}
 
         {!insights.length ? (
           <EmptyState
-            title="Nada que destacar"
-            description="Los precios de este día no dan pie a ninguna recomendación concreta."
+            title={t("tips.plan.emptyTitle")}
+            description={t("tips.plan.emptyBody")}
           />
         ) : (
           <Stack spacing={3}>
@@ -259,7 +293,7 @@ export function DayPlan({ insights, whenLabel, verdict, loadingBaseline, aside =
 
             {moments.length > 0 && (
               <Box>
-                <GroupLabel>Momentos del día</GroupLabel>
+                <GroupLabel>{t("tips.plan.moments")}</GroupLabel>
                 <Box
                   sx={{
                     display: "grid",
@@ -278,9 +312,15 @@ export function DayPlan({ insights, whenLabel, verdict, loadingBaseline, aside =
               </Box>
             )}
 
+            {share && (
+              <Box sx={{ display: { xs: "block", sm: "none" }, mt: -1 }}>
+                <ShareDayButton text={share} />
+              </Box>
+            )}
+
             {(facts.length > 0 || aside) && (
               <Box>
-                <GroupLabel>Para tener en cuenta</GroupLabel>
+                <GroupLabel>{t("tips.plan.facts")}</GroupLabel>
                 <Stack divider={<Divider flexItem />} sx={{ mt: -1.5 }}>
                   {facts.map((insight) => (
                     <FactRow key={insight.id} insight={insight} />

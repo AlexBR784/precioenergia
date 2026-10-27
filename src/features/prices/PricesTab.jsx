@@ -6,12 +6,15 @@ import PriceFiltersBar from "./PriceFiltersBar";
 import PriceHeadline from "./PriceHeadline";
 import PriceChartCard from "./PriceChartCard";
 import HourlyBreakdown from "./HourlyBreakdown";
+import MonthlyHistory from "./MonthlyHistory";
 import PricesSkeleton from "./PricesSkeleton";
 import TomorrowPreview from "../recommendations/TomorrowPreview";
 import { convertPrice, exportDecimalsFor } from "./priceFormat";
 import { EmptyState, ErrorState } from "../../components/StateViews";
 import { usePriceStats, hourOf } from "../../hooks/usePriceStats";
 import { downloadCsv } from "../../utils/downloadCsv";
+import { t } from "../../i18n";
+import { useEnergyPrefs } from "../../hooks/useEnergyPrefs";
 
 /**
  * Pestaña de precios. Sustituye a los ternarios anidados que antes decidían
@@ -30,6 +33,7 @@ export function PricesTab({
   onNavigateToTips,
 }) {
   const stats = usePriceStats(energyCost, date);
+  const { prefs } = useEnergyPrefs();
 
   const exportToCsv = () => {
     if (!energyCost?.length) return;
@@ -41,8 +45,8 @@ export function PricesTab({
         Number(convertPrice(item.value, units).toFixed(decimals)),
       ]);
 
-    downloadCsv(`Precios luz ${dayjs(date).format("DD-MM-YYYY")}.csv`, [
-      ["Hora", `Precio (${units})`],
+    downloadCsv(t("prices.csv.file", { date: dayjs(date).format("DD-MM-YYYY") }), [
+      [t("prices.csv.hour"), t(prefs.withTaxes ? "prices.csv.priceTaxes" : "prices.csv.price", { units })],
       ...rows,
     ]);
   };
@@ -61,8 +65,8 @@ export function PricesTab({
   if (noData) {
     const empty = (
       <EmptyState
-        title="Todavía no hay precios para este día"
-        description="Red Eléctrica publica los precios del día siguiente sobre las 20:15 h. Prueba con otra fecha."
+        title={t("prices.noData.title")}
+        description={t("prices.noData.body")}
       />
     );
     const isTomorrow = dayjs(date).isSame(dayjs().add(1, "day"), "day");
@@ -80,8 +84,8 @@ export function PricesTab({
       <Stack spacing={3}>
         {filters}
         <ErrorState
-          title="No se han podido cargar los precios"
-          description="Red Eléctrica no ha respondido a tiempo. Puedes volver a intentarlo."
+          title={t("prices.error.title")}
+          description={t("prices.error.body")}
           onRetry={() => fetchEnergyCost(date)}
         />
       </Stack>
@@ -96,7 +100,7 @@ export function PricesTab({
 
       <PriceHeadline stats={stats} units={units} />
 
-      <PriceChartCard data={energyCost} units={units} isToday={stats.isToday} />
+      <PriceChartCard data={energyCost} units={units} isToday={stats.isToday} date={date} />
 
       <HourlyBreakdown
         hours={stats.hours}
@@ -106,6 +110,8 @@ export function PricesTab({
         onNavigateToTips={onNavigateToTips}
         onExport={energyCost?.length ? exportToCsv : null}
       />
+
+      <MonthlyHistory units={units} />
     </Stack>
   );
 }

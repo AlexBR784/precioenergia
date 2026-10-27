@@ -8,6 +8,9 @@
  * punto de uso, con resultados inconsistentes.
  */
 
+import { t } from "../../i18n";
+import { fixed, formatMoney } from "../../i18n/format";
+
 export const UNITS = {
   MWH: "€/MWh",
   KWH: "€/kWh",
@@ -24,10 +27,7 @@ export const convertPrice = (price, units) =>
 
 export const formatPrice = (price, units) => {
   if (price == null || !Number.isFinite(price)) return "—";
-  return new Intl.NumberFormat("es-ES", {
-    minimumFractionDigits: decimalsFor(units),
-    maximumFractionDigits: decimalsFor(units),
-  }).format(convertPrice(price, units));
+  return fixed(convertPrice(price, units), decimalsFor(units));
 };
 
 /** Precio ya formateado junto a su unidad, p.ej. "92,45 €/MWh". */
@@ -37,7 +37,7 @@ export const formatPriceWithUnits = (price, units) =>
     : `${formatPrice(price, units)} ${units}`;
 
 /** "14:00" -> "14:00 h"; también acepta rangos "14:00-15:00". */
-export const formatHour = (hour) => (hour ? `${hour} h` : "—");
+export const formatHour = (hour) => (hour ? t("common.hour", { hour }) : "—");
 
 /**
  * Coste real de consumir `powerKw` durante una ventana horaria.
@@ -62,9 +62,5 @@ export const euroCost = (sumPriceMWh, powerKw) => {
 export const formatEuros = (amount) => {
   if (amount == null || !Number.isFinite(amount)) return "—";
   // Por debajo de 1 € las dos décimas se quedan cortas (0,03 € vs 0,04 €).
-  const decimals = Math.abs(amount) < 1 ? 3 : 2;
-  return `${new Intl.NumberFormat("es-ES", {
-    minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals,
-  }).format(amount)} €`;
+  return formatMoney(amount, Math.abs(amount) < 1 ? 3 : 2);
 };

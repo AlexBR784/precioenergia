@@ -6,15 +6,28 @@
  * `sx={{ color: 'price.cheapest' }}` o `theme.palette.*`.
  */
 
+import { t } from "../i18n";
+
 /** Tramos de precio, de más barato a más caro. El orden importa. */
 export const PRICE_TIERS = ["cheapest", "low", "medium", "high"];
 
-/** Etiqueta visible de cada tramo: el color nunca es el único canal. */
+/**
+ * Etiqueta visible de cada tramo: el color nunca es el único canal. Son
+ * getters para que salgan en el idioma activo.
+ */
 export const PRICE_TIER_LABELS = {
-  cheapest: "Barato",
-  low: "Moderado",
-  medium: "Alto",
-  high: "Muy alto",
+  get cheapest() {
+    return t("common.tiers.cheapest");
+  },
+  get low() {
+    return t("common.tiers.low");
+  },
+  get medium() {
+    return t("common.tiers.medium");
+  },
+  get high() {
+    return t("common.tiers.high");
+  },
 };
 
 /**

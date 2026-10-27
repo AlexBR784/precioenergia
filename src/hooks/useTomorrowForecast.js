@@ -13,13 +13,16 @@ const CACHE_TTL_MS = 15 * 60_000;
 let cache = null; // { key, at, value }
 let inflight = null;
 
-/** Medias horarias de una serie cuartohoraria, agrupadas por día local. */
+/**
+ * Medias horarias de una serie cuartohoraria, agrupadas por día. Día y hora se
+ * leen tal cual los publica REE (hora peninsular), igual que el PVPC: en
+ * Canarias se aplican a su hora local.
+ */
 const hourlyByDay = (values = []) => {
   const days = new Map();
-  values.forEach(({ value, datetime }) => {
-    const moment = dayjs(datetime);
-    const dayKey = moment.format("YYYY-MM-DD");
-    const hour = moment.hour();
+  values.forEach(({ value, datetime = "" }) => {
+    const dayKey = datetime.slice(0, 10);
+    const hour = Number(datetime.slice(11, 13));
     if (!days.has(dayKey)) days.set(dayKey, new Map());
     const hours = days.get(dayKey);
     const bucket = hours.get(hour) ?? { sum: 0, count: 0 };
@@ -66,8 +69,9 @@ const load = async (today) => {
     return { available: false };
   }
 
-  const pvpcPublished = (pvpc?.attributes?.values ?? []).some((item) =>
-    dayjs(item.datetime).isSame(tomorrow, "day")
+  const tomorrowKey = tomorrow.format("YYYY-MM-DD");
+  const pvpcPublished = (pvpc?.attributes?.values ?? []).some(
+    (item) => item.datetime?.slice(0, 10) === tomorrowKey
   );
 
   const todayAverage = average(todayRows);

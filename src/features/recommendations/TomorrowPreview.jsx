@@ -8,16 +8,17 @@ import TrendingFlatIcon from "@mui/icons-material/TrendingFlat";
 
 import { useTomorrowForecast } from "../../hooks/useTomorrowForecast";
 import { formatRangeLabel } from "../prices/cheapRanges";
+import { t } from "../../i18n";
 
 /** Diferencias menores no cambian la decisión: "parecida a hoy". */
 const SIMILAR = 5;
 
 const headline = ({ changePct, todayAverage, tomorrowAverage }) => {
   if (changePct == null) {
-    return tomorrowAverage < todayAverage ? "Mañana pinta más barata que hoy" : "Mañana pinta más cara que hoy";
+    return tomorrowAverage < todayAverage ? t("tips.tomorrow.cheaper") : t("tips.tomorrow.dearer");
   }
-  if (Math.abs(changePct) < SIMILAR) return "Mañana pinta parecida a hoy";
-  return `Mañana pinta un ${Math.round(Math.abs(changePct))} % ${changePct < 0 ? "más barata" : "más cara"} que hoy`;
+  if (Math.abs(changePct) < SIMILAR) return t("tips.tomorrow.similar");
+  return t("tips.tomorrow.change", { percent: Math.round(Math.abs(changePct)), cheaper: changePct < 0 });
 };
 
 /**
@@ -37,8 +38,6 @@ const trendOf = ({ changePct, todayAverage, tomorrowAverage }) => {
   return TRENDS.flat;
 };
 
-const AVANCE_NOTE =
-  "Avance con el precio del mercado mayorista, que marca la tendencia del PVPC. Los precios oficiales se publican sobre las 20:15 h.";
 
 /**
  * Mañana en una línea, al final de "Qué hacer hoy" (con el estilo de las filas
@@ -64,8 +63,8 @@ export function TomorrowNote({ forecast, onShowTomorrow }) {
             {headline(forecast)}
           </Typography>
           <Typography variant="body2" color="text.secondary" className="tabular" sx={{ mt: 0.25 }}>
-            {pvpcPublished ? "Ya están los precios oficiales" : "Avance del mercado mayorista"}
-            {cheapest ? ` · mejores horas ${formatRangeLabel(cheapest)}` : ""}
+            {pvpcPublished ? t("tips.tomorrow.official") : t("tips.tomorrow.market")}
+            {cheapest ? t("tips.tomorrow.bestHours", { range: formatRangeLabel(cheapest) }) : ""}
           </Typography>
         </Box>
       </Stack>
@@ -76,7 +75,7 @@ export function TomorrowNote({ forecast, onShowTomorrow }) {
           onClick={onShowTomorrow}
           sx={{ flexShrink: 0, ml: { xs: 3.5, sm: 0 } }}
         >
-          Ver mañana
+          {t("tips.tomorrow.show")}
         </Button>
       )}
     </Stack>
@@ -120,13 +119,13 @@ export function TomorrowPreview({ fallback = null }) {
           <Stack direction="row" spacing={0.75} alignItems="center" sx={{ color: "text.secondary" }}>
             <EventIcon sx={{ fontSize: 16 }} aria-hidden="true" />
             <Typography variant="subtitle2" sx={{ color: "inherit" }}>
-              Mañana
+              {t("tips.tomorrow.label")}
             </Typography>
           </Stack>
           <Chip
             size="small"
             variant="outlined"
-            label="Avance"
+            label={t("tips.tomorrow.preview")}
             sx={{ height: 20, fontSize: "0.75rem", borderColor: "divider", color: "text.secondary" }}
           />
         </Stack>
@@ -148,12 +147,12 @@ export function TomorrowPreview({ fallback = null }) {
             bgcolor: "surfaceMuted",
           }}
         >
-          {cheapest && <Stat label="Mejores horas" value={formatRangeLabel(cheapest)} color="price.cheapest" />}
-          {priciest && <Stat label="Evita" value={formatRangeLabel(priciest)} color="price.high" />}
+          {cheapest && <Stat label={t("tips.tomorrow.best")} value={formatRangeLabel(cheapest)} color="price.cheapest" />}
+          {priciest && <Stat label={t("tips.tomorrow.avoid")} value={formatRangeLabel(priciest)} color="price.high" />}
         </Box>
 
         <Typography variant="caption" color="text.secondary" component="p" sx={{ mt: 1.5 }}>
-          {AVANCE_NOTE}
+          {t("tips.tomorrow.note")}
         </Typography>
       </CardContent>
     </Card>

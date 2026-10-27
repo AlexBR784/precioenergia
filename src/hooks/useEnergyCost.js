@@ -12,6 +12,9 @@ const formatDay = (date) => {
   return `${year}-${month}-${day}`;
 };
 
+/** "2026-10-27T18:00:00.000+01:00" -> "18:00" (hora de pared, sin convertir). */
+export const wallClock = (iso = "") => iso.slice(11, 16);
+
 export const useEnergyCost = () => {
   const [energyCost, setEnergyCost] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -63,12 +66,14 @@ export const useEnergyCost = () => {
       return;
     }
 
-    const normalized = parsedData.map((item) => {
-      const itemDate = new Date(item.datetime);
-      const hours = itemDate.getHours().toString().padStart(2, "0");
-      const minutes = itemDate.getMinutes().toString().padStart(2, "0");
-      return { ...item, datetime: `${hours}:${minutes}` };
-    });
+    // La hora se lee tal cual la publica REE ("2026-10-27T18:00:00.000+01:00"
+    // -> "18:00") y no convertida a la zona del navegador: el PVPC se aplica en
+    // la hora local de cada sitio, así que en Canarias las 18:00 del PVPC son
+    // sus 18:00, no las 17:00.
+    const normalized = parsedData.map((item) => ({
+      ...item,
+      datetime: wallClock(item.datetime),
+    }));
 
     const cheapestItem = normalized.reduce((prev, current) =>
       prev.value < current.value ? prev : current

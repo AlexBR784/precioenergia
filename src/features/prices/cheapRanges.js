@@ -1,4 +1,5 @@
 import { hourOf } from "../../hooks/usePriceStats";
+import { t } from "../../i18n";
 
 /**
  * Búsqueda de las ventanas de N horas consecutivas más baratas del día.
@@ -87,14 +88,14 @@ export const formatRangeLabel = (range) => {
 export const rangeStatus = (range, currentHour, isToday) => {
   if (!range || !isToday) return null;
   if (currentHour >= range.startHour && currentHour < range.endHour) {
-    return { label: "En curso ahora", color: "price.cheapest" };
+    return { label: t("common.ranges.running"), color: "price.cheapest", running: true };
   }
   if (currentHour < range.startHour) {
     const remaining = range.startHour - currentHour;
     return {
-      label: `Empieza en ${remaining} h`,
+      label: t("common.ranges.startsIn", { hours: remaining }),
       color: "primary.main",
     };
   }
-  return { label: "Ya ha pasado", color: "text.secondary" };
+  return { label: t("common.ranges.past"), color: "text.secondary", past: true };
 };

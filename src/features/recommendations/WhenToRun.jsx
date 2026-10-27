@@ -20,6 +20,8 @@ import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import CheckIcon from "@mui/icons-material/Check";
+import EventIcon from "@mui/icons-material/EventAvailableOutlined";
+import ShareIcon from "@mui/icons-material/ShareOutlined";
 import LaundryIcon from "@mui/icons-material/LocalLaundryServiceOutlined";
 import DishwasherIcon from "@mui/icons-material/FlatwareOutlined";
 import DryerIcon from "@mui/icons-material/DryCleaningOutlined";
@@ -29,6 +31,9 @@ import CarIcon from "@mui/icons-material/ElectricCarOutlined";
 
 import { usePowerKw, readStoredPower } from "../../hooks/usePowerKw";
 import { useNow } from "../../hooks/useNow";
+import { useEnergyPrefs } from "../../hooks/useEnergyPrefs";
+import { downloadIcs } from "../../utils/calendar";
+import { shareText } from "../../utils/share";
 import { hourOf } from "../../hooks/usePriceStats";
 import {
   findRanges,
@@ -37,6 +42,8 @@ import {
   savingPercent,
 } from "../prices/cheapRanges";
 import { euroCost, formatEuros, formatPriceWithUnits } from "../prices/priceFormat";
+import { t } from "../../i18n";
+import { formatNumber } from "../../i18n/format";
 
 /**
  * Aparatos típicos de una casa con su duración y potencia habituales. Un
@@ -44,13 +51,18 @@ import { euroCost, formatEuros, formatPriceWithUnits } from "../prices/priceForm
  * Elegir uno rellena horas y potencia, que se pueden afinar después.
  */
 const APPLIANCES = [
-  { id: "washer", label: "Lavadora", hours: 2, kw: 2, Icon: LaundryIcon },
-  { id: "dishwasher", label: "Lavavajillas", hours: 2, kw: 1.5, Icon: DishwasherIcon },
-  { id: "dryer", label: "Secadora", hours: 1, kw: 2.5, Icon: DryerIcon },
-  { id: "oven", label: "Horno", hours: 1, kw: 2, Icon: OvenIcon },
-  { id: "heater", label: "Termo", hours: 3, kw: 1.5, Icon: WaterHeaterIcon },
-  { id: "ev", label: "Coche eléctrico", hours: 4, kw: 7.4, Icon: CarIcon },
-];
+  { id: "washer", hours: 2, kw: 2, Icon: LaundryIcon },
+  { id: "dishwasher", hours: 2, kw: 1.5, Icon: DishwasherIcon },
+  { id: "dryer", hours: 1, kw: 2.5, Icon: DryerIcon },
+  { id: "oven", hours: 1, kw: 2, Icon: OvenIcon },
+  { id: "heater", hours: 3, kw: 1.5, Icon: WaterHeaterIcon },
+  { id: "ev", hours: 4, kw: 7.4, Icon: CarIcon },
+].map((appliance) => ({
+  ...appliance,
+  get label() {
+    return t(`tips.when.appliances.${appliance.id}`);
+  },
+}));
 
 const MAX_HOURS = 12;
 
@@ -100,8 +112,8 @@ function RangeTrack({ total, best, worst, isToday }) {
   const nowPos = ((now.getHours() + now.getMinutes() / 60) / total) * 100;
 
   const label = [
-    `Tu franja, de ${formatRangeLabel(best)}`,
-    worst ? `la más cara, de ${formatRangeLabel(worst)}` : null,
+    t("tips.when.track.yours", { range: formatRangeLabel(best) }),
+    worst ? t("tips.when.track.worst", { range: formatRangeLabel(worst) }) : null,
   ]
     .filter(Boolean)
     .join("; ");
@@ -175,18 +187,18 @@ function RangeTrack({ total, best, worst, isToday }) {
 
       <Stack direction="row" flexWrap="wrap" useFlexGap sx={{ mt: 0.75, columnGap: 2, rowGap: 0.5 }}>
         <LegendItem swatch={<Box sx={{ width: 14, height: 6, borderRadius: 999, bgcolor: "primary.main" }} />}>
-          Tu franja
+          {t("tips.when.track.legendYours")}
         </LegendItem>
         {worst && (
           <LegendItem
             swatch={<Box sx={{ width: 14, height: 6, borderRadius: 999, bgcolor: "price.high", opacity: 0.35 }} />}
           >
-            La más cara
+            {t("tips.when.track.legendWorst")}
           </LegendItem>
         )}
         {isToday && (
           <LegendItem swatch={<Box sx={{ width: 2, height: 12, borderRadius: 1, bgcolor: "text.primary" }} />}>
-            Ahora
+            {t("tips.when.track.legendNow")}
           </LegendItem>
         )}
       </Stack>
@@ -205,7 +217,8 @@ function RangeTrack({ total, best, worst, isToday }) {
  *
  * Los resultados se calculan en vivo: el barrido es de ~24 posiciones.
  */
-export function WhenToRun({ energyCost, units, isToday }) {
+export function WhenToRun({ energyCost, units, isToday, date }) {
+  const { prefs: supplyPrefs } = useEnergyPrefs();
   const [hours, setHours] = useState(3);
   const [onlyFuture, setOnlyFuture] = useState(true);
   const [copied, setCopied] = useState(false);
@@ -264,18 +277,44 @@ export function WhenToRun({ energyCost, units, isToday }) {
   const saving = bestRange ? savingPercent(bestRange, worst) : null;
   const bestCost = bestRange ? euroCost(bestRange.sumPrice, powerKw) : null;
   const worstCost = worst ? euroCost(worst.sumPrice, powerKw) : null;
-  const powerLabel = powerKw.toLocaleString("es-ES");
+  const powerLabel = formatNumber(powerKw);
 
-  const copyBest = () => {
+  const taskName = selectedAppliance ? selectedAppliance.label : t("tips.when.genericAppliance", { kw: powerLabel });
+
+  // Compartir con el menú del sistema (WhatsApp…) o, en escritorio, copiar.
+  const shareBest = async () => {
     if (!bestRange) return;
-    const text = [
-      `Mejor momento (${effectiveHours} h): ${formatRangeLabel(bestRange)}`,
-      `Precio medio: ${formatPriceWithUnits(bestRange.avgPrice, units)}`,
-      `Coste aprox.: ${formatEuros(bestCost)} a ${powerLabel} kW`,
-    ].join("\n");
-    navigator.clipboard?.writeText(text).then(() => {
+    const text = t("tips.when.shareLines", {
+      task: taskName,
+      range: formatRangeLabel(bestRange),
+      hours: effectiveHours,
+      price: formatPriceWithUnits(bestRange.avgPrice, units),
+      cost: formatEuros(bestCost),
+      kw: powerLabel,
+    }).join("\n");
+    const result = await shareText({ title: t("tips.when.shareTitle"), text });
+    if (result === "copied") {
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
+    }
+  };
+
+  // Evento con aviso 10 minutos antes: sustituye a una notificación.
+  const addToCalendar = () => {
+    if (!bestRange) return;
+    const start = new Date(date ?? Date.now());
+    start.setHours(bestRange.startHour, 0, 0, 0);
+    const end = new Date(start);
+    end.setHours(start.getHours() + (bestRange.endHour - bestRange.startHour));
+    downloadIcs(`${taskName} ${formatRangeLabel(bestRange).replace(/\s/g, "")}.ics`, {
+      title: t("tips.when.calendarTitle", { task: taskName }),
+      start,
+      end,
+      description: t("tips.when.calendarBody", {
+        price: formatPriceWithUnits(bestRange.avgPrice, units),
+        cost: formatEuros(bestCost),
+        kw: powerLabel,
+      }),
     });
   };
 
@@ -286,12 +325,11 @@ export function WhenToRun({ energyCost, units, isToday }) {
         <Stack direction="row" spacing={1} alignItems="center">
           <ScheduleIcon fontSize="small" color="primary" aria-hidden="true" />
           <Typography variant="h2" component="h2" id="when-heading">
-            ¿Cuándo lo enciendo?
+            {t("tips.when.title")}
           </Typography>
         </Stack>
         <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25 }}>
-          Elige un aparato, o ajusta las horas y la potencia, y te decimos el
-          momento más barato del día.
+          {t("tips.when.body")}
         </Typography>
 
         <Stack
@@ -301,7 +339,7 @@ export function WhenToRun({ energyCost, units, isToday }) {
           spacing={1}
           sx={{ mt: 2 }}
           role="group"
-          aria-label="Aparato"
+          aria-label={t("tips.when.appliance")}
         >
           {APPLIANCES.map((appliance) => {
             const { Icon } = appliance;
@@ -335,7 +373,7 @@ export function WhenToRun({ energyCost, units, isToday }) {
         >
           <Stack direction="row" spacing={1.5} alignItems="center">
             <Typography variant="body2" color="text.secondary" id="hours-label">
-              Duración
+              {t("tips.when.duration")}
             </Typography>
             <Stack
               direction="row"
@@ -346,7 +384,7 @@ export function WhenToRun({ energyCost, units, isToday }) {
             >
               <IconButton
                 size="small"
-                aria-label="Una hora menos"
+                aria-label={t("tips.when.lessHour")}
                 disabled={effectiveHours <= 1}
                 onClick={() => setHours(Math.max(1, effectiveHours - 1))}
                 sx={{ borderRadius: 2 }}
@@ -362,7 +400,7 @@ export function WhenToRun({ energyCost, units, isToday }) {
               </Typography>
               <IconButton
                 size="small"
-                aria-label="Una hora más"
+                aria-label={t("tips.when.moreHour")}
                 disabled={effectiveHours >= maxHours}
                 onClick={() => setHours(Math.min(maxHours, effectiveHours + 1))}
                 sx={{ borderRadius: 2 }}
@@ -373,12 +411,12 @@ export function WhenToRun({ energyCost, units, isToday }) {
           </Stack>
 
           <TextField
-            label="Potencia"
+            label={t("tips.when.power")}
             size="small"
             value={powerText}
             onChange={handlePowerChange}
             sx={{ width: { xs: "100%", sm: 130 } }}
-            inputProps={{ inputMode: "decimal", "aria-label": "Potencia en kilovatios" }}
+            inputProps={{ inputMode: "decimal", "aria-label": t("tips.when.powerAria") }}
             InputProps={{ endAdornment: <InputAdornment position="end">kW</InputAdornment> }}
           />
 
@@ -390,7 +428,7 @@ export function WhenToRun({ energyCost, units, isToday }) {
                 onChange={(_, checked) => setOnlyFuture(checked)}
               />
             }
-            label={<Typography variant="body2">Solo desde ahora</Typography>}
+            label={<Typography variant="body2">{t("tips.when.onlyFuture")}</Typography>}
             sx={{ mx: 0 }}
           />
         </Stack>
@@ -409,7 +447,7 @@ export function WhenToRun({ energyCost, units, isToday }) {
           >
             <Box sx={{ minWidth: 0 }}>
               <Typography variant="subtitle2" color="text.secondary">
-                Mejor momento
+                {t("tips.when.best")}
               </Typography>
               <Typography
                 className="tabular"
@@ -419,7 +457,7 @@ export function WhenToRun({ energyCost, units, isToday }) {
               </Typography>
               <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap sx={{ mt: 0.5 }}>
                 <Typography variant="body2" color="text.secondary" className="tabular">
-                  {formatPriceWithUnits(bestRange.avgPrice, units)} de media
+                  {t("tips.when.average", { price: formatPriceWithUnits(bestRange.avgPrice, units) })}
                 </Typography>
                 {status && (
                   <Chip
@@ -451,31 +489,31 @@ export function WhenToRun({ energyCost, units, isToday }) {
                 }}
               >
                 <Stat
-                  label="Coste"
+                  label={t("tips.when.cost")}
                   value={`≈ ${formatEuros(bestCost)}`}
-                  context={`${effectiveHours} h a ${powerLabel} kW`}
+                  context={t("tips.when.costContext", { hours: effectiveHours, kw: powerLabel })}
                 />
                 {saving != null ? (
                   <Stat
-                    label="Ahorro"
+                    label={t("tips.when.saving")}
                     value={`${Math.round(saving)} %`}
                     color="price.cheapest"
                     // El porcentaje solo exagera con mínimos muy bajos: va
                     // siempre con el importe del peor tramo.
-                    context={`frente a ${formatRangeLabel(worst)} (${formatEuros(worstCost)})`}
+                    context={t("tips.when.savingContext", { range: formatRangeLabel(worst), cost: formatEuros(worstCost) })}
                   />
                 ) : (
                   <Box />
                 )}
               </Box>
               <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 1 }}>
-                Término de energía PVPC, sin impuestos ni término de potencia.
+                {supplyPrefs.withTaxes ? t("tips.when.noteTaxes") : t("tips.when.noteNoTaxes")}
               </Typography>
 
               {alternatives.length > 0 && (
                 <Box sx={{ mt: 2 }}>
                   <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 0.5 }}>
-                    Otras opciones
+                    {t("tips.when.others")}
                   </Typography>
                   <Stack divider={<Divider flexItem />}>
                     {alternatives.map((range) => (
@@ -499,20 +537,30 @@ export function WhenToRun({ energyCost, units, isToday }) {
                 </Box>
               )}
 
-              <Button
-                size="small"
-                onClick={copyBest}
-                startIcon={copied ? <CheckIcon /> : <ContentCopyIcon />}
-                sx={{ mt: 1, ml: -0.5 }}
-              >
-                {copied ? "Copiado" : "Copiar resultado"}
-              </Button>
+              <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ mt: 1, ml: -0.5 }}>
+                {/* Solo si la franja aún no ha pasado: un aviso para algo pasado no sirve. */}
+                {(!isToday || bestRange.endHour > currentHour) && (
+                  <Button size="small" onClick={addToCalendar} startIcon={<EventIcon />}>
+                    {t("tips.when.calendar")}
+                  </Button>
+                )}
+                <Button
+                  size="small"
+                  onClick={shareBest}
+                  startIcon={copied ? <CheckIcon /> : navigator.share ? <ShareIcon /> : <ContentCopyIcon />}
+                >
+                  {copied
+                    ? t("common.actions.copied")
+                    : navigator.share
+                      ? t("common.actions.share")
+                      : t("common.actions.copy")}
+                </Button>
+              </Stack>
             </Box>
           </Box>
         ) : (
           <Typography variant="body2" color="text.secondary">
-            No quedan tramos de {effectiveHours} h disponibles hoy. Desactiva «Solo
-            desde ahora» para ver los del día completo.
+            {t("tips.when.none", { hours: effectiveHours })}
           </Typography>
         )}
       </CardContent>

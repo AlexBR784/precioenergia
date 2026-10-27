@@ -1,20 +1,26 @@
 /* eslint-disable react/prop-types */
-import { useMemo } from "react";
-import { Box, Card, CardContent, Stack, Typography } from "@mui/material";
+import { useMemo, useState } from "react";
+import { Alert, Box, Button, Card, CardContent, CircularProgress, Stack, Typography } from "@mui/material";
 import { alpha, keyframes } from "@mui/material/styles";
 import TrendingDownIcon from "@mui/icons-material/TrendingDown";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import TrendingFlatIcon from "@mui/icons-material/TrendingFlat";
+import CalendarIcon from "@mui/icons-material/CalendarViewWeekOutlined";
+import LuggageIcon from "@mui/icons-material/LuggageOutlined";
 
-import { useFuelTrend } from "../../hooks/useFuelTrend";
+import { fetchFuelDays, useFuelTrend } from "../../hooks/useFuelTrend";
+import { upcomingTravelPeak } from "../../utils/holidays";
 import { formatEuros } from "../prices/priceFormat";
-import { summarizeTrend } from "./fuelData";
+import { cheapestWeekday, summarizeTrend } from "./fuelData";
 import { formatLiterPrice, LITER_UNITS } from "./fuelFormat";
+import { t } from "../../i18n";
+import { formatDate, formatNumber } from "../../i18n/format";
+import { rich } from "../../i18n/rich";
 
 const VERDICTS = {
-  down: { title: "Bajando: si no tienes prisa, espera unos días", color: "price.cheapest", Icon: TrendingDownIcon },
-  up: { title: "Subiendo: mejor llena ahora", color: "price.high", Icon: TrendingUpIcon },
-  flat: { title: "Estable: llena cuando te venga bien", color: "text.secondary", Icon: TrendingFlatIcon },
+  down: { color: "price.cheapest", Icon: TrendingDownIcon },
+  up: { color: "price.high", Icon: TrendingUpIcon },
+  flat: { color: "text.secondary", Icon: TrendingFlatIcon },
 };
 
 /** La línea se descubre de izquierda a derecha, una sola vez. */
@@ -23,19 +29,20 @@ const reveal = keyframes`
   to   { clip-path: inset(0 0 0 0); }
 `;
 
-const shortDate = (date) => new Intl.DateTimeFormat("es-ES", { day: "numeric", month: "short" }).format(date);
+const shortDate = (date) => formatDate(date, { day: "numeric", month: "short" });
 
-const cents = (euros) =>
-  `${Math.abs(euros * 100).toLocaleString("es-ES", { maximumFractionDigits: 1 })} céntimos`;
+const cents = (euros) => formatNumber(Math.abs(euros * 100), { maximumFractionDigits: 1 });
 
-/** "1,529 €/L, 2,1 céntimos menos que hace dos semanas (50 L: 1,05 € menos)". */
+/** "2,1 céntimos menos por litro que hace dos semanas (1,05 € menos al llenar 50 L)". */
 const comparison = (trend, liters) => {
   const { change } = trend;
-  if (Math.abs(change) < 0.001) return "casi igual que hace dos semanas";
-  const word = change < 0 ? "menos" : "más";
-  return `${cents(change)} ${word} por litro que hace dos semanas (${formatEuros(
-    Math.abs(change) * liters
-  )} ${word} al llenar ${liters.toLocaleString("es-ES")} L)`;
+  if (Math.abs(change) < 0.001) return t("fuel.trend.almostSame");
+  return t("fuel.trend.change", {
+    cents: cents(change),
+    cheaper: change < 0,
+    amount: formatEuros(Math.abs(change) * liters),
+    liters: formatNumber(liters),
+  });
 };
 
 /**
@@ -62,9 +69,12 @@ function Sparkline({ trend, color }) {
   return (
     <Box
       role="img"
-      aria-label={`Precio medio de ${formatLiterPrice(points[0].average)} ${LITER_UNITS} el ${shortDate(
-        points[0].date
-      )} a ${formatLiterPrice(trend.last.average)} ${LITER_UNITS} hoy.`}
+      aria-label={t("fuel.trend.sparkAria", {
+        from: formatLiterPrice(points[0].average),
+        to: formatLiterPrice(trend.last.average),
+        units: LITER_UNITS,
+        date: shortDate(points[0].date),
+      })}
       sx={{ width: "100%" }}
     >
       <Box
@@ -118,9 +128,116 @@ function Sparkline({ trend, color }) {
           {shortDate(points[0].date)} · {formatLiterPrice(points[0].average)}
         </Typography>
         <Typography variant="caption" className="tabular" sx={{ fontWeight: 700 }}>
-          Hoy · {formatLiterPrice(trend.last.average)}
+          {t("fuel.trend.today", { price: formatLiterPrice(trend.last.average) })}
         </Typography>
       </Stack>
+    </Box>
+  );
+}
+
+const WEEK_ORDER = [1, 2, 3, 4, 5, 6, 0];
+// Inicial del día en el idioma activo ("L", "M"… en castellano usa "X" para el miércoles).
+const shortDay = (day) => t(`fuel.trend.shortDays.${day}`);
+const centsText = (euros) => formatNumber(Math.abs(euros * 100), { maximumFractionDigits: 1 });
+
+/**
+ * "¿Qué día de la semana sale más barato?": en España se repite que los lunes,
+ * pero varía por provincia. Se comprueba con las cuatro últimas semanas del
+ * histórico, bajo demanda (son 28 peticiones pequeñas).
+ */
+function WeekdayInsight({ provinceId, productId, provinceLabel }) {
+  const [state, setState] = useState({ loading: false, result: undefined });
+
+  const analyze = async () => {
+    setState({ loading: true, result: undefined });
+    try {
+      const points = await fetchFuelDays(provinceId, productId, 28);
+      setState({ loading: false, result: cheapestWeekday(points) });
+    } catch {
+      setState({ loading: false, result: null });
+    }
+  };
+
+  if (state.result === undefined) {
+    return (
+      <Button
+        size="small"
+        startIcon={state.loading ? <CircularProgress size={14} color="inherit" /> : <CalendarIcon />}
+        onClick={analyze}
+        disabled={state.loading || !provinceId}
+        sx={{ ml: -0.5 }}
+      >
+        {state.loading ? t("fuel.trend.weekdayLoading") : t("fuel.trend.weekdayButton")}
+      </Button>
+    );
+  }
+
+  if (!state.result) {
+    return (
+      <Typography variant="body2" color="text.secondary">
+        {t("fuel.trend.weekdayNoData")}
+      </Typography>
+    );
+  }
+
+  const { byDay, cheapest, priciest, spread } = state.result;
+  const max = Math.max(...byDay.map((entry) => Math.abs(entry.delta)), 0.0005);
+
+  return (
+    <Box>
+      <Typography variant="body2">
+        {spread < 0.003
+          ? t("fuel.trend.weekdayFlat", { province: provinceLabel })
+          : rich(
+              t("fuel.trend.weekdayResult", {
+                province: provinceLabel,
+                cheapest: <strong>{cheapest.name}</strong>,
+                cents: centsText(cheapest.delta),
+                priciest: <strong>{priciest.name}</strong>,
+              })
+            )}
+      </Typography>
+      <Stack
+        direction="row"
+        spacing={0.75}
+        alignItems="center"
+        role="img"
+        aria-label={byDay
+          .map((entry) => t("fuel.trend.weekdayAria", { day: entry.name, cheaper: entry.delta < 0, cents: centsText(entry.delta) }))
+          .join(", ")}
+        sx={{ mt: 1.25 }}
+      >
+        {WEEK_ORDER.map((day) => {
+          const entry = byDay.find((item) => item.day === day);
+          const bar = (
+            <Box
+              sx={{
+                height: 2 + (Math.abs(entry.delta) / max) * 22,
+                width: "100%",
+                borderRadius: "3px",
+                bgcolor: day === cheapest.day ? "price.cheapest" : day === priciest.day ? "price.high" : "text.disabled",
+              }}
+            />
+          );
+          return (
+            <Stack key={day} alignItems="center" spacing={0.5} sx={{ flex: 1, maxWidth: 40 }} aria-hidden="true">
+              {/* Barras que salen de una línea central: arriba, más caro; abajo, más barato. */}
+              <Box sx={{ height: 52, width: "100%", display: "grid", gridTemplateRows: "1fr 1fr" }}>
+                <Box sx={{ display: "flex", alignItems: "flex-end" }}>{entry.delta > 0 && bar}</Box>
+                <Box sx={{ display: "flex", alignItems: "flex-start", borderTop: 1, borderColor: "divider" }}>
+                  {entry.delta < 0 && bar}
+                </Box>
+              </Box>
+              <Typography variant="caption" color="text.secondary">
+                {shortDay(day)}
+              </Typography>
+            </Stack>
+          );
+        })}
+      </Stack>
+      <Typography variant="caption" color="text.secondary" component="p" sx={{ mt: 0.75 }}>
+        {t("fuel.trend.weekdayLegend")}
+      </Typography>
     </Box>
   );
 }
@@ -146,6 +263,7 @@ export function FuelTrend({ provinceId, provinceLabel, productId, todayAverage, 
 
   if (!trend) return null;
 
+  const peak = upcomingTravelPeak();
   const verdict = VERDICTS[trend.direction];
   const { Icon } = verdict;
 
@@ -161,18 +279,24 @@ export function FuelTrend({ provinceId, provinceLabel, productId, todayAverage, 
             <Stack direction="row" spacing={0.75} alignItems="center" sx={{ color: verdict.color }}>
               <Icon sx={{ fontSize: 18 }} aria-hidden="true" />
               <Typography variant="subtitle2" sx={{ color: "inherit" }}>
-                ¿Lleno ahora o espero?
+                {t("fuel.trend.kicker")}
               </Typography>
             </Stack>
             <Typography variant="h2" component="h2" id="fuel-trend-heading" sx={{ mt: 0.75 }}>
-              {verdict.title}
+              {t(`fuel.trend.${trend.direction}`)}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-              La media en {provinceLabel} está hoy a{" "}
-              <Box component="span" className="tabular" sx={{ color: "text.primary", fontWeight: 600 }}>
-                {formatLiterPrice(trend.last.average)} {LITER_UNITS}
-              </Box>
-              , {comparison(trend, liters)}.
+              {rich(
+                t("fuel.trend.average", {
+                  province: provinceLabel,
+                  price: (
+                    <Box component="span" className="tabular" sx={{ color: "text.primary", fontWeight: 600 }}>
+                      {formatLiterPrice(trend.last.average)} {LITER_UNITS}
+                    </Box>
+                  ),
+                  comparison: comparison(trend, liters),
+                })
+              )}
             </Typography>
           </Box>
 
@@ -181,9 +305,18 @@ export function FuelTrend({ provinceId, provinceLabel, productId, todayAverage, 
           </Box>
         </Stack>
 
+        {peak && (
+          <Alert severity="info" icon={<LuggageIcon fontSize="inherit" />} sx={{ mt: 2 }}>
+            {t("fuel.trend.peak", { date: formatDate(peak.date, { weekday: "long", day: "numeric" }), name: peak.name })}
+          </Alert>
+        )}
+
+        <Box sx={{ mt: 2 }}>
+          <WeekdayInsight provinceId={provinceId} productId={productId} provinceLabel={provinceLabel} />
+        </Box>
+
         <Typography variant="caption" color="text.secondary" component="p" sx={{ mt: 1.5 }}>
-          Media de las gasolineras de {provinceLabel} en los últimos 14 días. Es la tendencia
-          reciente, no una predicción.
+          {t("fuel.trend.note", { province: provinceLabel })}
         </Typography>
       </CardContent>
     </Card>

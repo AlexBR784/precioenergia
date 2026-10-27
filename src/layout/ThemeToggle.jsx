@@ -11,11 +11,12 @@ import LightModeIcon from "@mui/icons-material/LightModeOutlined";
 import DarkModeIcon from "@mui/icons-material/DarkModeOutlined";
 import SettingsBrightnessIcon from "@mui/icons-material/SettingsBrightness";
 import { useColorMode } from "../theme/colorMode";
+import { t } from "../i18n";
 
 const OPTIONS = [
-  { value: "light", label: "Claro", Icon: LightModeIcon },
-  { value: "dark", label: "Oscuro", Icon: DarkModeIcon },
-  { value: "system", label: "Según el sistema", Icon: SettingsBrightnessIcon },
+  { value: "light", Icon: LightModeIcon },
+  { value: "dark", Icon: DarkModeIcon },
+  { value: "system", Icon: SettingsBrightnessIcon },
 ];
 
 /** Selector de tema claro / oscuro / sistema. */
@@ -24,16 +25,17 @@ export function ThemeToggle() {
   const [anchorEl, setAnchorEl] = useState(null);
 
   const current = OPTIONS.find((o) => o.value === preference) ?? OPTIONS[2];
+  const currentLabel = t(`layout.theme.${current.value}`);
   // El icono refleja el modo aplicado, no la preferencia: con "sistema"
   // muestra el sol o la luna según lo que se esté viendo realmente.
   const CurrentIcon = mode === "dark" ? DarkModeIcon : LightModeIcon;
 
   return (
     <>
-      <Tooltip title={`Tema: ${current.label}`}>
+      <Tooltip title={t("layout.theme.tooltip", { name: currentLabel })}>
         <IconButton
           onClick={(event) => setAnchorEl(event.currentTarget)}
-          aria-label={`Cambiar tema. Actual: ${current.label}`}
+          aria-label={t("layout.theme.button", { name: currentLabel })}
           aria-haspopup="menu"
           aria-expanded={Boolean(anchorEl)}
           size="small"
@@ -50,7 +52,7 @@ export function ThemeToggle() {
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
         transformOrigin={{ vertical: "top", horizontal: "right" }}
       >
-        {OPTIONS.map(({ value, label, Icon }) => (
+        {OPTIONS.map(({ value, Icon }) => (
           <MenuItem
             key={value}
             selected={value === preference}
@@ -62,7 +64,7 @@ export function ThemeToggle() {
             <ListItemIcon>
               <Icon fontSize="small" />
             </ListItemIcon>
-            <ListItemText>{label}</ListItemText>
+            <ListItemText>{t(`layout.theme.${value}`)}</ListItemText>
           </MenuItem>
         ))}
       </Menu>

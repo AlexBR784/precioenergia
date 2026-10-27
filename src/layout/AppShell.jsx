@@ -2,6 +2,7 @@
 import { Box, Container } from "@mui/material";
 import AppHeader from "./AppHeader";
 import AppFooter from "./AppFooter";
+import { t } from "../i18n";
 
 /**
  * Estructura semántica de la página: enlace de salto, <header>, <main> y <footer>,
@@ -19,7 +20,7 @@ export function AppShell({ activeTab, onTabChange, children }) {
         className="skip-link"
         sx={{ bgcolor: "primary.main", color: "primary.contrastText" }}
       >
-        Saltar al contenido
+        {t("layout.skipLink")}
       </Box>
 
       <AppHeader activeTab={activeTab} onTabChange={onTabChange} />

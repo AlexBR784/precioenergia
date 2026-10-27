@@ -1,0 +1,148 @@
+/** Pestaña Carburantes. */
+export default {
+  loading: "Cargando gasolineras",
+  fuels: {
+    g95: "Gasolina 95",
+    diesel: "Gasóleo A",
+    glp: "GLP",
+    g98: "Gasolina 98",
+    g95Premium: "Gasolina 95 Premium",
+    dieselPremium: "Gasóleo Premium",
+  },
+  independent: "Independiente",
+  nearYou: "cerca de ti",
+  inPlace: "en {place}",
+
+  tab: {
+    pickTitle: "Elige dónde quieres repostar",
+    pickNearby: "Para buscar gasolineras cerca de ti necesitamos tu ubicación. Si prefieres no compartirla, elige tu provincia.",
+    pickArea: "Selecciona tu provincia (y tu municipio si quieres afinar) o pulsa «Cerca de mí».",
+    useLocation: "Usar mi ubicación",
+    errorTitle: "No se han podido cargar las gasolineras",
+    errorBody: "El servicio del Ministerio no ha respondido a tiempo. Suele ser algo puntual.",
+    emptyTitle: "No encontramos {fuel} {scope}",
+    emptyNearby: "Prueba a ampliar el radio de búsqueda, quitar filtros o elegir otro combustible.",
+    emptyArea: "Prueba a quitar filtros, elegir toda la provincia u otro combustible.",
+    source: ({ updated }) =>
+      `Precios comunicados por cada gasolinera al Ministerio para la Transición Ecológica y el Reto Demográfico${
+        updated ? ` (actualizados el ${updated})` : ""
+      }. Pueden haber cambiado desde entonces: confírmalos en el surtidor.`,
+  },
+
+  filters: {
+    label: "Filtros de carburantes",
+    fuel: "Combustible",
+    otherFuel: "Otro combustible",
+    zoneMode: "Cómo elegir la zona",
+    byArea: "Por zona",
+    nearMe: "Cerca de mí",
+    radius: "Radio de búsqueda",
+    locating: "Obteniendo tu ubicación…",
+    locationPrivacy: "Tu ubicación solo se usa en tu navegador, no se envía ni se guarda.",
+    province: "Provincia",
+    municipality: "Municipio",
+    wholeProvince: "Toda la provincia",
+    brand: "Marca",
+    allBrands: "Todas",
+    liters: "Para llenar",
+    sortBy: "Ordenar por",
+    sortPrice: "Precio",
+    sortDistance: "Distancia",
+    onlyOpen: "Solo abiertas ahora",
+    litersHelp: "Los litros se usan para calcular cuánto cuesta llenar el depósito.",
+    geo: {
+      denied: "No tenemos permiso para usar tu ubicación. Puedes activarlo en los ajustes del navegador o elegir tu provincia a mano.",
+      unavailable: "Este navegador no permite obtener tu ubicación. Elige tu provincia a mano.",
+      error: "No hemos podido obtener tu ubicación. Prueba de nuevo o elige tu provincia a mano.",
+    },
+    discount: "Mi descuento",
+    discountAmount: "Descuento",
+    discountUnit: "cént./L",
+    discountActive: "Precios de {brand} con tu descuento.",
+    discountHint: "Si tienes tarjeta o app de una marca.",
+  },
+
+  hero: {
+    meta: ({ fuel, scope, count }) => `${fuel} · ${scope} · ${count} gasolineras`,
+    cheapest: ({ brand, price }) => ["La más barata es ", brand, ", a ", price],
+    distance: "a {distance}",
+    fill: "Llenar {liters} L allí",
+    saving: "{amount} menos que la media",
+    spreadAria: "{count} gasolineras entre {min} y {max} {units}; media de {average}.",
+    cheapestLabel: "Más barata",
+    averageLabel: "Media",
+    priciestLabel: "Más cara",
+  },
+
+  list: {
+    title: "Las más baratas",
+    count: "{shown} de {total}",
+    open: "Abierta",
+    closed: "Cerrada",
+    cheapest: "La más barata",
+    discounted: "Con tu descuento (surtidor {price})",
+    directions: "Cómo llegar",
+    directionsAria: "Cómo llegar a {brand}, {address}, {locality}",
+    save: "Guardar {brand} en tus gasolineras",
+    unsave: "Quitar {brand} de tus gasolineras",
+    more: "Ver {count} más",
+  },
+
+  mine: {
+    title: "Tus gasolineras",
+    atAverage: "En la media de la zona",
+    vsAverage: ({ cents, below }) => `${cents} cént. ${below ? "por debajo" : "por encima"} de la media`,
+    extra: " · llenar {liters} L aquí cuesta {amount} más que en la más barata",
+    isCheapest: " · es la más barata",
+    hidden: ({ count }) =>
+      `${count === 1 ? "Tienes 1 gasolinera guardada" : `Tienes ${count} gasolineras guardadas`} fuera de esta zona, sin este combustible o fuera de los filtros.`,
+  },
+
+  trend: {
+    kicker: "¿Lleno ahora o espero?",
+    down: "Bajando: si no tienes prisa, espera unos días",
+    up: "Subiendo: mejor llena ahora",
+    flat: "Estable: llena cuando te venga bien",
+    average: ({ province, price, comparison }) => [`La media en ${province} está hoy a `, price, `, ${comparison}.`],
+    almostSame: "casi igual que hace dos semanas",
+    change: ({ cents, cheaper, amount, liters }) =>
+      `${cents} céntimos ${cheaper ? "menos" : "más"} por litro que hace dos semanas (${amount} ${
+        cheaper ? "menos" : "más"
+      } al llenar ${liters} L)`,
+    sparkAria: "Precio medio de {from} {units} el {date} a {to} {units} hoy.",
+    today: "Hoy · {price}",
+    peak: ({ date, name }) =>
+      `El ${date} es ${name}. Antes de puentes y vacaciones los precios suelen subir: si vas a viajar, no esperes al último día.`,
+    note: "Media de las gasolineras de {province} en los últimos 14 días. Es la tendencia reciente, no una predicción.",
+    weekdayButton: "¿Qué día de la semana sale más barato?",
+    weekdayLoading: "Mirando las últimas 4 semanas…",
+    weekdayNoData: "No hay datos suficientes para comparar los días de la semana.",
+    weekdayFlat: "En {province} apenas cambia según el día: llena cuando te venga bien.",
+    weekdayResult: ({ province, cheapest, cents, priciest }) => [
+      `En ${province}, el día más barato suele ser el `,
+      cheapest,
+      ` (${cents} cént. menos que la media de su semana) y el más caro, el `,
+      priciest,
+      ".",
+    ],
+    weekdayAria: ({ day, cheaper, cents }) => `${day}: ${cheaper ? "menos" : "más"} ${cents} cént.`,
+    weekdayLegend: "Arriba, más caro que la media de su semana; abajo, más barato. Con solo cuatro semanas, tómalo como pista.",
+    shortDays: { 0: "D", 1: "L", 2: "M", 3: "X", 4: "J", 5: "V", 6: "S" },
+  },
+
+  trip: {
+    title: "¿Cuánto me cuesta el viaje?",
+    km: "Kilómetros",
+    consumption: "Consumo (L/100 km)",
+    consumptionHelp: "En la ficha del coche. Típico: 5–7.",
+    cheapest: "En la más barata",
+    litersOf: "{liters} L de {fuel}",
+    average: "A precio medio",
+    ofArea: "de la zona",
+    electric: "En eléctrico",
+    charging: "cargando en casa ({range})",
+    chargingNoTaxes: "cargando en casa ({range}), sin impuestos",
+    evNote:
+      "Eléctrico medio de {kwh100} kWh/100 km ({kwh} kWh para este viaje) con el PVPC del día que estás viendo en Precios, en sus {hours} horas más baratas. Cargar en un punto público cuesta bastante más. Ahorro frente a la más barata: {saving}.",
+  },
+};

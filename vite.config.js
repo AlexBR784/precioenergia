@@ -14,7 +14,10 @@ import react from '@vitejs/plugin-react'
  * - connect-src: solo las dos APIs que usa la app (luz de REE y carburantes
  *   del Ministerio). Si algún día se colara un script, no podría
  *   mandar datos a ningún otro sitio.
- * - img-src data: y blob:: iconos embebidos y la descarga del CSV.
+ * - img-src data: y blob:: iconos embebidos, el favicon con el precio y la
+ *   descarga del CSV.
+ * - worker-src 'self': el service worker (sw.js) que deja instalar la app y
+ *   abrirla sin conexión.
  * frame-ancestors no funciona en <meta>; el clickjacking no se puede cerrar
  * desde GitHub Pages, aunque aquí no hay acciones sensibles.
  */
@@ -26,6 +29,7 @@ const CSP = [
   "font-src 'self'",
   "connect-src 'self' https://apidatos.ree.es https://sedeaplicaciones.minetur.gob.es",
   "manifest-src 'self'",
+  "worker-src 'self'",
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'none'",

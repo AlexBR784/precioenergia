@@ -19,7 +19,16 @@ export const DEFAULT_PREFS = {
   fuel: DEFAULT_FUEL,
   liters: 50,
   radiusKm: 10,
+  // Gasolineras marcadas con la estrella (ids del Ministerio).
+  favorites: [],
+  // Descuento de fidelización: { brand: "Repsol", cents: 5 } o null.
+  discount: null,
+  // Consumo del coche (L/100 km) y kilómetros del viaje, para "¿cuánto me cuesta?".
+  consumption: 6.5,
+  tripKm: 100,
 };
+
+const MAX_FAVORITES = 20;
 
 const sanitize = (raw) => {
   const prefs = { ...DEFAULT_PREFS };
@@ -33,6 +42,23 @@ const sanitize = (raw) => {
     prefs.liters = raw.liters;
   }
   if (RADIUS_OPTIONS.includes(raw.radiusKm)) prefs.radiusKm = raw.radiusKm;
+  if (Array.isArray(raw.favorites)) {
+    prefs.favorites = [...new Set(raw.favorites.filter((id) => typeof id === "string"))].slice(0, MAX_FAVORITES);
+  }
+  if (
+    raw.discount &&
+    typeof raw.discount.brand === "string" &&
+    raw.discount.brand.trim() &&
+    Number.isFinite(raw.discount.cents) &&
+    raw.discount.cents > 0 &&
+    raw.discount.cents <= 50
+  ) {
+    prefs.discount = { brand: raw.discount.brand.trim(), cents: raw.discount.cents };
+  }
+  if (Number.isFinite(raw.consumption) && raw.consumption > 0 && raw.consumption <= 40) {
+    prefs.consumption = raw.consumption;
+  }
+  if (Number.isFinite(raw.tripKm) && raw.tripKm > 0 && raw.tripKm <= 5000) prefs.tripKm = raw.tripKm;
   return prefs;
 };
 

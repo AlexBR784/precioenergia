@@ -1,9 +1,10 @@
 import { Box, Card, CardContent, Skeleton, Stack } from "@mui/material";
+import { t } from "../../i18n";
 
 /** Mismo esqueleto que el contenido real, para que el layout no salte. */
 export function RecommendationsSkeleton() {
   return (
-    <Stack spacing={3} aria-busy="true" aria-label="Cargando consejos">
+    <Stack spacing={3} aria-busy="true" aria-label={t("tips.loading")}>
       <Skeleton variant="rounded" width={170} height={40} />
 
       <Card>

@@ -2,6 +2,10 @@
 import { Box, Card, CardContent, Stack, Typography } from "@mui/material";
 import ShowChartIcon from "@mui/icons-material/ShowChart";
 import HourlyPriceChart from "../../components/HourlyPriceChart";
+import PeriodStrip from "../../components/PeriodStrip";
+import { useEnergyPrefs } from "../../hooks/useEnergyPrefs";
+import { t } from "../../i18n";
+import { useNow } from "../../hooks/useNow";
 
 function LegendItem({ swatch, children }) {
   return (
@@ -15,19 +19,20 @@ function LegendItem({ swatch, children }) {
 }
 
 /** Tarjeta del gráfico de precio por hora, con su leyenda. */
-export function PriceChartCard({ data, units, isToday }) {
+export function PriceChartCard({ data, units, isToday, date }) {
+  const { region } = useEnergyPrefs();
+  const now = useNow();
   return (
     <Card component="section" aria-labelledby="chart-heading">
       <CardContent>
         <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 0.5 }}>
           <ShowChartIcon fontSize="small" color="primary" aria-hidden="true" />
           <Typography variant="h2" component="h2" id="chart-heading">
-            Precio por hora
+            {t("prices.chart.title")}
           </Typography>
         </Stack>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-          El precio de cada hora. El color va de frío (barato) a caliente (caro).
-          Pasa el ratón o toca la gráfica para ver el precio de una hora.
+          {t("prices.chart.body")}
         </Typography>
 
         <HourlyPriceChart data={data} units={units} isToday={isToday} />
@@ -54,7 +59,7 @@ export function PriceChartCard({ data, units, isToday }) {
               />
             }
           >
-            De más barato a más caro
+            {t("prices.chart.legendGradient")}
           </LegendItem>
           <LegendItem
             swatch={
@@ -64,7 +69,7 @@ export function PriceChartCard({ data, units, isToday }) {
               />
             }
           >
-            Media del día
+            {t("prices.chart.legendAverage")}
           </LegendItem>
           {isToday && (
             <LegendItem
@@ -75,10 +80,16 @@ export function PriceChartCard({ data, units, isToday }) {
                 />
               }
             >
-              Hora actual
+              {t("prices.chart.legendNow")}
             </LegendItem>
           )}
         </Stack>
+
+        {/* Los tramos 2.0TD explican por qué la tarde es cara y, con precio por
+            tramos, son lo único que decide la factura. */}
+        <Box sx={{ mt: 2.5, pt: 2, borderTop: 1, borderColor: "divider" }}>
+          <PeriodStrip date={date} region={region} nowHour={isToday ? now.getHours() : null} />
+        </Box>
       </CardContent>
     </Card>
   );

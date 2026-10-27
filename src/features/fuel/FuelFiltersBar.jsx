@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import {
   Alert,
+  Autocomplete,
   Box,
   Card,
   CardContent,
@@ -17,17 +18,73 @@ import {
 } from "@mui/material";
 import MyLocationIcon from "@mui/icons-material/MyLocationOutlined";
 import MapIcon from "@mui/icons-material/MapOutlined";
+import LoyaltyIcon from "@mui/icons-material/LoyaltyOutlined";
+
+import NumberField from "../../components/NumberField";
 
 import { FUELS, MAIN_FUELS, OTHER_FUELS, SORTS } from "./fuelData";
 import { PROVINCES_SORTED } from "./provinces";
 import { MODES, RADIUS_OPTIONS } from "../../hooks/useFuelPrefs";
+import { t } from "../../i18n";
 
-const GEO_MESSAGES = {
-  denied:
-    "No tenemos permiso para usar tu ubicación. Puedes activarlo en los ajustes del navegador o elegir tu provincia a mano.",
-  unavailable: "Este navegador no permite obtener tu ubicación. Elige tu provincia a mano.",
-  error: "No hemos podido obtener tu ubicación. Prueba de nuevo o elige tu provincia a mano.",
-};
+const GEO_MESSAGES = ["denied", "unavailable", "error"];
+
+/** Marcas con tarjeta o app de descuento más habituales en España. */
+const DISCOUNT_BRANDS = ["Repsol", "Moeve", "BP", "Galp", "Shell", "Avia", "Carrefour", "Alcampo", "Eroski", "Ballenoil", "Plenoil", "Petroprix"];
+
+/**
+ * "Mi descuento": los céntimos por litro de la tarjeta o app de una marca. Los
+ * datos del Ministerio son los del surtidor y no los incluyen; con esto el
+ * ranking se ordena por lo que de verdad pagaría el usuario.
+ */
+function DiscountField({ discount, brands, onChange }) {
+  const [brand, setBrand] = useState(discount?.brand ?? "");
+  const [cents, setCents] = useState(discount?.cents ?? null);
+  const options = [...new Set([...DISCOUNT_BRANDS, ...brands])].sort((a, b) => a.localeCompare(b, "es"));
+
+  const commit = (nextBrand, nextCents) => {
+    const name = nextBrand.trim();
+    onChange(name && nextCents > 0 ? { brand: name, cents: nextCents } : null);
+  };
+
+  return (
+    <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5} alignItems={{ xs: "stretch", sm: "center" }}>
+      <Stack direction="row" spacing={0.75} alignItems="center" sx={{ color: "text.secondary", minWidth: { sm: 130 } }}>
+        <LoyaltyIcon fontSize="small" aria-hidden="true" />
+        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+          {t("fuel.filters.discount")}
+        </Typography>
+      </Stack>
+      <Autocomplete
+        freeSolo
+        size="small"
+        options={options}
+        value={brand}
+        onInputChange={(_, value) => {
+          setBrand(value);
+          commit(value, cents);
+        }}
+        renderInput={(params) => <TextField {...params} label={t("fuel.filters.brand")} />}
+        sx={{ minWidth: { sm: 200 } }}
+      />
+      <NumberField
+        size="small"
+        label={t("fuel.filters.discountAmount")}
+        unit={t("fuel.filters.discountUnit")}
+        value={cents}
+        max={50}
+        onChange={(value) => {
+          setCents(value);
+          commit(brand, value);
+        }}
+        sx={{ maxWidth: { sm: 160 } }}
+      />
+      <Typography variant="caption" color="text.secondary">
+        {discount ? t("fuel.filters.discountActive", { brand: discount.brand }) : t("fuel.filters.discountHint")}
+      </Typography>
+    </Stack>
+  );
+}
 
 /**
  * Todos los controles de la pestaña. Combustible y zona van arriba porque
@@ -65,10 +122,10 @@ export function FuelFiltersBar({
     }
   };
 
-  const geoMessage = GEO_MESSAGES[geoStatus];
+  const geoMessage = GEO_MESSAGES.includes(geoStatus) ? t(`fuel.filters.geo.${geoStatus}`) : null;
 
   return (
-    <Card component="section" aria-label="Filtros de carburantes">
+    <Card component="section" aria-label={t("fuel.filters.label")}>
       <CardContent>
         <Stack spacing={2}>
           {/* Combustible */}
@@ -82,7 +139,7 @@ export function FuelFiltersBar({
               fullWidth
               size="small"
               color="primary"
-              aria-label="Combustible"
+              aria-label={t("fuel.filters.fuel")}
               value={MAIN_FUELS.includes(prefs.fuel) ? prefs.fuel : null}
               onChange={(_, value) => value && onPrefsChange({ fuel: value })}
               sx={{ flexGrow: 1, "& .MuiToggleButton-root": { minHeight: 44 } }}
@@ -97,7 +154,7 @@ export function FuelFiltersBar({
             <TextField
               select
               size="small"
-              label="Otro combustible"
+              label={t("fuel.filters.otherFuel")}
               value={extraFuelSelected}
               onChange={(event) => onPrefsChange({ fuel: event.target.value })}
               sx={{ minWidth: { sm: 210 } }}
@@ -116,7 +173,7 @@ export function FuelFiltersBar({
               exclusive
               size="small"
               color="primary"
-              aria-label="Cómo elegir la zona"
+              aria-label={t("fuel.filters.zoneMode")}
               value={prefs.mode}
               onChange={(_, value) => {
                 if (!value) return;
@@ -127,11 +184,11 @@ export function FuelFiltersBar({
             >
               <ToggleButton value={MODES.AREA}>
                 <MapIcon fontSize="small" sx={{ mr: 0.75 }} aria-hidden="true" />
-                Por zona
+                {t("fuel.filters.byArea")}
               </ToggleButton>
               <ToggleButton value={MODES.NEARBY}>
                 <MyLocationIcon fontSize="small" sx={{ mr: 0.75 }} aria-hidden="true" />
-                Cerca de mí
+                {t("fuel.filters.nearMe")}
               </ToggleButton>
             </ToggleButtonGroup>
 
@@ -144,7 +201,7 @@ export function FuelFiltersBar({
                 <TextField
                   select
                   size="small"
-                  label="Radio de búsqueda"
+                  label={t("fuel.filters.radius")}
                   value={prefs.radiusKm}
                   onChange={(event) => onPrefsChange({ radiusKm: Number(event.target.value) })}
                   sx={{ minWidth: { sm: 200 } }}
@@ -157,9 +214,9 @@ export function FuelFiltersBar({
                 </TextField>
                 <Typography variant="body2" color="text.secondary">
                   {geoStatus === "loading"
-                    ? "Obteniendo tu ubicación…"
+                    ? t("fuel.filters.locating")
                     : geoStatus === "granted"
-                      ? "Tu ubicación solo se usa en tu navegador, no se envía ni se guarda."
+                      ? t("fuel.filters.locationPrivacy")
                       : ""}
                 </Typography>
               </Stack>
@@ -168,7 +225,7 @@ export function FuelFiltersBar({
                 <TextField
                   select
                   size="small"
-                  label="Provincia"
+                  label={t("fuel.filters.province")}
                   value={prefs.provinceId}
                   onChange={(event) =>
                     onPrefsChange({ provinceId: event.target.value, municipalityId: "" })
@@ -185,13 +242,13 @@ export function FuelFiltersBar({
                 <TextField
                   select
                   size="small"
-                  label="Municipio"
+                  label={t("fuel.filters.municipality")}
                   value={municipalities.some((m) => m.id === prefs.municipalityId) ? prefs.municipalityId : ""}
                   onChange={(event) => onPrefsChange({ municipalityId: event.target.value })}
                   disabled={!municipalities.length}
                   sx={{ minWidth: { sm: 240 } }}
                 >
-                  <MenuItem value="">Toda la provincia</MenuItem>
+                  <MenuItem value="">{t("fuel.filters.wholeProvince")}</MenuItem>
                   {municipalities.map((municipality) => (
                     <MenuItem key={municipality.id} value={municipality.id}>
                       {municipality.name}
@@ -221,11 +278,11 @@ export function FuelFiltersBar({
             <TextField
               select
               size="small"
-              label="Marca"
+              label={t("fuel.filters.brand")}
               value={brands.includes(brand) ? brand : ""}
               onChange={(event) => onBrandChange(event.target.value)}
             >
-              <MenuItem value="">Todas</MenuItem>
+              <MenuItem value="">{t("fuel.filters.allBrands")}</MenuItem>
               {brands.map((name) => (
                 <MenuItem key={name} value={name}>
                   {name}
@@ -235,7 +292,7 @@ export function FuelFiltersBar({
 
             <TextField
               size="small"
-              label="Para llenar"
+              label={t("fuel.filters.liters")}
               value={litersText}
               onChange={handleLiters}
               InputProps={{
@@ -249,12 +306,12 @@ export function FuelFiltersBar({
               <TextField
                 select
                 size="small"
-                label="Ordenar por"
+                label={t("fuel.filters.sortBy")}
                 value={sort}
                 onChange={(event) => onSortChange(event.target.value)}
               >
-                <MenuItem value={SORTS.PRICE}>Precio</MenuItem>
-                <MenuItem value={SORTS.DISTANCE}>Distancia</MenuItem>
+                <MenuItem value={SORTS.PRICE}>{t("fuel.filters.sortPrice")}</MenuItem>
+                <MenuItem value={SORTS.DISTANCE}>{t("fuel.filters.sortDistance")}</MenuItem>
               </TextField>
             )}
 
@@ -265,13 +322,19 @@ export function FuelFiltersBar({
                   onChange={(event) => onOnlyOpenChange(event.target.checked)}
                 />
               }
-              label="Solo abiertas ahora"
+              label={t("fuel.filters.onlyOpen")}
               sx={{ mx: 0, minHeight: 44, gridColumn: { xs: "1 / -1", md: "auto" } }}
             />
           </Box>
           <Typography id="liters-help" variant="caption" color="text.secondary" sx={{ mt: -1 }}>
-            Los litros se usan para calcular cuánto cuesta llenar el depósito.
+            {t("fuel.filters.litersHelp")}
           </Typography>
+
+          <DiscountField
+            discount={prefs.discount}
+            brands={brands}
+            onChange={(discount) => onPrefsChange({ discount })}
+          />
         </Stack>
       </CardContent>
     </Card>

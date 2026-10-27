@@ -15,8 +15,9 @@ import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import CalendarIcon from "@mui/icons-material/CalendarMonthOutlined";
 import dayjs from "dayjs";
-import "dayjs/locale/es";
 import { useNow } from "../hooks/useNow";
+import { t } from "../i18n";
+import { capitalize } from "../i18n/format";
 
 /** REE publica los precios del día siguiente sobre las 20:15 h. */
 const PUBLISH_HOUR = 20;
@@ -29,11 +30,10 @@ const tomorrowPublished = (now = dayjs()) =>
 const relativeName = (day, now) => {
   const today = dayjs(now).startOf("day");
   const diff = day.startOf("day").diff(today, "day");
-  if (diff === 0) return "Hoy";
-  if (diff === 1) return "Mañana";
-  if (diff === -1) return "Ayer";
-  const weekday = day.locale("es").format("dddd");
-  return weekday.charAt(0).toUpperCase() + weekday.slice(1);
+  if (diff === 0) return t("common.days.today");
+  if (diff === 1) return t("common.days.tomorrow");
+  if (diff === -1) return t("common.days.yesterday");
+  return capitalize(day.format("dddd"));
 };
 
 /**
@@ -53,8 +53,8 @@ export function DaySelector({ value, onChange }) {
   const now = useNow();
   const [open, setOpen] = useState(false);
 
-  // Locale explícito: el global de dayjs sigue en inglés ("Oct", "Friday").
-  const day = dayjs(value).locale("es");
+  // dayjs usa el idioma activo (lo fija `loadLanguage`).
+  const day = dayjs(value);
   const today = dayjs(now).startOf("day");
   const tomorrow = today.add(1, "day");
   const isToday = day.isSame(today, "day");
@@ -73,14 +73,14 @@ export function DaySelector({ value, onChange }) {
         alignItems="center"
         sx={{ border: 1, borderColor: "divider", borderRadius: 2, bgcolor: "background.paper" }}
       >
-        <IconButton size="small" aria-label="Día anterior" onClick={() => go(day.subtract(1, "day"))} sx={{ borderRadius: 2 }}>
+        <IconButton size="small" aria-label={t("common.days.previous")} onClick={() => go(day.subtract(1, "day"))} sx={{ borderRadius: 2 }}>
           <ChevronLeftIcon fontSize="small" />
         </IconButton>
 
         <ButtonBase
           ref={anchorRef}
           onClick={() => setOpen(true)}
-          aria-label={`Elegir día. Ahora: ${relativeName(day, now)}, ${day.format("D [de] MMMM [de] YYYY")}`}
+          aria-label={t("common.days.pick", { name: relativeName(day, now), date: day.format("LL") })}
           aria-haspopup="dialog"
           sx={{
             px: 1.25,
@@ -106,7 +106,7 @@ export function DaySelector({ value, onChange }) {
 
         <IconButton
           size="small"
-          aria-label="Día siguiente"
+          aria-label={t("common.days.next")}
           disabled={!canGoNext}
           onClick={() => go(day.add(1, "day"))}
           sx={{ borderRadius: 2 }}
@@ -119,23 +119,23 @@ export function DaySelector({ value, onChange }) {
         size="small"
         exclusive
         value={quick}
-        aria-label="Accesos rápidos de día"
+        aria-label={t("common.days.quick")}
         onChange={(_, value) => {
           if (value === "today") go(today);
           if (value === "tomorrow") go(tomorrow);
         }}
         sx={{ "& .MuiToggleButton-root": { px: 1.5, minHeight: 40 } }}
       >
-        <ToggleButton value="today">Hoy</ToggleButton>
+        <ToggleButton value="today">{t("common.days.today")}</ToggleButton>
         {/* Sin Tooltip envolviendo: ToggleButtonGroup necesita los botones
             como hijos directos para marcar el seleccionado. El aviso va en
             `title` y, si se elige igualmente, la pestaña explica que aún no
             hay precios. */}
         <ToggleButton
           value="tomorrow"
-          title={published ? undefined : "Los precios de mañana se publican sobre las 20:15 h"}
+          title={published ? undefined : t("common.days.tomorrowNotYet")}
         >
-          Mañana
+          {t("common.days.tomorrow")}
         </ToggleButton>
       </ToggleButtonGroup>
 

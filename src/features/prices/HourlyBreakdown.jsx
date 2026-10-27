@@ -23,14 +23,18 @@ import RemoveIcon from "@mui/icons-material/RemoveRounded";
 import { hourOf } from "../../hooks/usePriceStats";
 import { usePowerKw } from "../../hooks/usePowerKw";
 import { useNow } from "../../hooks/useNow";
+import { useEnergyPrefs } from "../../hooks/useEnergyPrefs";
 import { PRICE_TIER_LABELS } from "../../theme/tokens";
 import { euroCost, formatEuros, formatPrice } from "./priceFormat";
+import { t } from "../../i18n";
+import { formatNumber } from "../../i18n/format";
+import { rich } from "../../i18n/rich";
 
 /** Las tres partes del día en las que se agrupan las horas. */
 const PERIODS = [
-  { id: "night", label: "Madrugada", from: 0, to: 8 },
-  { id: "day", label: "Mañana y mediodía", from: 8, to: 16 },
-  { id: "evening", label: "Tarde y noche", from: 16, to: 24 },
+  { id: "night", from: 0, to: 8 },
+  { id: "day", from: 8, to: 16 },
+  { id: "evening", from: 16, to: 24 },
 ];
 
 const ORDER = { HOUR: "hour", PRICE: "price" };
@@ -81,7 +85,7 @@ function AverageDelta({ value, average, tier }) {
   const percent = percentVsAverage(value, average);
   const near = Math.abs(percent) < NEAR_AVERAGE;
   const label = near
-    ? "≈ media"
+    ? t("prices.hours.nearAverage")
     : `${percent < 0 ? "−" : "+"}${Math.round(Math.abs(percent))} %`;
 
   return (
@@ -198,29 +202,8 @@ function AverageLegend({ style, average, units }) {
     </Box>
   );
 
-  if (style === STYLES.BAR) {
-    return (
-      <>
-        La raya del centro es la media del día ({mean}). La barra crece{" "}
-        {cheap("a la izquierda si la hora es más barata")} y {dear("a la derecha si es más cara")}:
-        cuanto más larga, más se aleja.
-      </>
-    );
-  }
-  if (style === STYLES.ARROW) {
-    return (
-      <>
-        Frente a la media del día ({mean}): {cheap("↓ más barata")}, {dear("↑ más cara")} y «–» en
-        la media. El color es el tramo de precio.
-      </>
-    );
-  }
-  return (
-    <>
-      El % compara cada hora con la media del día ({mean}): {cheap("en negativo, más barata")};{" "}
-      {dear("en positivo, más cara")}.
-    </>
-  );
+  const key = style === STYLES.BAR ? "legendBar" : style === STYLES.ARROW ? "legendArrow" : "legendPercent";
+  return rich(t(`prices.hours.${key}`, { mean, cheap, dear }));
 }
 
 function HourRow({ row, units, powerKw, average, maxDeviation, style, past, rank }) {
@@ -228,8 +211,8 @@ function HourRow({ row, units, powerKw, average, maxDeviation, style, past, rank
   const percent = percentVsAverage(row.value, average);
   const relation =
     Math.abs(percent) < NEAR_AVERAGE
-      ? "en la media del día"
-      : `un ${Math.round(Math.abs(percent))} % ${percent < 0 ? "más barata" : "más cara"} que la media`;
+      ? t("prices.hours.rowAtAverage")
+      : t("prices.hours.rowVsAverage", { percent: Math.round(Math.abs(percent)), below: percent < 0 });
 
   return (
     <Box
@@ -286,8 +269,8 @@ function HourRow({ row, units, powerKw, average, maxDeviation, style, past, rank
       </Typography>
 
       <Box component="span" sx={visuallyHidden}>
-        {row.isNow ? "Hora actual. " : ""}
-        {PRICE_TIER_LABELS[row.tier]}, {relation}. Coste de esa hora: {formatEuros(cost)}.
+        {row.isNow ? t("prices.hours.rowNow") : ""}
+        {t("prices.hours.rowSummary", { tier: PRICE_TIER_LABELS[row.tier], relation, cost: formatEuros(cost) })}
       </Box>
     </Box>
   );
@@ -329,6 +312,7 @@ function Column({ title, subtitle, header, rows, renderRow }) {
  * ordena, y no arriba con la fecha.
  */
 export function HourlyBreakdown({ hours, units, average, isToday, onNavigateToTips, onExport }) {
+  const { prefs: supplyPrefs } = useEnergyPrefs();
   const [order, setOrder] = useState(ORDER.HOUR);
   const [style, setStyleState] = useState(readStoredStyle);
   const setStyle = (value) => {
@@ -365,15 +349,15 @@ export function HourlyBreakdown({ hours, units, average, isToday, onNavigateToTi
         color: "text.secondary",
       }}
     >
-      <span>Hora</span>
+      <span>{t("prices.hours.colHour")}</span>
       <Box component="span" sx={{ textAlign: "right" }}>
-        Precio
+        {t("prices.hours.colPrice")}
       </Box>
       <Box component="span" sx={{ textAlign: "center" }}>
-        vs. media
+        {t("prices.hours.colVsAverage")}
       </Box>
       <Box component="span" sx={{ textAlign: "right", whiteSpace: "nowrap" }}>
-        1 h a {powerKw.toLocaleString("es-ES")} kW
+        {t("prices.hours.colCost", { kw: formatNumber(powerKw) })}
       </Box>
     </Box>
   );
@@ -383,9 +367,9 @@ export function HourlyBreakdown({ hours, units, average, isToday, onNavigateToTi
       const sorted = [...hours].sort((a, b) => a.value - b.value);
       const size = Math.ceil(sorted.length / 3);
       return [
-        { id: "cheap", title: `Las ${size} más baratas`, rows: sorted.slice(0, size), offset: 0 },
-        { id: "mid", title: "Intermedias", rows: sorted.slice(size, size * 2), offset: size },
-        { id: "dear", title: "Las más caras", rows: sorted.slice(size * 2), offset: size * 2 },
+        { id: "cheap", title: t("prices.hours.cheapest", { count: size }), rows: sorted.slice(0, size), offset: 0 },
+        { id: "mid", title: t("prices.hours.middle"), rows: sorted.slice(size, size * 2), offset: size },
+        { id: "dear", title: t("prices.hours.dearest"), rows: sorted.slice(size * 2), offset: size * 2 },
       ];
     }
     return PERIODS.map((period) => {
@@ -396,9 +380,11 @@ export function HourlyBreakdown({ hours, units, average, isToday, onNavigateToTi
       const mean = rows.length ? rows.reduce((sum, row) => sum + row.value, 0) / rows.length : null;
       return {
         id: period.id,
-        title: period.label,
+        title: t(`prices.hours.${period.id}`),
         subtitle:
-          mean != null ? `${pad(period.from)}–${pad(period.to)} h · media ${formatPrice(mean, units)}` : null,
+          mean != null
+            ? t("prices.hours.periodSubtitle", { from: pad(period.from), to: pad(period.to), mean: formatPrice(mean, units) })
+            : null,
         rows,
       };
     });
@@ -418,12 +404,11 @@ export function HourlyBreakdown({ hours, units, average, isToday, onNavigateToTi
             <Stack direction="row" spacing={1} alignItems="center">
               <ScheduleIcon fontSize="small" color="primary" aria-hidden="true" />
               <Typography variant="h2" component="h2" id="hours-heading">
-                Precio hora a hora
+                {t("prices.hours.title")}
               </Typography>
             </Stack>
             <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25 }}>
-              Precio en {units} y lo que cuesta una hora de consumo a{" "}
-              {powerKw.toLocaleString("es-ES")} kW.
+              {t("prices.hours.body", { units, kw: formatNumber(powerKw) })}
             </Typography>
           </Box>
 
@@ -432,14 +417,14 @@ export function HourlyBreakdown({ hours, units, average, isToday, onNavigateToTi
               size="small"
               exclusive
               value={order}
-              aria-label="Orden de las horas"
+              aria-label={t("prices.hours.order")}
               onChange={(_, value) => value && setOrder(value)}
             >
-              <ToggleButton value={ORDER.HOUR}>Por hora</ToggleButton>
-              <ToggleButton value={ORDER.PRICE}>Más baratas primero</ToggleButton>
+              <ToggleButton value={ORDER.HOUR}>{t("prices.hours.byHour")}</ToggleButton>
+              <ToggleButton value={ORDER.PRICE}>{t("prices.hours.cheapestFirst")}</ToggleButton>
             </ToggleButtonGroup>
             {onExport && (
-              <Tooltip title="Descargar los precios del día en CSV (se abre en Excel, Numbers o Google Sheets)">
+              <Tooltip title={t("prices.hours.csvTooltip")}>
                 <Button
                   size="small"
                   variant="outlined"
@@ -457,7 +442,7 @@ export function HourlyBreakdown({ hours, units, average, isToday, onNavigateToTi
               onClick={onNavigateToTips}
               sx={{ minHeight: { xs: 44, sm: 36 } }}
             >
-              Ver consejos del día
+              {t("prices.hours.toTips")}
             </Button>
           </Stack>
         </Stack>
@@ -477,15 +462,15 @@ export function HourlyBreakdown({ hours, units, average, isToday, onNavigateToTi
             size="small"
             exclusive
             value={style}
-            aria-label="Cómo mostrar la comparación con la media"
+            aria-label={t("prices.hours.styleLabel")}
             onChange={(_, value) => value && setStyle(value)}
             sx={{ flexShrink: 0, "& .MuiToggleButton-root": { px: 1.25, minHeight: 32 } }}
           >
-            <ToggleButton value={STYLES.PERCENT} aria-label="Porcentaje">
+            <ToggleButton value={STYLES.PERCENT} aria-label={t("prices.hours.stylePercent")}>
               %
             </ToggleButton>
-            <ToggleButton value={STYLES.BAR}>Barra</ToggleButton>
-            <ToggleButton value={STYLES.ARROW}>Flecha</ToggleButton>
+            <ToggleButton value={STYLES.BAR}>{t("prices.hours.styleBar")}</ToggleButton>
+            <ToggleButton value={STYLES.ARROW}>{t("prices.hours.styleArrow")}</ToggleButton>
           </ToggleButtonGroup>
         </Stack>
 
@@ -522,8 +507,7 @@ export function HourlyBreakdown({ hours, units, average, isToday, onNavigateToTi
         </Box>
 
         <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 2 }}>
-          «1 h a {powerKw.toLocaleString("es-ES")} kW»: lo que cuesta una hora de consumo a esa potencia (término de energía PVPC,
-          sin impuestos ni término de potencia). Cambia la potencia en «¿Cuándo lo enciendo?».
+          {t("prices.hours.footnote", { kw: formatNumber(powerKw), withTaxes: supplyPrefs.withTaxes })}
         </Typography>
       </CardContent>
     </Card>

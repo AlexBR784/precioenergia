@@ -4,6 +4,39 @@ import BoltIcon from "@mui/icons-material/Bolt";
 
 import PriceTierBadge from "../../components/PriceTierBadge";
 import { formatHour, formatPrice } from "./priceFormat";
+import { useEnergyPrefs } from "../../hooks/useEnergyPrefs";
+import { useNow } from "../../hooks/useNow";
+import { t } from "../../i18n";
+import { rich } from "../../i18n/rich";
+import { PERIODS, currentPeriod } from "../../utils/tariffPeriods";
+
+const hhmm = (date) => `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+
+/**
+ * Tramo 2.0TD de ahora ("Valle hasta las 08:00"). Le sirve a todo el mundo:
+ * con PVPC explica el precio y con precio por tramos es lo que se paga.
+ */
+function PeriodNow() {
+  const { region } = useEnergyPrefs();
+  const now = useNow();
+  const { period, until } = currentPeriod(now, region);
+  const tone = { P1: "price.high", P2: "price.medium", P3: "price.cheapest" }[period];
+
+  return (
+    <Typography variant="caption" color="text.secondary" component="p" sx={{ mt: 0.75 }}>
+      {rich(
+        t("prices.headline.period", {
+          period: (
+            <Box component="span" sx={{ color: tone, fontWeight: 700 }}>
+              {PERIODS[period].label.toLowerCase()}
+            </Box>
+          ),
+          until: until ? hhmm(until) : null,
+        })
+      )}
+    </Typography>
+  );
+}
 
 function Stat({ label, value, units, context }) {
   return (
@@ -44,18 +77,18 @@ export function PriceHeadline({ stats, units }) {
   const vsAverage = (() => {
     if (!showNow || !average) return null;
     const diff = ((current.value - average) / Math.abs(average)) * 100;
-    if (Math.abs(diff) < 1) return "En la media del día";
-    return `${Math.abs(Math.round(diff))} % ${diff < 0 ? "por debajo" : "por encima"} de la media`;
+    if (Math.abs(diff) < 1) return t("prices.headline.atAverage");
+    return t("prices.headline.vsAverage", { percent: Math.abs(Math.round(diff)), below: diff < 0 });
   })();
 
   const stats3 = [
-    { key: "min", label: "Mínimo", value: formatPrice(min?.value, units), context: `a las ${formatHour(min?.hour)}` },
-    { key: "max", label: "Máximo", value: formatPrice(max?.value, units), context: `a las ${formatHour(max?.hour)}` },
-    { key: "avg", label: "Media", value: formatPrice(average, units), context: "del día" },
+    { key: "min", label: t("prices.headline.min"), value: formatPrice(min?.value, units), context: t("prices.headline.atHour", { hour: formatHour(min?.hour) }) },
+    { key: "max", label: t("prices.headline.max"), value: formatPrice(max?.value, units), context: t("prices.headline.atHour", { hour: formatHour(max?.hour) }) },
+    { key: "avg", label: t("prices.headline.average"), value: formatPrice(average, units), context: t("prices.headline.ofDay") },
   ];
 
   return (
-    <Card component="section" aria-label="Resumen del día">
+    <Card component="section" aria-label={t("prices.headline.summary")}>
       <CardContent sx={{ p: { xs: 2, sm: 2.5 }, "&:last-child": { pb: { xs: 2, sm: 2.5 } } }}>
         <Box
           sx={{
@@ -69,7 +102,7 @@ export function PriceHeadline({ stats, units }) {
             <Stack direction="row" spacing={0.5} alignItems="center" sx={{ color: "text.secondary" }}>
               {showNow && <BoltIcon sx={{ fontSize: 16 }} aria-hidden="true" />}
               <Typography variant="subtitle2" sx={{ color: "inherit" }}>
-                {showNow ? `Ahora · ${formatHour(current.hour)}` : "Media del día"}
+                {showNow ? t("prices.headline.now", { hour: formatHour(current.hour) }) : t("prices.headline.dayAverage")}
               </Typography>
             </Stack>
             <Stack direction="row" spacing={0.75} alignItems="baseline" flexWrap="wrap">
@@ -96,6 +129,7 @@ export function PriceHeadline({ stats, units }) {
                 </Typography>
               </Stack>
             )}
+            {showNow && <PeriodNow />}
           </Box>
 
           <Box

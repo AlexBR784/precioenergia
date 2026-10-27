@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import { useEffect, useMemo, useState } from "react";
 import { Button, Stack, Typography } from "@mui/material";
 
@@ -9,6 +10,7 @@ import { useNow } from "../../hooks/useNow";
 import {
   FUELS,
   SORTS,
+  applyDiscount,
   computeStats,
   isOpenNow,
   nearestProvinceIds,
@@ -21,7 +23,10 @@ import FuelFiltersBar from "./FuelFiltersBar";
 import FuelSkeleton from "./FuelSkeleton";
 import FuelHero from "./FuelHero";
 import FuelTrend from "./FuelTrend";
+import MyStations from "./MyStations";
+import TripCost from "./TripCost";
 import StationList from "./StationList";
+import { t } from "../../i18n";
 
 const sortedUnique = (values) => [...new Set(values)].sort((a, b) => a.localeCompare(b, "es"));
 
@@ -32,7 +37,7 @@ const sortedUnique = (values) => [...new Set(values)].sort((a, b) => a.localeCom
  * pestaña se desmonta al cambiar de sección); aquí se orquesta la zona, se
  * filtra y se pinta. Toda la lógica de cálculo está en `fuelData.js`.
  */
-export function FuelTab() {
+export function FuelTab({ energyCost }) {
   const { prefs, updatePrefs } = useFuelPrefs();
   const geo = useGeolocation();
   const geoGranted = useGeolocationGranted();
@@ -77,12 +82,12 @@ export function FuelTab() {
     : "";
 
   const scoped = useMemo(() => {
-    const priced = priceStations(stations, prefs.fuel, origin);
+    const priced = applyDiscount(priceStations(stations, prefs.fuel, origin), prefs.discount);
     if (isNearby) {
       return priced.filter((s) => s.distanceKm != null && s.distanceKm <= prefs.radiusKm);
     }
     return municipalityId ? priced.filter((s) => s.municipalityId === municipalityId) : priced;
-  }, [stations, prefs.fuel, prefs.radiusKm, origin, isNearby, municipalityId]);
+  }, [stations, prefs.fuel, prefs.radiusKm, prefs.discount, origin, isNearby, municipalityId]);
 
   const brands = useMemo(() => sortedUnique(scoped.map((s) => s.brand)), [scoped]);
 
@@ -98,6 +103,18 @@ export function FuelTab() {
 
   const stats = useMemo(() => computeStats(visible), [visible]);
 
+  // Favoritas: las guardadas que están en la zona y con este combustible.
+  const favoriteStations = useMemo(
+    () => visible.filter((station) => prefs.favorites.includes(station.id)),
+    [visible, prefs.favorites]
+  );
+  const toggleFavorite = (id) =>
+    updatePrefs({
+      favorites: prefs.favorites.includes(id)
+        ? prefs.favorites.filter((favorite) => favorite !== id)
+        : [...prefs.favorites, id],
+    });
+
   // La tendencia va por provincia (así viene el histórico): con "Cerca de mí",
   // la más cercana. Su punto de hoy es la media de toda esa provincia.
   const trendProvinceId = provinceIds[0] ?? null;
@@ -109,8 +126,10 @@ export function FuelTab() {
 
   const fuelLabel = FUELS[prefs.fuel].label;
   const scopeLabel = isNearby
-    ? "cerca de ti"
-    : `en ${municipalities.find((m) => m.id === municipalityId)?.name ?? provinceName(prefs.provinceId)}`;
+    ? t("fuel.nearYou")
+    : t("fuel.inPlace", {
+        place: municipalities.find((m) => m.id === municipalityId)?.name ?? provinceName(prefs.provinceId),
+      });
 
   const resetKey = [
     prefs.fuel,
@@ -130,16 +149,12 @@ export function FuelTab() {
   if (needsZone || (waitingForLocation && geoStatus !== "loading")) {
     body = (
       <EmptyState
-        title="Elige dónde quieres repostar"
-        description={
-          isNearby
-            ? "Para buscar gasolineras cerca de ti necesitamos tu ubicación. Si prefieres no compartirla, elige tu provincia."
-            : "Selecciona tu provincia (y tu municipio si quieres afinar) o pulsa «Cerca de mí»."
-        }
+        title={t("fuel.tab.pickTitle")}
+        description={isNearby ? t("fuel.tab.pickNearby") : t("fuel.tab.pickArea")}
         action={
           isNearby && geoStatus !== "denied" && geoStatus !== "unavailable" ? (
             <Button variant="contained" onClick={requestLocation} sx={{ minHeight: 44 }}>
-              Usar mi ubicación
+              {t("fuel.tab.useLocation")}
             </Button>
           ) : null
         }
@@ -150,20 +165,16 @@ export function FuelTab() {
   } else if (error) {
     body = (
       <ErrorState
-        title="No se han podido cargar las gasolineras"
-        description="El servicio del Ministerio no ha respondido a tiempo. Suele ser algo puntual."
+        title={t("fuel.tab.errorTitle")}
+        description={t("fuel.tab.errorBody")}
         onRetry={reload}
       />
     );
   } else if (!stats) {
     body = (
       <EmptyState
-        title={`No encontramos ${fuelLabel.toLowerCase()} ${scopeLabel}`}
-        description={
-          isNearby
-            ? "Prueba a ampliar el radio de búsqueda, quitar filtros o elegir otro combustible."
-            : "Prueba a quitar filtros, elegir toda la provincia u otro combustible."
-        }
+        title={t("fuel.tab.emptyTitle", { fuel: fuelLabel.toLowerCase(), scope: scopeLabel })}
+        description={isNearby ? t("fuel.tab.emptyNearby") : t("fuel.tab.emptyArea")}
       />
     );
   } else {
@@ -175,6 +186,13 @@ export function FuelTab() {
           stats={stats}
           stations={visible}
           liters={prefs.liters}
+        />
+        <MyStations
+          stations={favoriteStations}
+          stats={stats}
+          liters={prefs.liters}
+          onToggleFavorite={toggleFavorite}
+          hiddenCount={prefs.favorites.length - favoriteStations.length}
         />
         <FuelTrend
           provinceId={trendProvinceId}
@@ -190,6 +208,17 @@ export function FuelTab() {
           showDistance={isNearby}
           now={now}
           resetKey={resetKey}
+          favorites={prefs.favorites}
+          onToggleFavorite={toggleFavorite}
+        />
+        <TripCost
+          fuelLabel={fuelLabel}
+          cheapest={stats.cheapest.price}
+          average={stats.average}
+          consumption={prefs.consumption}
+          tripKm={prefs.tripKm}
+          onPrefsChange={updatePrefs}
+          energyCost={energyCost}
         />
       </>
     );
@@ -215,10 +244,7 @@ export function FuelTab() {
       {body}
 
       <Typography variant="caption" color="text.secondary">
-        Precios comunicados por cada gasolinera al Ministerio para la Transición
-        Ecológica y el Reto Demográfico
-        {updatedAt ? ` (actualizados el ${formatUpdated(updatedAt)})` : ""}. Pueden
-        haber cambiado desde entonces: confírmalos en el surtidor.
+        {t("fuel.tab.source", { updated: updatedAt ? formatUpdated(updatedAt) : null })}
       </Typography>
     </Stack>
   );

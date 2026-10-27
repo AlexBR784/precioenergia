@@ -45,6 +45,20 @@ const loadDay = async (day, provinceId, productId) => {
 };
 
 /**
+ * Medias de los últimos `days` días (sin contar hoy), para buscar el día de la
+ * semana más barato. Son `days` peticiones de ~27 KB: solo bajo demanda.
+ */
+export const fetchFuelDays = async (provinceId, productId, days = 28) => {
+  const today = dayjs().startOf("day");
+  const points = await Promise.all(
+    Array.from({ length: days }, (_, index) =>
+      loadDay(today.subtract(index + 1, "day"), provinceId, productId).catch(() => null)
+    )
+  );
+  return points.filter(Boolean);
+};
+
+/**
  * Evolución del precio medio de un combustible en una provincia durante las
  * dos últimas semanas, para responder a "¿lleno ahora o espero?".
  *

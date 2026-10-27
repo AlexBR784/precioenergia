@@ -1,4 +1,5 @@
 import { Box, Card, CardContent, Skeleton, Stack } from "@mui/material";
+import { t } from "../../i18n";
 
 /**
  * Esqueleto de carga con la forma del contenido final.
@@ -7,7 +8,7 @@ import { Box, Card, CardContent, Skeleton, Stack } from "@mui/material";
  */
 export function PricesSkeleton() {
   return (
-    <Stack spacing={3} aria-busy="true" aria-label="Cargando precios">
+    <Stack spacing={3} aria-busy="true" aria-label={t("prices.loading")}>
       <Stack direction={{ xs: "column", md: "row" }} spacing={2} justifyContent="space-between">
         <Stack direction="row" spacing={2}>
           <Skeleton variant="rounded" width={170} height={40} />

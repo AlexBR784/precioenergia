@@ -1,4 +1,6 @@
 import { PROVINCES } from "./provinces";
+import dayjs from "dayjs";
+import { t } from "../../i18n";
 
 /**
  * Lógica pura de la pestaña de carburantes: catálogo de combustibles,
@@ -15,12 +17,12 @@ import { PROVINCES } from "./provinces";
  * depósito" y el ranking tienen sentido en €/L y con suficientes estaciones.
  */
 export const FUELS = {
-  g95: { label: "Gasolina 95", field: "Precio Gasolina 95 E5", productId: 1, main: true },
-  diesel: { label: "Gasóleo A", field: "Precio Gasoleo A", productId: 4, main: true },
-  glp: { label: "GLP", field: "Precio Gases licuados del petróleo", productId: 17, main: true },
-  g98: { label: "Gasolina 98", field: "Precio Gasolina 98 E5", productId: 3 },
-  g95Premium: { label: "Gasolina 95 Premium", field: "Precio Gasolina 95 E5 Premium", productId: 20 },
-  dieselPremium: { label: "Gasóleo Premium", field: "Precio Gasoleo Premium", productId: 5 },
+  g95: { get label() { return t("fuel.fuels.g95"); }, field: "Precio Gasolina 95 E5", productId: 1, main: true },
+  diesel: { get label() { return t("fuel.fuels.diesel"); }, field: "Precio Gasoleo A", productId: 4, main: true },
+  glp: { get label() { return t("fuel.fuels.glp"); }, field: "Precio Gases licuados del petróleo", productId: 17, main: true },
+  g98: { get label() { return t("fuel.fuels.g98"); }, field: "Precio Gasolina 98 E5", productId: 3 },
+  g95Premium: { get label() { return t("fuel.fuels.g95Premium"); }, field: "Precio Gasolina 95 E5 Premium", productId: 20 },
+  dieselPremium: { get label() { return t("fuel.fuels.dieselPremium"); }, field: "Precio Gasoleo Premium", productId: 5 },
 };
 
 export const MAIN_FUELS = Object.keys(FUELS).filter((key) => FUELS[key].main);
@@ -58,10 +60,14 @@ export const titleCase = (text) =>
     // La primera palabra siempre empieza en mayúscula, aunque sea "de" o "la".
     .replace(/^\p{L}/u, (char) => char.toUpperCase());
 
-/** Rótulo "Nº 10.935" = sin marca reconocible. */
+/**
+ * Rótulo "Nº 10.935" = sin marca reconocible: se guarda vacío y se nombra al
+ * pintar ("Independiente" en el idioma activo), porque las gasolineras
+ * normalizadas se quedan en caché aunque se cambie de idioma.
+ */
 const brandOf = (raw) => {
   const text = String(raw ?? "").trim();
-  if (!text || /^n[º°o]\.?\s*\d/i.test(text)) return "Independiente";
+  if (!text || /^n[º°o]\.?\s*\d/i.test(text)) return "";
   return titleCase(text);
 };
 
@@ -229,6 +235,7 @@ export const priceStations = (stations, fuel, origin = null) =>
     .filter((station) => !station.restricted && station.prices[fuel] != null)
     .map((station) => ({
       ...station,
+      brand: station.brand || t("fuel.independent"),
       price: station.prices[fuel],
       distanceKm:
         origin && station.lat != null && station.lon != null
@@ -269,6 +276,71 @@ export const computeStats = (priced) => {
     low: percentile(sorted, 0.05),
     high: percentile(sorted, 0.95),
   };
+};
+
+/** "MOEVE (antes CEPSA)" y "moeve" son la misma marca a efectos del descuento. */
+const brandKey = (text) =>
+  String(text ?? "")
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "")
+    .toLowerCase()
+    .trim();
+
+/**
+ * Aplica el descuento de fidelización del usuario (céntimos por litro en una
+ * marca) a las gasolineras de esa marca. El ranking pasa a ordenarse por lo
+ * que de verdad pagaría; `listPrice` guarda el precio del surtidor.
+ */
+export const applyDiscount = (priced, discount) => {
+  if (!discount) return priced;
+  const key = brandKey(discount.brand);
+  return priced.map((station) =>
+    brandKey(station.brand).includes(key)
+      ? { ...station, listPrice: station.price, price: station.price - discount.cents / 100 }
+      : station
+  );
+};
+
+/** Nombre del día de la semana (0 = domingo) en el idioma activo. */
+const weekdayName = (day) => dayjs().day(day).format("dddd");
+
+/**
+ * Día de la semana más barato según unas semanas de medias diarias
+ * (`[{ date, average }]`). Cada día se compara con la media de su semana para
+ * que una subida general no se confunda con "los jueves son caros".
+ */
+export const cheapestWeekday = (points) => {
+  if (!points || points.length < 14) return null;
+  const weekKey = (date) => {
+    const monday = new Date(date);
+    monday.setDate(monday.getDate() - ((monday.getDay() + 6) % 7));
+    return monday.toDateString();
+  };
+  const weeks = new Map();
+  points.forEach((point) => {
+    const key = weekKey(point.date);
+    weeks.set(key, [...(weeks.get(key) ?? []), point]);
+  });
+
+  const deltas = Array.from({ length: 7 }, () => []);
+  weeks.forEach((weekPoints) => {
+    if (weekPoints.length < 4) return;
+    const mean = weekPoints.reduce((sum, p) => sum + p.average, 0) / weekPoints.length;
+    weekPoints.forEach((p) => deltas[p.date.getDay()].push(p.average - mean));
+  });
+
+  const byDay = deltas
+    .map((values, day) => ({
+      day,
+      name: weekdayName(day),
+      delta: values.length ? values.reduce((sum, v) => sum + v, 0) / values.length : null,
+    }))
+    .filter((entry) => entry.delta != null);
+  if (byDay.length < 7) return null;
+
+  const cheapest = byDay.reduce((best, entry) => (entry.delta < best.delta ? entry : best));
+  const priciest = byDay.reduce((worst, entry) => (entry.delta > worst.delta ? entry : worst));
+  return { byDay, cheapest, priciest, spread: priciest.delta - cheapest.delta };
 };
 
 /** Coste de repostar `liters` litros a `price` €/L. */

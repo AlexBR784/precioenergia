@@ -10,6 +10,8 @@ import { getPriceTier, PRICE_TIER_LABELS } from "../theme/tokens";
 import { hourOf } from "../hooks/usePriceStats";
 import { useNow } from "../hooks/useNow";
 import { EmptyState } from "./StateViews";
+import { t } from "../i18n";
+import { fixed, formatNumber } from "../i18n/format";
 import { convertPrice, decimalsFor, UNITS } from "../features/prices/priceFormat";
 
 /**
@@ -37,10 +39,7 @@ function HourlyPriceChart({ data, units, isToday }) {
     const { palette } = theme;
     const animate = !prefersReducedMotion();
     const decimals = decimalsFor(units);
-    const number = new Intl.NumberFormat("es-ES", {
-      minimumFractionDigits: decimals,
-      maximumFractionDigits: decimals,
-    });
+    const number = { format: (value) => fixed(value, decimals) };
 
     // Los tramos se calculan con los precios originales (€/MWh), igual que en
     // la tabla, para que el tooltip diga lo mismo que la fila de esa hora.
@@ -84,8 +83,8 @@ function HourlyPriceChart({ data, units, isToday }) {
     });
 
     const seriesData = values.map((value, index) => {
-      if (index === minIndex) return keyPoint(index, price.cheapest, "Mín.");
-      if (index === maxIndex) return keyPoint(index, price.high, "Máx.");
+      if (index === minIndex) return keyPoint(index, price.cheapest, t("common.chart.min"));
+      if (index === maxIndex) return keyPoint(index, price.high, t("common.chart.max"));
       if (index === nowIndex) return keyPoint(index, palette.text.primary, null);
       return value;
     });
@@ -98,7 +97,7 @@ function HourlyPriceChart({ data, units, isToday }) {
         // la noche, que suele ser el más alto.
         label: {
           position: "insideStartTop",
-          formatter: `Media ${number.format(average)}`,
+          formatter: t("common.chart.average", { value: number.format(average) }),
           color: palette.text.secondary,
           backgroundColor: palette.background.paper,
           padding: [1, 4],
@@ -113,7 +112,7 @@ function HourlyPriceChart({ data, units, isToday }) {
         lineStyle: { color: alpha(palette.text.primary, 0.5), type: "solid", width: 1 },
         label: {
           position: "end",
-          formatter: "Ahora",
+          formatter: t("common.chart.now"),
           color: palette.background.paper,
           backgroundColor: palette.text.primary,
           padding: [2, 6],
@@ -163,11 +162,11 @@ function HourlyPriceChart({ data, units, isToday }) {
           const diff = average !== 0 ? ((value - average) / Math.abs(average)) * 100 : 0;
           const vsAverage =
             Math.abs(diff) < 1
-              ? "en la media"
-              : `${Math.abs(Math.round(diff))} % ${diff < 0 ? "por debajo" : "por encima"} de la media`;
+              ? t("common.chart.atAverage")
+              : t("common.chart.vsAverage", { percent: Math.abs(Math.round(diff)), below: diff < 0 });
           const dot = `<span style="display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px;background:${price[tiers[index]]}"></span>`;
           return [
-            `<div style="font-weight:600">${categories[index]} h${index === nowIndex ? " · ahora" : ""}</div>`,
+            `<div style="font-weight:600">${t("common.hour", { hour: categories[index] })}${index === nowIndex ? t("common.chart.nowSuffix") : ""}</div>`,
             `<div style="font-size:15px;font-weight:700;margin:2px 0">${number.format(value)} ${units}</div>`,
             `<div>${dot}${PRICE_TIER_LABELS[tiers[index]]} · ${vsAverage}</div>`,
           ].join("");
@@ -195,15 +194,12 @@ function HourlyPriceChart({ data, units, isToday }) {
         axisLine: { show: false },
         axisLabel: {
           ...base.axisCommon.axisLabel,
-          formatter: (value) =>
-            new Intl.NumberFormat("es-ES", {
-              maximumFractionDigits: units === UNITS.MWH ? 0 : 3,
-            }).format(value),
+          formatter: (value) => formatNumber(value, { maximumFractionDigits: units === UNITS.MWH ? 0 : 3 }),
         },
       },
       series: [
         {
-          name: `Precio (${units})`,
+          name: t("common.chart.series", { units }),
           type: "line",
           step: "middle",
           data: seriesData,
@@ -240,8 +236,8 @@ function HourlyPriceChart({ data, units, isToday }) {
   if (!option) {
     return (
       <EmptyState
-        title="Sin datos para el gráfico"
-        description="No hay precios disponibles para representar en esta fecha."
+        title={t("common.chart.emptyTitle")}
+        description={t("common.chart.emptyBody")}
       />
     );
   }
