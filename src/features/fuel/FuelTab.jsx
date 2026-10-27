@@ -20,6 +20,7 @@ import { provinceName } from "./provinces";
 import FuelFiltersBar from "./FuelFiltersBar";
 import FuelSkeleton from "./FuelSkeleton";
 import FuelHero from "./FuelHero";
+import FuelTrend from "./FuelTrend";
 import StationList from "./StationList";
 
 const sortedUnique = (values) => [...new Set(values)].sort((a, b) => a.localeCompare(b, "es"));
@@ -97,6 +98,15 @@ export function FuelTab() {
 
   const stats = useMemo(() => computeStats(visible), [visible]);
 
+  // La tendencia va por provincia (así viene el histórico): con "Cerca de mí",
+  // la más cercana. Su punto de hoy es la media de toda esa provincia.
+  const trendProvinceId = provinceIds[0] ?? null;
+  const trendTodayAverage = useMemo(() => {
+    if (!trendProvinceId) return null;
+    const inProvince = stations.filter((s) => s.provinceId === trendProvinceId);
+    return computeStats(priceStations(inProvince, prefs.fuel))?.average ?? null;
+  }, [stations, trendProvinceId, prefs.fuel]);
+
   const fuelLabel = FUELS[prefs.fuel].label;
   const scopeLabel = isNearby
     ? "cerca de ti"
@@ -164,6 +174,13 @@ export function FuelTab() {
           scopeLabel={scopeLabel}
           stats={stats}
           stations={visible}
+          liters={prefs.liters}
+        />
+        <FuelTrend
+          provinceId={trendProvinceId}
+          provinceLabel={provinceName(trendProvinceId)}
+          productId={FUELS[prefs.fuel].productId}
+          todayAverage={trendTodayAverage}
           liters={prefs.liters}
         />
         <StationList

@@ -7,9 +7,11 @@ import DaySelector from "../../components/DaySelector";
 import { EmptyState, ErrorState } from "../../components/StateViews";
 import { usePriceStats } from "../../hooks/usePriceStats";
 import { useNow } from "../../hooks/useNow";
+import { useTomorrowForecast } from "../../hooks/useTomorrowForecast";
 import { buildInsights } from "./dayInsights";
 import DayPlan from "./DayPlan";
 import RecommendationsSkeleton from "./RecommendationsSkeleton";
+import TomorrowPreview, { TomorrowNote } from "./TomorrowPreview";
 import WhenToRun from "./WhenToRun";
 
 /**
@@ -37,6 +39,10 @@ export function RecommendationsTab({
 
   const stats = usePriceStats(energyCost, date);
   const isFuture = useMemo(() => dayjs(date).isAfter(dayjs(), "day"), [date]);
+  const isTomorrow = useMemo(() => dayjs(date).isSame(dayjs().add(1, "day"), "day"), [date]);
+
+  // El avance de mañana solo se apunta mirando hoy.
+  const { forecast } = useTomorrowForecast(stats.isToday);
 
   const { verdict, insights } = useMemo(
     () =>
@@ -69,13 +75,17 @@ export function RecommendationsTab({
   );
 
   if (noData) {
+    const empty = (
+      <EmptyState
+        title="Todavía no hay precios para este día"
+        description="Los precios del día siguiente se publican sobre las 20:15 h. Prueba con otra fecha."
+      />
+    );
     return (
       <Stack spacing={3}>
         {dateControl}
-        <EmptyState
-          title="Todavía no hay precios para este día"
-          description="Los precios del día siguiente se publican sobre las 20:15 h. Prueba con otra fecha."
-        />
+        {/* Mañana sin PVPC: el avance con el mercado mayorista, si ya lo hay. */}
+        {isTomorrow ? <TomorrowPreview fallback={empty} /> : empty}
       </Stack>
     );
   }
@@ -104,6 +114,16 @@ export function RecommendationsTab({
         whenLabel={stats.isToday ? "hoy" : isFuture ? "mañana" : "ese día"}
         verdict={verdict}
         loadingBaseline={baselineLoading}
+        aside={
+          // Mañana como apunte, no como otro veredicto: aparece cuando REE ya
+          // ha publicado el mercado de mañana (hacia mediodía).
+          stats.isToday && forecast?.available ? (
+            <TomorrowNote
+              forecast={forecast}
+              onShowTomorrow={() => onDateChange(dayjs().add(1, "day"))}
+            />
+          ) : null
+        }
       />
 
       {/* Los consejos de arriba dan por supuesta una tarea genérica; esta

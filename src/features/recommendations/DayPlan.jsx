@@ -225,7 +225,11 @@ function VerdictHeader({ verdict, whenLabel, loadingBaseline }) {
   );
 }
 
-export function DayPlan({ insights, whenLabel, verdict, loadingBaseline }) {
+/**
+ * `aside` es una fila extra al final de "Para tener en cuenta" (el apunte de
+ * mañana); se pasa ya montada para que el plan no sepa de dónde sale.
+ */
+export function DayPlan({ insights, whenLabel, verdict, loadingBaseline, aside = null }) {
   const now = insights.find((insight) => insight.kind === "now");
   const moments = insights.filter((insight) => insight.kind === "moment");
   const facts = insights.filter((insight) => insight.kind === "fact");
@@ -274,13 +278,14 @@ export function DayPlan({ insights, whenLabel, verdict, loadingBaseline }) {
               </Box>
             )}
 
-            {facts.length > 0 && (
+            {(facts.length > 0 || aside) && (
               <Box>
                 <GroupLabel>Para tener en cuenta</GroupLabel>
                 <Stack divider={<Divider flexItem />} sx={{ mt: -1.5 }}>
                   {facts.map((insight) => (
                     <FactRow key={insight.id} insight={insight} />
                   ))}
+                  {aside}
                 </Stack>
               </Box>
             )}

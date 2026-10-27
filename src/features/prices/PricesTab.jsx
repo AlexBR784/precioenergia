@@ -7,6 +7,7 @@ import PriceHeadline from "./PriceHeadline";
 import PriceChartCard from "./PriceChartCard";
 import HourlyBreakdown from "./HourlyBreakdown";
 import PricesSkeleton from "./PricesSkeleton";
+import TomorrowPreview from "../recommendations/TomorrowPreview";
 import { convertPrice, exportDecimalsFor } from "./priceFormat";
 import { EmptyState, ErrorState } from "../../components/StateViews";
 import { usePriceStats, hourOf } from "../../hooks/usePriceStats";
@@ -58,13 +59,18 @@ export function PricesTab({
   );
 
   if (noData) {
+    const empty = (
+      <EmptyState
+        title="Todavía no hay precios para este día"
+        description="Red Eléctrica publica los precios del día siguiente sobre las 20:15 h. Prueba con otra fecha."
+      />
+    );
+    const isTomorrow = dayjs(date).isSame(dayjs().add(1, "day"), "day");
     return (
       <Stack spacing={3}>
         {filters}
-        <EmptyState
-          title="Todavía no hay precios para este día"
-          description="Red Eléctrica publica los precios del día siguiente sobre las 20:15 h. Prueba con otra fecha."
-        />
+        {/* Mañana sin PVPC: el avance con el mercado mayorista, si ya lo hay. */}
+        {isTomorrow ? <TomorrowPreview fallback={empty} /> : empty}
       </Stack>
     );
   }

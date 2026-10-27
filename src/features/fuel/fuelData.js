@@ -9,17 +9,18 @@ import { PROVINCES } from "./provinces";
 
 /**
  * Combustibles que se ofrecen. `field` es el nombre exacto del campo en la
- * respuesta del Ministerio. Quedan fuera los que se venden por kilo (gas
+ * respuesta del Ministerio y `productId` su id en `Listados/ProductosPetroliferos`
+ * (lo usa el histórico filtrado por producto). Quedan fuera los que se venden por kilo (gas
  * natural, hidrógeno) o casi no existen (E10, E85): el cálculo de "llenar el
  * depósito" y el ranking tienen sentido en €/L y con suficientes estaciones.
  */
 export const FUELS = {
-  g95: { label: "Gasolina 95", field: "Precio Gasolina 95 E5", main: true },
-  diesel: { label: "Gasóleo A", field: "Precio Gasoleo A", main: true },
-  glp: { label: "GLP", field: "Precio Gases licuados del petróleo", main: true },
-  g98: { label: "Gasolina 98", field: "Precio Gasolina 98 E5" },
-  g95Premium: { label: "Gasolina 95 Premium", field: "Precio Gasolina 95 E5 Premium" },
-  dieselPremium: { label: "Gasóleo Premium", field: "Precio Gasoleo Premium" },
+  g95: { label: "Gasolina 95", field: "Precio Gasolina 95 E5", productId: 1, main: true },
+  diesel: { label: "Gasóleo A", field: "Precio Gasoleo A", productId: 4, main: true },
+  glp: { label: "GLP", field: "Precio Gases licuados del petróleo", productId: 17, main: true },
+  g98: { label: "Gasolina 98", field: "Precio Gasolina 98 E5", productId: 3 },
+  g95Premium: { label: "Gasolina 95 Premium", field: "Precio Gasolina 95 E5 Premium", productId: 20 },
+  dieselPremium: { label: "Gasóleo Premium", field: "Precio Gasoleo Premium", productId: 5 },
 };
 
 export const MAIN_FUELS = Object.keys(FUELS).filter((key) => FUELS[key].main);
@@ -287,3 +288,48 @@ export const sortStations = (priced, sort) =>
     if (sort === SORTS.DISTANCE) return byDistance || byPrice;
     return byPrice || byDistance;
   });
+
+// ---------------------------------------------------------------------------
+// Tendencia
+// ---------------------------------------------------------------------------
+
+/**
+ * Por debajo de medio céntimo por litro en una semana el precio se considera
+ * estable: en un depósito de 50 L son 25 céntimos, nada por lo que esperar.
+ */
+const TREND_THRESHOLD = 0.005;
+
+/**
+ * Resume la evolución del precio medio (`[{ date, average }]`, el último es
+ * hoy) en una dirección para la última semana y el cambio en todo el periodo.
+ * La dirección se mira en la última semana y no en las dos: lo que pasó hace
+ * 14 días dice poco de lo que pasará mañana.
+ */
+export const summarizeTrend = (points) => {
+  if (!points || points.length < 3) return null;
+
+  const sorted = [...points].sort((a, b) => a.date - b.date);
+  const first = sorted[0];
+  const last = sorted[sorted.length - 1];
+  const weekAgo = new Date(last.date);
+  weekAgo.setDate(weekAgo.getDate() - 6);
+  const weekRef = [...sorted].reverse().find((point) => point.date <= weekAgo) ?? first;
+
+  const weekChange = last.average - weekRef.average;
+  let direction = "flat";
+  if (weekChange <= -TREND_THRESHOLD) direction = "down";
+  else if (weekChange >= TREND_THRESHOLD) direction = "up";
+
+  const averages = sorted.map((point) => point.average);
+  return {
+    points: sorted,
+    direction,
+    weekChange,
+    change: last.average - first.average,
+    changePct: ((last.average - first.average) / first.average) * 100,
+    first,
+    last,
+    min: Math.min(...averages),
+    max: Math.max(...averages),
+  };
+};
