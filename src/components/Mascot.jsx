@@ -39,6 +39,7 @@ export function Mascot({ size = 40 }) {
   return (
     <Box
       sx={{
+        display: "flex",
         flexShrink: 0,
         transformOrigin: "50% 100%",
         animation: animate ? `${hop} 900ms cubic-bezier(0.3, 0.7, 0.4, 1) 150ms both` : "none",

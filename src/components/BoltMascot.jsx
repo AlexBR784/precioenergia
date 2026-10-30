@@ -283,6 +283,17 @@ const POSES = {
 /** Caja de las poses: el cuerpo más el sitio de brazos, piernas y objetos. */
 const POSE_VIEW = "-17 -5 95 80";
 
+/**
+ * Ancho a partir del alto (número o responsive de `sx`). Va explícito y no con
+ * `aspect-ratio`: en Safari de iOS, un SVG al 100 % dentro de una caja sin
+ * ancho propio cuenta como 300 px al medir la cabecera, y empujaba el título
+ * y los botones fuera de la pantalla.
+ */
+const widthFor = (size, ratio) =>
+  typeof size === "number"
+    ? size * ratio
+    : Object.fromEntries(Object.entries(size).map(([breakpoint, value]) => [breakpoint, value * ratio]));
+
 const stroke = { stroke: INK, strokeWidth: 2.4, strokeLinecap: "round", strokeLinejoin: "round", fill: "none" };
 const LIMB = 2.6;
 
@@ -371,7 +382,7 @@ export function BoltMascot({ mood, pose, size = 56, animate = true }) {
       sx={{
         flexShrink: 0,
         height: size,
-        aspectRatio: posed ? "95 / 80" : "64 / 66",
+        width: widthFor(size, posed ? 95 / 80 : 64 / 66),
         transformOrigin: "50% 90%",
         animation: run(`${pop} 0.45s ${ease} both`),
         // Con movimiento reducido, todo en su estado final y sin gestos.
