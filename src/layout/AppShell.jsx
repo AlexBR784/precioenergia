@@ -3,6 +3,9 @@ import { Box, Container } from "@mui/material";
 import AppHeader from "./AppHeader";
 import AppFooter from "./AppFooter";
 import { BottomNav } from "./SectionNav";
+import TourDialog from "../guide/TourDialog";
+import OfflineNotice from "./OfflineNotice";
+import SectionErrorBoundary from "./SectionErrorBoundary";
 import { t } from "../i18n";
 
 /**
@@ -44,11 +47,13 @@ export function AppShell({ section, sectionLabel, children }) {
         maxWidth="lg"
         sx={{ flexGrow: 1, py: { xs: 2, sm: 3 }, "&:focus": { outline: "none" } }}
       >
-        {children}
+        <OfflineNotice />
+        <SectionErrorBoundary resetKey={section}>{children}</SectionErrorBoundary>
       </Container>
 
       <AppFooter />
       <BottomNav section={section} />
+      <TourDialog />
     </Box>
   );
 }

@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import { useState } from "react";
 import { Box, ButtonBase, Typography } from "@mui/material";
 import TuneIcon from "@mui/icons-material/TuneOutlined";
@@ -7,14 +8,19 @@ import { useEnergyPrefs } from "../../hooks/useEnergyPrefs";
 import SupplyDialog from "./SupplyDialog";
 import { tariffLabel } from "./supplyData";
 import { t } from "../../i18n";
+import Hint from "../../guide/Hint";
 
 /**
  * Acceso a "Mi suministro" desde la barra de ajustes, con lo elegido a la
  * vista ("PVPC · con impuestos"): así se entiende de un vistazo qué precios se
  * están enseñando.
+ *
+ * `hint`: enseñar aquí la pista de "Mi suministro" (solo en Precios, que
+ * es donde se ve primero), si aún no se ha tocado nada del suministro.
  */
-export function SupplyButton() {
+export function SupplyButton({ hint = false }) {
   const [open, setOpen] = useState(false);
+  const [anchor, setAnchor] = useState(null);
   const { prefs, region } = useEnergyPrefs();
 
   const summary = [
@@ -28,6 +34,7 @@ export function SupplyButton() {
   return (
     <>
       <ButtonBase
+        ref={setAnchor}
         onClick={() => setOpen(true)}
         aria-haspopup="dialog"
         sx={{
@@ -54,6 +61,7 @@ export function SupplyButton() {
         </Box>
       </ButtonBase>
       <SupplyDialog open={open} onClose={() => setOpen(false)} />
+      <Hint id="supply" anchor={anchor} enabled={hint && !prefs.tariff && !prefs.region && !prefs.withTaxes} />
     </>
   );
 }

@@ -91,6 +91,15 @@ export default {
       button: "Canvia el tema. Actual: {name}",
     },
     install: { tooltip: "Instal·la l'app", button: "Instal·la l'app en aquest dispositiu" },
+    offline: {
+      title: "Sense connexió",
+      body: "És possible que vegis les últimes dades desades, no les d'ara.",
+    },
+    crash: {
+      title: "Alguna cosa ha fallat en aquesta secció",
+      body: "Torna a carregar la pàgina per tornar-ho a provar. Si continua passant, prova una altra secció.",
+      reload: "Torna a carregar",
+    },
     footer: {
       data: "Dades:",
       ree: "Red Eléctrica de España — apidatos.ree.es",
@@ -669,6 +678,74 @@ export default {
       chargingNoTaxes: "carregant a casa ({range}), sense impostos",
       evNote:
         "Elèctric mitjà de {kwh100} kWh/100 km ({kwh} kWh per a aquest viatge) amb el PVPC del dia que mires a Preus, en les seves {hours} hores més barates. Carregar en un punt públic costa força més. Estalvi davant de la més barata: {saving}.",
+    },
+  },
+  guide: {
+    gotIt: "Entesos",
+    hints: {
+      supply: {
+        title: "Els teus preus, a la teva mida",
+        body: "A «El meu subministrament» tries la teva tarifa, la teva zona i si vols veure els preus amb impostos.",
+      },
+      calendar: {
+        title: "Que no se te'n passi",
+        body: "Afegeix la millor franja al teu calendari i t'avisarà 10 minuts abans.",
+      },
+      import: {
+        title: "Calcula amb el teu consum real",
+        body: "Puja el CSV de la teva distribuïdora o de Datadis. El fitxer no surt del teu navegador.",
+      },
+      discount: {
+        title: "Tens descompte en alguna marca?",
+        body: "Indica la marca i els cèntims per litre i el rànquing s'ordena pel que pagaries de debò.",
+      },
+      install: {
+        title: "Tingues-la a mà",
+        body: "Instal·la l'app i obre els preus des de la pantalla d'inici, com qualsevol altra.",
+      },
+    },
+    whatsNew: {
+      title: "Novetats",
+      intro: "Des de la teva última visita hi ha coses noves:",
+      close: "Tanca les novetats",
+      items: {
+        bill: { title: "Factura", body: "Calcula la teva factura de llum i compara-la amb el teu consum real." },
+        supply: { title: "El meu subministrament", body: "La teva tarifa, la teva zona i els preus amb impostos." },
+        languages: { title: "Més idiomes", body: "Ara també en català, gallec, basc i anglès." },
+        nav: { title: "Navegació nova", body: "Cada secció té la seva pròpia adreça: desa-la o comparteix-la." },
+      },
+    },
+    tour: {
+      open: "Mira el recorregut",
+      title: "Recorregut per l'app",
+      step: "Pas {current} de {total}",
+      back: "Enrere",
+      next: "Següent",
+      done: "Acaba",
+      close: "Tanca",
+      go: "Ves a {section}",
+      steps: {
+        prices: {
+          title: "Preus",
+          body: "El preu de la llum ara i hora a hora, avui i demà (des de les 20:15). Els colors diuen si és barat o car.",
+        },
+        tips: {
+          title: "Consells",
+          body: "Quan posar la rentadora, el rentaplats o carregar el cotxe, i quant estalvies fent-ho.",
+        },
+        bill: {
+          title: "Factura",
+          body: "Calcula la teva factura de llum, puja-hi el teu consum real i compara tarifes.",
+        },
+        fuel: {
+          title: "Carburants",
+          body: "Les benzineres més barates a prop teu o a la teva zona, amb les teves preferides i el teu descompte.",
+        },
+        settings: {
+          title: "Ajustos per a tot",
+          body: "«El meu subministrament» adapta els preus a la teva tarifa i la teva zona. A dalt canvies l'idioma i el tema, i pots instal·lar l'app.",
+        },
+      },
     },
   },
 };

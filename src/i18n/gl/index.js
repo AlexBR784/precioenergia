@@ -91,6 +91,15 @@ export default {
       button: "Cambiar o tema. Actual: {name}",
     },
     install: { tooltip: "Instalar a app", button: "Instalar a app neste dispositivo" },
+    offline: {
+      title: "Sen conexión",
+      body: "Pode que vexas os últimos datos gardados, non os de agora.",
+    },
+    crash: {
+      title: "Algo fallou nesta sección",
+      body: "Recarga a páxina para tentalo de novo. Se segue pasando, proba outra sección.",
+      reload: "Recargar",
+    },
     footer: {
       data: "Datos:",
       ree: "Red Eléctrica de España — apidatos.ree.es",
@@ -670,6 +679,74 @@ export default {
       chargingNoTaxes: "cargando na casa ({range}), sen impostos",
       evNote:
         "Eléctrico medio de {kwh100} kWh/100 km ({kwh} kWh para esta viaxe) co PVPC do día que estás a ver en Prezos, nas súas {hours} horas máis baratas. Cargar nun punto público custa bastante máis. Aforro fronte á máis barata: {saving}.",
+    },
+  },
+  guide: {
+    gotIt: "Entendido",
+    hints: {
+      supply: {
+        title: "Os teus prezos, á túa medida",
+        body: "En «A miña subministración» escolles a túa tarifa, a túa zona e se queres ver os prezos con impostos.",
+      },
+      calendar: {
+        title: "Que non se che pase",
+        body: "Engade a mellor franxa ao teu calendario e avisarate 10 minutos antes.",
+      },
+      import: {
+        title: "Calcula co teu consumo real",
+        body: "Sube o CSV da túa distribuidora ou de Datadis. O ficheiro non sae do teu navegador.",
+      },
+      discount: {
+        title: "Tes desconto nalgunha marca?",
+        body: "Indica a marca e os céntimos por litro e a clasificación ordénase polo que pagarías de verdade.",
+      },
+      install: {
+        title: "Tena á man",
+        body: "Instala a app e abre os prezos desde a pantalla de inicio, coma calquera outra.",
+      },
+    },
+    whatsNew: {
+      title: "Novidades",
+      intro: "Desde a túa última visita hai cousas novas:",
+      close: "Pechar as novidades",
+      items: {
+        bill: { title: "Factura", body: "Calcula a túa factura da luz e compáraa co teu consumo real." },
+        supply: { title: "A miña subministración", body: "A túa tarifa, a túa zona e os prezos con impostos." },
+        languages: { title: "Máis idiomas", body: "Agora tamén en catalán, galego, éuscaro e inglés." },
+        nav: { title: "Navegación nova", body: "Cada sección ten o seu propio enderezo: gárdao ou compárteo." },
+      },
+    },
+    tour: {
+      open: "Ver percorrido",
+      title: "Percorrido pola app",
+      step: "Paso {current} de {total}",
+      back: "Atrás",
+      next: "Seguinte",
+      done: "Rematar",
+      close: "Pechar",
+      go: "Ir a {section}",
+      steps: {
+        prices: {
+          title: "Prezos",
+          body: "O prezo da luz agora e hora a hora, hoxe e mañá (desde as 20:15). As cores din se é barato ou caro.",
+        },
+        tips: {
+          title: "Consellos",
+          body: "Cando pór a lavadora, o lavalouza ou cargar o coche, e canto aforras facéndoo.",
+        },
+        bill: {
+          title: "Factura",
+          body: "Calcula a túa factura da luz, súbelle o teu consumo real e compara tarifas.",
+        },
+        fuel: {
+          title: "Carburantes",
+          body: "As gasolineiras máis baratas preto de ti ou na túa zona, coas túas favoritas e o teu desconto.",
+        },
+        settings: {
+          title: "Axustes para todo",
+          body: "«A miña subministración» adapta os prezos á túa tarifa e á túa zona. Arriba cambias o idioma e o tema, e podes instalar a app.",
+        },
+      },
     },
   },
 };

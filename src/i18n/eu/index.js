@@ -97,6 +97,15 @@ export default {
       button: "Aldatu gaia. Unekoa: {name}",
     },
     install: { tooltip: "Instalatu aplikazioa", button: "Instalatu aplikazioa gailu honetan" },
+    offline: {
+      title: "Konexiorik gabe",
+      body: "Baliteke gordetako azken datuak ikustea, ez oraingoak.",
+    },
+    crash: {
+      title: "Zerbaitek huts egin du atal honetan",
+      body: "Kargatu berriro orria berriz saiatzeko. Gertatzen jarraitzen badu, probatu beste atal bat.",
+      reload: "Kargatu berriro",
+    },
     footer: {
       data: "Datuak:",
       ree: "Red Eléctrica de España — apidatos.ree.es",
@@ -682,6 +691,74 @@ export default {
       chargingNoTaxes: "etxean kargatuz ({range}), zergarik gabe",
       evNote:
         "{kwh100} kWh/100 km kontsumitzen dituen auto elektriko arrunta ({kwh} kWh bidaia honetarako), Prezioak atalean ikusten ari zaren eguneko PVPCrekin, bere {hours} ordu merkeenetan. Kargagune publiko batean kargatzea askoz garestiagoa da. Merkeenarekiko aurrezpena: {saving}.",
+    },
+  },
+  guide: {
+    gotIt: "Ulertuta",
+    hints: {
+      supply: {
+        title: "Zure prezioak, zure neurrira",
+        body: "«Nire hornidura» atalean zure tarifa eta eremua aukeratzen dituzu, baita prezioak zergekin ikusi nahi dituzun ere.",
+      },
+      calendar: {
+        title: "Ez zaitez ahaztu",
+        body: "Gehitu tarterik onena zure egutegira, eta 10 minutu lehenago abisatuko dizu.",
+      },
+      import: {
+        title: "Kalkulatu zure benetako kontsumoarekin",
+        body: "Igo zure banatzailearen edo Datadisen CSVa. Fitxategia ez da zure nabigatzailetik irteten.",
+      },
+      discount: {
+        title: "Deskonturik duzu markaren batean?",
+        body: "Adierazi marka eta litroko zentimoak, eta sailkapena benetan ordainduko zenukeenaren arabera ordenatuko da.",
+      },
+      install: {
+        title: "Izan ezazu eskura",
+        body: "Instalatu aplikazioa eta ireki prezioak hasierako pantailatik, beste edozein bezala.",
+      },
+    },
+    whatsNew: {
+      title: "Berritasunak",
+      intro: "Zure azken bisitatik gauza berriak daude:",
+      close: "Itxi berritasunak",
+      items: {
+        bill: { title: "Faktura", body: "Kalkulatu zure argi-faktura eta alderatu zure benetako kontsumoarekin." },
+        supply: { title: "Nire hornidura", body: "Zure tarifa, zure eremua eta prezioak zergekin." },
+        languages: { title: "Hizkuntza gehiago", body: "Orain katalanez, galizieraz, euskaraz eta ingelesez ere bai." },
+        nav: { title: "Nabigazio berria", body: "Atal bakoitzak bere helbidea du: gorde edo partekatu." },
+      },
+    },
+    tour: {
+      open: "Ikusi ibilbidea",
+      title: "Aplikazioaren ibilbidea",
+      step: "{current}. urratsa {total}tik",
+      back: "Atzera",
+      next: "Hurrengoa",
+      done: "Amaitu",
+      close: "Itxi",
+      go: "Joan hona: {section}",
+      steps: {
+        prices: {
+          title: "Prezioak",
+          body: "Argiaren prezioa orain eta orduz ordu, gaur eta bihar (20:15etik aurrera). Koloreek merkea ala garestia den adierazten dute.",
+        },
+        tips: {
+          title: "Aholkuak",
+          body: "Noiz jarri garbigailua edo ontzi-garbigailua, edo noiz kargatu autoa, eta zenbat aurrezten duzun.",
+        },
+        bill: {
+          title: "Faktura",
+          body: "Kalkulatu zure argi-faktura, igo zure benetako kontsumoa eta alderatu tarifak.",
+        },
+        fuel: {
+          title: "Erregaiak",
+          body: "Zure inguruko edo zure eremuko gasolindegi merkeenak, zure gogokoekin eta zure deskontuarekin.",
+        },
+        settings: {
+          title: "Denetarako ezarpenak",
+          body: "«Nire hornidura» atalak prezioak zure tarifara eta eremura egokitzen ditu. Goian hizkuntza eta gaia aldatzen dituzu, eta aplikazioa instala dezakezu.",
+        },
+      },
     },
   },
 };

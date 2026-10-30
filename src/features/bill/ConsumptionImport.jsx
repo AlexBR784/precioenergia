@@ -13,6 +13,7 @@ import { parseConsumptionCsv, summarizeConsumption } from "./consumptionCsv";
 import { t } from "../../i18n";
 import { fixed, formatNumber } from "../../i18n/format";
 import { rich } from "../../i18n/rich";
+import Hint from "../../guide/Hint";
 
 /** Se cruzan como mucho los últimos 90 días del archivo: son 4 peticiones a REE. */
 const MAX_DAYS = 90;
@@ -90,6 +91,7 @@ function Profile({ profile }) {
 export function ConsumptionImport({ usage, onUsage }) {
   const { region } = useEnergyPrefs();
   const inputRef = useRef(null);
+  const [uploadButton, setUploadButton] = useState(null);
   const [state, setState] = useState({ loading: false, error: null, fileName: null, average: null, trimmed: false });
 
   const handleFile = async (file) => {
@@ -162,6 +164,7 @@ export function ConsumptionImport({ usage, onUsage }) {
 
         <Stack direction="row" spacing={1.5} alignItems="center" flexWrap="wrap" useFlexGap sx={{ mt: 2 }}>
           <Button
+            ref={setUploadButton}
             variant={usage ? "outlined" : "contained"}
             startIcon={state.loading ? <CircularProgress size={16} color="inherit" /> : <UploadIcon />}
             onClick={() => inputRef.current?.click()}
@@ -179,6 +182,7 @@ export function ConsumptionImport({ usage, onUsage }) {
               {state.fileName}
             </Typography>
           )}
+          <Hint id="import" anchor={uploadButton} enabled={!usage && !state.loading} />
           <input
             ref={inputRef}
             type="file"

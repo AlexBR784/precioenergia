@@ -41,10 +41,7 @@ export function AppHeader({ section }) {
             alignItems="center"
             sx={{ flexGrow: { xs: 1, md: 0 }, flexShrink: 0, minWidth: 0 }}
           >
-            {/* Reacciona al cambiar de sección: vuelve a saltar y a dar el pulgar.
-                El salto sube ~16 % de su alto y gira un poco, así que la barra
-                deja holgura por encima (12 px) para que no se salga de la página. */}
-            <Mascot size={{ xs: 36, sm: 44 }} playKey={section} />
+            <Mascot size={{ xs: 36, sm: 40 }} />
             <Typography variant="h1" noWrap sx={{ fontSize: { xs: "1rem", sm: "1.25rem" } }}>
               {t("common.appName")}
             </Typography>

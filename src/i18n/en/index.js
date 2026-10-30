@@ -91,6 +91,15 @@ export default {
       button: "Change theme. Current: {name}",
     },
     install: { tooltip: "Install the app", button: "Install the app on this device" },
+    offline: {
+      title: "You're offline",
+      body: "You may be seeing the last saved data, not the current one.",
+    },
+    crash: {
+      title: "Something went wrong in this section",
+      body: "Reload the page to try again. If it keeps happening, try another section.",
+      reload: "Reload",
+    },
     footer: {
       data: "Data:",
       ree: "Red Eléctrica de España — apidatos.ree.es",
@@ -668,6 +677,74 @@ export default {
       chargingNoTaxes: "charging at home ({range}), excl. taxes",
       evNote:
         "An average EV using {kwh100} kWh/100 km ({kwh} kWh for this trip) at the PVPC of the day shown in Prices, in its {hours} cheapest hours. Public charging costs considerably more. Saving vs. the cheapest station: {saving}.",
+    },
+  },
+  guide: {
+    gotIt: "Got it",
+    hints: {
+      supply: {
+        title: "Prices that fit you",
+        body: "In “My supply” you choose your tariff, your area and whether to see prices with taxes.",
+      },
+      calendar: {
+        title: "Don't miss it",
+        body: "Add the best time slot to your calendar and it will remind you 10 minutes before.",
+      },
+      import: {
+        title: "Use your real usage",
+        body: "Upload the CSV from your distributor or from Datadis. The file never leaves your browser.",
+      },
+      discount: {
+        title: "Got a discount with a brand?",
+        body: "Enter the brand and the cents per litre, and the ranking is sorted by what you'd really pay.",
+      },
+      install: {
+        title: "Keep it handy",
+        body: "Install the app and open prices from your home screen, like any other app.",
+      },
+    },
+    whatsNew: {
+      title: "What's new",
+      intro: "There are new things since your last visit:",
+      close: "Close what's new",
+      items: {
+        bill: { title: "Bill", body: "Estimate your electricity bill and compare it with your real usage." },
+        supply: { title: "My supply", body: "Your tariff, your area and prices with taxes." },
+        languages: { title: "More languages", body: "Now also in Catalan, Galician, Basque and English." },
+        nav: { title: "New navigation", body: "Each section has its own address: bookmark it or share it." },
+      },
+    },
+    tour: {
+      open: "Take the tour",
+      title: "App tour",
+      step: "Step {current} of {total}",
+      back: "Back",
+      next: "Next",
+      done: "Finish",
+      close: "Close",
+      go: "Go to {section}",
+      steps: {
+        prices: {
+          title: "Prices",
+          body: "The electricity price now and hour by hour, today and tomorrow (from 20:15). Colours tell you whether it's cheap or expensive.",
+        },
+        tips: {
+          title: "Tips",
+          body: "When to run the washing machine or dishwasher or charge the car, and how much you save.",
+        },
+        bill: {
+          title: "Bill",
+          body: "Estimate your electricity bill, add your real usage and compare tariffs.",
+        },
+        fuel: {
+          title: "Fuel",
+          body: "The cheapest petrol stations near you or in your area, with your favourites and your discount.",
+        },
+        settings: {
+          title: "Settings for everything",
+          body: "“My supply” adapts prices to your tariff and area. At the top you change the language and theme, and you can install the app.",
+        },
+      },
     },
   },
 };

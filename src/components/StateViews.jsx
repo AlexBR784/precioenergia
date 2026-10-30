@@ -1,14 +1,18 @@
 /* eslint-disable react/prop-types */
-import { Box, Button, Stack, Typography } from "@mui/material";
-import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
-import InboxIcon from "@mui/icons-material/InboxOutlined";
+import { Button, Stack, Typography } from "@mui/material";
+import BoltMascot from "./BoltMascot";
 import { t } from "../i18n";
 
 /**
  * Estados vacío y de error compartidos. Sustituyen a los <Alert> sueltos y al
  * <div> sin estilo que devolvía el gráfico de precios cuando no había datos.
+ *
+ * Los ilustra el rayo con la pose que toca (`pose`): buscando si no hay nada,
+ * dormido si aún no hay precios, señalando si falta elegir algo y con el
+ * enchufe desconectado si algo ha fallado. Es donde una mascota más ayuda:
+ * quita hierro al momento sin tapar ningún dato.
  */
-function StateView({ icon, title, description, action, tone = "muted" }) {
+function StateView({ pose, title, description, action, tone = "muted" }) {
   return (
     <Stack
       spacing={1.5}
@@ -25,19 +29,7 @@ function StateView({ icon, title, description, action, tone = "muted" }) {
         color: "text.secondary",
       }}
     >
-      <Box
-        sx={{
-          display: "grid",
-          placeItems: "center",
-          width: 48,
-          height: 48,
-          borderRadius: "50%",
-          bgcolor: tone === "error" ? "priceSoft.high" : "surfaceMuted",
-          color: tone === "error" ? "error.main" : "text.secondary",
-        }}
-      >
-        {icon}
-      </Box>
+      <BoltMascot pose={pose} size={{ xs: 88, sm: 100 }} />
       <Typography variant="h3" component="p" color="text.primary">
         {title}
       </Typography>
@@ -51,10 +43,10 @@ function StateView({ icon, title, description, action, tone = "muted" }) {
   );
 }
 
-export function EmptyState({ title, description, action }) {
+export function EmptyState({ title, description, action, pose = "search" }) {
   return (
     <StateView
-      icon={<InboxIcon />}
+      pose={pose}
       title={title}
       description={description}
       action={action}
@@ -66,7 +58,7 @@ export function ErrorState({ title, description, onRetry, retryLabel = t("common
   return (
     <StateView
       tone="error"
-      icon={<ErrorOutlineIcon />}
+      pose="error"
       title={title}
       description={description}
       action={

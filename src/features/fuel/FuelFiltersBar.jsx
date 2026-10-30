@@ -26,6 +26,7 @@ import { FUELS, MAIN_FUELS, OTHER_FUELS, SORTS } from "./fuelData";
 import { PROVINCES_SORTED } from "./provinces";
 import { MODES, RADIUS_OPTIONS } from "../../hooks/useFuelPrefs";
 import { t } from "../../i18n";
+import Hint from "../../guide/Hint";
 
 const GEO_MESSAGES = ["denied", "unavailable", "error"];
 
@@ -37,8 +38,9 @@ const DISCOUNT_BRANDS = ["Repsol", "Moeve", "BP", "Galp", "Shell", "Avia", "Carr
  * datos del Ministerio son los del surtidor y no los incluyen; con esto el
  * ranking se ordena por lo que de verdad pagaría el usuario.
  */
-function DiscountField({ discount, brands, onChange }) {
+function DiscountField({ discount, brands, onChange, hint }) {
   const [brand, setBrand] = useState(discount?.brand ?? "");
+  const [label, setLabel] = useState(null);
   const [cents, setCents] = useState(discount?.cents ?? null);
   const options = [...new Set([...DISCOUNT_BRANDS, ...brands])].sort((a, b) => a.localeCompare(b, "es"));
 
@@ -49,7 +51,13 @@ function DiscountField({ discount, brands, onChange }) {
 
   return (
     <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5} alignItems={{ xs: "stretch", sm: "center" }}>
-      <Stack direction="row" spacing={0.75} alignItems="center" sx={{ color: "text.secondary", minWidth: { sm: 130 } }}>
+      <Stack
+        ref={setLabel}
+        direction="row"
+        spacing={0.75}
+        alignItems="center"
+        sx={{ color: "text.secondary", minWidth: { sm: 130 }, alignSelf: { xs: "flex-start", sm: "center" } }}
+      >
         <LoyaltyIcon fontSize="small" aria-hidden="true" />
         <Typography variant="body2" sx={{ fontWeight: 600 }}>
           {t("fuel.filters.discount")}
@@ -82,6 +90,7 @@ function DiscountField({ discount, brands, onChange }) {
       <Typography variant="caption" color="text.secondary">
         {discount ? t("fuel.filters.discountActive", { brand: discount.brand }) : t("fuel.filters.discountHint")}
       </Typography>
+      <Hint id="discount" anchor={label} enabled={hint && !discount} placement="bottom-start" />
     </Stack>
   );
 }
@@ -104,6 +113,7 @@ export function FuelFiltersBar({
   onOnlyOpenChange,
   sort,
   onSortChange,
+  ready,
 }) {
   const isNearby = prefs.mode === MODES.NEARBY;
   const extraFuelSelected = OTHER_FUELS.includes(prefs.fuel) ? prefs.fuel : "";
@@ -334,6 +344,7 @@ export function FuelFiltersBar({
             discount={prefs.discount}
             brands={brands}
             onChange={(discount) => onPrefsChange({ discount })}
+            hint={ready}
           />
         </Stack>
       </CardContent>

@@ -44,6 +44,7 @@ import {
 import { euroCost, formatEuros, formatPriceWithUnits } from "../prices/priceFormat";
 import { t } from "../../i18n";
 import { formatNumber } from "../../i18n/format";
+import Hint from "../../guide/Hint";
 
 /**
  * Aparatos típicos de una casa con su duración y potencia habituales. Un
@@ -222,6 +223,7 @@ export function WhenToRun({ energyCost, units, isToday, date }) {
   const [hours, setHours] = useState(3);
   const [onlyFuture, setOnlyFuture] = useState(true);
   const [copied, setCopied] = useState(false);
+  const [calendarButton, setCalendarButton] = useState(null);
 
   // La potencia se comparte con los consejos ("Lo que cambia en euros").
   const { powerKw, setPowerKw } = usePowerKw();
@@ -356,7 +358,7 @@ export function WhenToRun({ energyCost, units, isToday, date }) {
                   height: 36,
                   px: 0.5,
                   borderColor: selected ? "primary.main" : "divider",
-                  bgcolor: selected ? "primarySoft" : "transparent",
+                  bgcolor: selected ? "selected" : "transparent",
                   color: selected ? "text.primary" : "text.secondary",
                   "& .MuiChip-icon": { color: "inherit" },
                 }}
@@ -540,10 +542,11 @@ export function WhenToRun({ energyCost, units, isToday, date }) {
               <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ mt: 1, ml: -0.5 }}>
                 {/* Solo si la franja aún no ha pasado: un aviso para algo pasado no sirve. */}
                 {(!isToday || bestRange.endHour > currentHour) && (
-                  <Button size="small" onClick={addToCalendar} startIcon={<EventIcon />}>
+                  <Button ref={setCalendarButton} size="small" onClick={addToCalendar} startIcon={<EventIcon />}>
                     {t("tips.when.calendar")}
                   </Button>
                 )}
+                <Hint id="calendar" anchor={calendarButton} />
                 <Button
                   size="small"
                   onClick={shareBest}

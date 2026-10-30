@@ -50,7 +50,7 @@ export function TariffOptions({ value, onChange }) {
               borderRadius: 2,
               border: 1,
               borderColor: selected ? "primary.main" : "divider",
-              bgcolor: selected ? "primarySoft" : "transparent",
+              bgcolor: selected ? "selected" : "transparent",
               transition: "border-color 150ms, background-color 150ms",
               "&:hover": { borderColor: selected ? "primary.main" : "text.secondary" },
             }}

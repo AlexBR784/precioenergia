@@ -64,14 +64,16 @@ export const getPriceTier = (price, minPrice, maxPrice) => {
  * grandes ni tonos saturados: una herramienta de precios tiene que transmitir
  * fiabilidad, y el color llamativo se reserva para lo que pide atención.
  *
- * El amarillo puro de la mascota (#FFD60A) no aparece en la interfaz: se usa
- * un dorado apagado de la misma familia, para que el personaje sea lo único
- * que brilla.
+ * El dorado es el de la mascota (el rayo plano, `BoltMascot`) y significa
+ * "la marca": el personaje y lo seleccionado (`selected`, un tinte dorado
+ * suave en los dos temas). Por eso ningún tramo de precio es dorado.
  *
  * Los tramos de precio van de frío a caliente (verde azulado → azul acero →
- * ocre → teja), desaturados para que se lean sin gritar y sin pasar por el
- * verde lima, que choca con el amarillo de la mascota. Lo que significa cada
- * tramo lo dice siempre su etiqueta, no el color.
+ * naranja tostado → teja), desaturados para que se lean sin gritar y sin pasar
+ * por el verde lima, que choca con el dorado. El tramo "alto" era un ocre casi
+ * idéntico al dorado de la marca (en oscuro, al color de los botones): ahora
+ * es naranja, para que un botón no parezca un aviso de precio. Lo que
+ * significa cada tramo lo dice siempre su etiqueta, no el color.
  */
 export const palette = {
   light: {
@@ -80,6 +82,8 @@ export const palette = {
     primaryLight: "#475569",
     /** Gris azulado muy tenue: tarjeta destacada y selección. */
     primarySoft: "#EEF1F5",
+    /** Lo seleccionado (sección activa, opción elegida): tinte dorado de la marca. */
+    selected: "#F6E9C4",
 
     accent: "#D9A92E",
     accentDark: "#B8891A",
@@ -98,14 +102,14 @@ export const palette = {
     price: {
       cheapest: "#2B7A78",
       low: "#4A7BA7",
-      medium: "#B7791F",
+      medium: "#B5602A",
       high: "#B83A3A",
     },
     /** Fondo tenue del mismo tramo, para chips y barras. */
     priceSoft: {
       cheapest: "#E3F0EF",
       low: "#E6EEF6",
-      medium: "#F7EEDD",
+      medium: "#F8E7DA",
       high: "#F7E4E2",
     },
   },
@@ -116,6 +120,7 @@ export const palette = {
     primaryDark: "#C9A845",
     primaryLight: "#EED68A",
     primarySoft: "#20252D",
+    selected: "#332C19",
 
     accent: "#D9B44A",
     accentDark: "#C29B33",
@@ -134,13 +139,13 @@ export const palette = {
     price: {
       cheapest: "#5FB3AD",
       low: "#7FA6CC",
-      medium: "#D9A55A",
+      medium: "#E3905E",
       high: "#D97A73",
     },
     priceSoft: {
       cheapest: "#17302F",
       low: "#1A2735",
-      medium: "#33291A",
+      medium: "#36251C",
       high: "#362020",
     },
 

@@ -2,6 +2,7 @@ import { Box, Container, Link, Stack, Typography } from "@mui/material";
 import { REGIONS } from "../data/spain";
 import { useEnergyPrefs } from "../hooks/useEnergyPrefs";
 import { t } from "../i18n";
+import { openTour } from "../guide/guideStore";
 import { formatNumber } from "../i18n/format";
 
 const percent = (rate) => `${formatNumber(rate * 100, { maximumFractionDigits: 2 })} %`;
@@ -47,6 +48,15 @@ export function AppFooter() {
               {t("layout.footer.fuel")}
             </Link>
           </Typography>
+          <Link
+            component="button"
+            variant="caption"
+            underline="hover"
+            onClick={openTour}
+            sx={{ fontWeight: 600, minHeight: 24 }}
+          >
+            {t("guide.tour.open")}
+          </Link>
           <Typography variant="caption" color="text.secondary">
             {prefs.withTaxes
               ? t("layout.footer.withTaxes", { tax: tax.name, rate: percent(tax.rate) })

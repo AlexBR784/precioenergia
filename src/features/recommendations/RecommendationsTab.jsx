@@ -102,6 +102,7 @@ export function RecommendationsTab({
   if (noData) {
     const empty = (
       <EmptyState
+        pose="sleep"
         title={t("tips.noData.title")}
         description={t("tips.noData.body")}
       />

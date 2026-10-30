@@ -16,6 +16,11 @@
   título de la pestaña y favicon de color.
 - Carburantes: descuento de fidelización, gasolineras favoritas, coste del viaje y comparación con
   un eléctrico cargado en las horas baratas.
+- Guía sin tour forzado (`src/guide`): una pista por sección la primera vez (como mucho una por
+  visita, nunca en la primera hasta pasados 8 s ni si se llega por un enlace a una sección),
+  «Novedades» una sola vez para quien ya usaba la web, «Instalar» desde la tercera visita y
+  «Ver recorrido» a demanda en el pie. Todo en `precioenergia:guide`; para volver a verlo, borrar
+  esa clave.
 
 ## Mantenimiento: cifras que cambian por ley
 Todas están en `src/data/spain.js`, con la fecha de revisión. La página `#mantenimiento`

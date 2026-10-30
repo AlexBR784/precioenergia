@@ -59,12 +59,15 @@ export function PricesTab({
       onDateChange={onDateChange}
       units={units}
       onUnitsChange={onUnitsChange}
+      // La pista espera a que haya precios: nunca sobre la carga o un error.
+      ready={!loading && !timeoutFlag && !noData}
     />
   );
 
   if (noData) {
     const empty = (
       <EmptyState
+        pose="sleep"
         title={t("prices.noData.title")}
         description={t("prices.noData.body")}
       />

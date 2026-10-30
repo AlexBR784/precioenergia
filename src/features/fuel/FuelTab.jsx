@@ -149,6 +149,7 @@ export function FuelTab({ energyCost }) {
   if (needsZone || (waitingForLocation && geoStatus !== "loading")) {
     body = (
       <EmptyState
+        pose="pointing"
         title={t("fuel.tab.pickTitle")}
         description={isNearby ? t("fuel.tab.pickNearby") : t("fuel.tab.pickArea")}
         action={
@@ -239,6 +240,8 @@ export function FuelTab({ energyCost }) {
         onOnlyOpenChange={setOnlyOpen}
         sort={sort}
         onSortChange={setSort}
+        // La pista espera a que haya gasolineras: nunca sobre la carga o un error.
+        ready={Boolean(stats) && !loading && !error && !waitingForLocation}
       />
 
       {body}

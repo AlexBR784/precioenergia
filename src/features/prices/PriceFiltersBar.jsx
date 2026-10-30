@@ -15,7 +15,7 @@ import SupplyButton from "../supply/SupplyButton";
  * quedaban alineadas. El orden de las horas vive en "Precio hora a hora" y la
  * descarga (CSV) junto a esa misma tabla, que es lo que descarga.
  */
-export function PriceFiltersBar({ date, onDateChange, units, onUnitsChange }) {
+export function PriceFiltersBar({ date, onDateChange, units, onUnitsChange, ready }) {
   return (
     <Stack
       component="section"
@@ -38,7 +38,7 @@ export function PriceFiltersBar({ date, onDateChange, units, onUnitsChange }) {
         justifyContent="space-between"
         sx={{ width: { xs: "100%", sm: "auto" } }}
       >
-        <SupplyButton />
+        <SupplyButton hint={ready} />
         <ToggleButtonGroup
           size="small"
           exclusive

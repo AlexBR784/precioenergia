@@ -19,6 +19,17 @@ export default {
     tooltip: "Instalar la app",
     button: "Instalar la app en este dispositivo",
   },
+  /** Aviso cuando no hay red: se ven los datos guardados. */
+  offline: {
+    title: "Sin conexión",
+    body: "Puede que veas los últimos datos guardados, no los de ahora.",
+  },
+  /** Si una sección se rompe al pintarse. */
+  crash: {
+    title: "Algo ha fallado en esta sección",
+    body: "Recarga la página para volver a intentarlo. Si sigue pasando, prueba otra sección.",
+    reload: "Recargar",
+  },
   footer: {
     data: "Datos:",
     ree: "Red Eléctrica de España — apidatos.ree.es",

@@ -14,7 +14,7 @@ import EventIcon from "@mui/icons-material/EventOutlined";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 
 import { EmptyState } from "../../components/StateViews";
-import MoodFace from "./MoodFace";
+import BoltMascot from "../../components/BoltMascot";
 import { shareText } from "../../utils/share";
 import { t } from "../../i18n";
 
@@ -192,11 +192,11 @@ function FactRow({ insight }) {
  * las alturas no casaban y el título repetía la hora que había que buscar
  * dentro del texto. Ordenar por "cuándo actúo" deja claro qué leer primero.
  */
-/** Humor de la carita según el veredicto del día. */
+/** Ánimo del rayo según el veredicto del día. */
 const MOOD_BY_LEVEL = { cheap: "happy", expensive: "sad", normal: "neutral", unknown: "unknown" };
 
 /**
- * Cabecera del plan: cómo es el día frente a la semana anterior, con la carita.
+ * Cabecera del plan: cómo es el día frente a la semana anterior, con el rayo.
  *
  * Antes era una tarjeta suelta encima del plan, con la media del día en grande
  * (la misma cifra que la cabecera de Precios). Aquí abre el plan: primero cómo
@@ -229,8 +229,8 @@ function ShareDayButton({ text }) {
 function VerdictHeader({ verdict, whenLabel, loadingBaseline, share }) {
   return (
     <Stack direction="row" spacing={1.75} alignItems="center" sx={{ mb: 2.5 }}>
-      {/* key: al cambiar de veredicto (otro día) la carita vuelve a animarse */}
-      <MoodFace key={verdict.level} mood={MOOD_BY_LEVEL[verdict.level] ?? "unknown"} size={52} />
+      {/* key: al cambiar de veredicto (otro día) el rayo vuelve a animarse */}
+      <BoltMascot key={verdict.level} mood={MOOD_BY_LEVEL[verdict.level] ?? "unknown"} size={56} />
       <Box sx={{ minWidth: 0 }}>
         <Stack direction="row" spacing={0.75} alignItems="center" sx={{ color: "text.secondary" }}>
           <TipsIcon sx={{ fontSize: 16 }} aria-hidden="true" />
@@ -284,6 +284,7 @@ export function DayPlan({ insights, whenLabel, verdict, loadingBaseline, aside =
 
         {!insights.length ? (
           <EmptyState
+            pose="normal"
             title={t("tips.plan.emptyTitle")}
             description={t("tips.plan.emptyBody")}
           />

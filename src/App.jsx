@@ -17,6 +17,7 @@ import { useNow } from "./hooks/useNow";
 import { useEnergyPrefs } from "./hooks/useEnergyPrefs";
 import { taxFactor } from "./data/spain";
 import { useLiveTitle } from "./hooks/useLiveTitle";
+import WhatsNew from "./guide/WhatsNew";
 
 const UNITS_KEY = "precioenergia:units";
 
@@ -131,6 +132,7 @@ function App() {
   return (
     <AppShell section={maintenanceOpen ? null : activeTab} sectionLabel={sectionLabel}>
       {maintenanceOpen && <MaintenancePage />}
+      {!maintenanceOpen && <WhatsNew />}
 
       {!maintenanceOpen && shownTab === "prices" && (
         <PricesTab

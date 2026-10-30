@@ -15,7 +15,7 @@ import { t } from "../i18n";
 /*
  * Navegación entre secciones con el patrón de barra de navegación de
  * Material 3: superficie sólida, un "indicador" tonal (píldora suave en
- * `primarySoft`, el color de selección de la paleta) detrás de la sección
+ * `selected`, el tinte dorado de selección de la paleta) detrás de la sección
  * activa y su icono relleno. El indicador se desliza de una sección a otra.
  *
  * Encaja con el resto de la app: mismas superficies opacas, mismos tokens y
@@ -58,7 +58,7 @@ function Indicator({ index, width, height, top }) {
           : `calc(${Math.max(index, 0)} * (100% / ${COUNT}))`,
         opacity: index < 0 ? 0 : 1,
         borderRadius: 999,
-        bgcolor: "primarySoft",
+        bgcolor: "selected",
         transition: SLIDE,
         pointerEvents: "none",
         "@media (prefers-reduced-motion: reduce)": { transition: "none" },

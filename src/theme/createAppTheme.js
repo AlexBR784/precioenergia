@@ -49,6 +49,7 @@ export const createAppTheme = (mode = "light") => {
       priceSoft: t.priceSoft,
       surfaceMuted: t.paperMuted,
       primarySoft: t.primarySoft,
+      selected: t.selected,
       accentSoft: t.accentSoft,
     },
 
@@ -172,10 +173,10 @@ export const createAppTheme = (mode = "light") => {
             borderColor: t.divider,
             // Selección sobria: fondo tenue y texto en el color de acción.
             "&.Mui-selected": {
-              backgroundColor: isDark ? alpha(t.primary, 0.14) : t.primarySoft,
+              backgroundColor: t.selected,
               color: isDark ? t.primaryLight : t.primaryDark,
               "&:hover": {
-                backgroundColor: alpha(t.primary, isDark ? 0.2 : 0.1),
+                backgroundColor: alpha(t.accent, isDark ? 0.28 : 0.34),
               },
             },
           },

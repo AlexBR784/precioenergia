@@ -6,24 +6,64 @@ import { fixed, formatDate } from "../i18n/format";
 const dateLabel = () => formatDate(new Date(), { month: "long", day: "numeric" });
 
 let originalIcon = null;
+const baseIcons = new Map();
+let iconRequest = 0;
 
-/** Favicon redondo del color del precio de ahora (verde barato … rojo caro). */
-const setPriceIcon = (color) => {
+/**
+ * Cara del rayo según el tramo: contento si es barato, tranquilo si es
+ * moderado y preocupado si es alto o muy alto. Las variantes las genera
+ * `design/mascota/iconos.py` junto al favicon (`favicon-32x32-happy.png`…).
+ */
+const FACE_BY_TIER = { cheapest: "-happy", low: "", medium: "-worried", high: "-worried" };
+
+/** Cada favicon, cargado una vez para dibujar encima. */
+const loadBaseIcon = (src) => {
+  if (!baseIcons.has(src)) {
+    baseIcons.set(
+      src,
+      new Promise((resolve) => {
+        const image = new Image();
+        image.onload = () => resolve(image);
+        image.onerror = () => resolve(null);
+        image.src = src;
+      })
+    );
+  }
+  return baseIcons.get(src);
+};
+
+/**
+ * Favicon del rayo con la cara del precio de ahora y un punto de su color
+ * (verde barato … rojo caro), con aro blanco para que se vea en pestañas
+ * claras y oscuras. Sin precio de hoy, el favicon tal cual.
+ */
+const setPriceIcon = async (color, tier) => {
   const link = document.querySelector('link[rel="icon"][sizes="32x32"]') ?? document.querySelector('link[rel="icon"]');
   if (!link) return;
   if (originalIcon == null) originalIcon = link.href;
+  const request = ++iconRequest;
   if (!color) {
     link.href = originalIcon;
     return;
   }
+  const image =
+    (await loadBaseIcon(originalIcon.replace(/\.png$/, `${FACE_BY_TIER[tier] ?? ""}.png`))) ??
+    (await loadBaseIcon(originalIcon));
+  // Si entretanto ha llegado otro precio, manda ese.
+  if (request !== iconRequest) return;
   const canvas = document.createElement("canvas");
   canvas.width = 32;
   canvas.height = 32;
   const context = canvas.getContext("2d");
   if (!context) return;
-  context.fillStyle = color;
+  if (image) context.drawImage(image, 0, 0, 32, 32);
   context.beginPath();
-  context.arc(16, 16, 14, 0, Math.PI * 2);
+  context.arc(24, 24, 7, 0, Math.PI * 2);
+  context.fillStyle = "#FFFFFF";
+  context.fill();
+  context.beginPath();
+  context.arc(24, 24, 5.5, 0, Math.PI * 2);
+  context.fillStyle = color;
   context.fill();
   link.href = canvas.toDataURL("image/png");
 };
@@ -52,7 +92,7 @@ export const useLiveTitle = (energyCost, isToday, now, prefix = null) => {
     const values = energyCost.map((item) => item.value);
     const tier = getPriceTier(current.value, Math.min(...values), Math.max(...values));
     document.title = withPrefix(t("common.liveTitle", { price: fixed(current.value / 1000, 3), app: t("common.appName") }));
-    setPriceIcon(palette.light.price[tier]);
+    setPriceIcon(palette.light.price[tier], tier);
   }, [energyCost, isToday, hour, prefix]);
 };
 
