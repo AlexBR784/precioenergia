@@ -36,6 +36,10 @@ def constant(name):
     return "".join(re.findall(r'"([^"]*)"', block))
 
 
+def face_dx():
+    return float(re.search(r"const FACE_DX = ([\d.]+);", SOURCE).group(1))
+
+
 def mood_face(name):
     """Cara de `MOODS[name]`: cejas, boca, ojos (óvalos o trazos) y mofletes."""
     block = re.search(rf"\n  {name}: \{{(.*?)\n  \}},", SOURCE, re.S).group(1)
@@ -131,16 +135,18 @@ def render(height, face="neutral"):
     blush_mask = Image.new("L", size)
     if face:
         brows, mouth, eyes, blush = mood_face(face)
+        fx = face_dx()
+        move = lambda pts: [(x + fx, y) for x, y in pts]
         for d in brows:
-            stroke(ink, flatten(d)[0], 2, scale)
-        stroke(ink, flatten(mouth)[0], 2.4, scale)
+            stroke(ink, move(flatten(d)[0]), 2, scale)
+        stroke(ink, move(flatten(mouth)[0]), 2.4, scale)
         for d in eyes.get("lines", []):
-            stroke(ink, flatten(d)[0], 2.4, scale)
-        for cx, cy in eyes.get("ovals", []):
+            stroke(ink, move(flatten(d)[0]), 2.4, scale)
+        for cx, cy in move(eyes.get("ovals", [])):
             ink.ellipse(((cx - 2.1) * scale, (cy - 3) * scale, (cx + 2.1) * scale, (cy + 3) * scale), fill=255)
         if blush:
             cheeks = ImageDraw.Draw(blush_mask)
-            for cx in (15, 38.5):
+            for cx in (15 + fx, 38.5 + fx):
                 cheeks.ellipse(((cx - 3) * scale, (37 - 1.8) * scale, (cx + 3) * scale, (37 + 1.8) * scale), fill=255)
 
     out = Image.new("RGBA", size, (0, 0, 0, 0))

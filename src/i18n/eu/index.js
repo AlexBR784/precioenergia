@@ -86,6 +86,7 @@ export default {
   },
 
   layout: {
+    brand: ({ strong }) => [strong("Argiaren"), " prezioa"],
     skipLink: "Joan edukira",
     sections: "Aplikazioaren atalak",
     tabs: { prices: "Prezioak", tips: "Aholkuak", bill: "Faktura", fuel: "Erregaiak" },

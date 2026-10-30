@@ -34,13 +34,18 @@ const SPARK = palette.light.price.high;
 const GLASS = palette.light.priceSoft.low;
 const BLUSH = "#F2A7A0";
 
-/** Silueta: rayo achatado, inclinado a la derecha, esquinas redondeadas. */
+/**
+ * Silueta: el símbolo de la marca, construido sobre una retícula (lados
+ * paralelos, mismos radios). Sale de `design/marca/geometria.py`; si cambia
+ * allí, se copia aquí y se regeneran los iconos (`design/mascota/iconos.py`).
+ */
 const BODY =
-  "M18.9 12 L50.1 5.8 Q54 5 52.7 8.8 L46.5 27.6 Q46 29 47.5 29.3 L54.5 30.5 Q57.5 31 55.7 33.4 " +
-  "L41 53.5 Q38 57.5 33.1 58.5 L21.9 60.7 Q18 61.5 18.1 57.5 L18.4 48.5 Q18.5 47 17 46.8 " +
-  "L8 45.4 Q5 45 5.8 42.1 L12.6 17.8 Q14 13 18.9 12 Z";
+  "M20.14 12.37 L49.86 6.43 Q53 5.8 52.08 8.87 L47.1 25.46 Q46.7 26.8 48.07 26.53 L53.56 25.43 Q56.7 24.8 54.96 27.48 L37.03 55.06 Q35.29 57.74 32.15 58.37 " +
+  "L22.14 60.37 Q19 61 19.92 57.93 L22.8 48.34 Q23.2 47 21.83 47.27 L8.89 49.86 Q5.75 50.49 6.67 47.42 L16.08 16.07 Q17 13 20.14 12.37 Z";
 /** Cantos de la derecha: una banda más oscura (recortada por la silueta) da volumen sin degradados. */
-const SHADE = "M54 5 L46 29 L57.5 31 L38 57.5";
+const SHADE = "M53 5.8 L46.7 26.8 L56.7 24.8 L35.29 57.74";
+/** Desplazamiento de la cara hacia la derecha, para centrarla en la silueta. */
+const FACE_DX = 2.5;
 
 const pop = keyframes`
   0%   { transform: scale(0.6); opacity: 0; }
@@ -180,7 +185,7 @@ const LEGS = {
   ],
 };
 const LEFT_ARM = { items: [{ line: "M11 34 Q5 39 4 46" }, { dot: [4, 47.6] }] };
-const RIGHT_ARM = { items: [{ line: "M50 38 Q56 42 57 48" }, { dot: [57.2, 49.6] }] };
+const RIGHT_ARM = { items: [{ line: "M46 38 Q55 42 56 48" }, { dot: [56.2, 49.6] }] };
 
 const POSES = {
   // De pie, tranquilo (recorrido: Precios).
@@ -227,7 +232,7 @@ const POSES = {
     groups: [
       LEGS,
       LEFT_ARM,
-      { items: [{ line: "M50 38 Q57 41 60 38.2" }, { line: "M62.4 35.4 L65.2 29.6", width: 3 }, { lens: [68, 23.4, 6.4] }, { dot: [61.2, 37.2] }] },
+      { items: [{ line: "M46 38 Q57 41 60 38.2" }, { line: "M62.4 35.4 L65.2 29.6", width: 3 }, { lens: [68, 23.4, 6.4] }, { dot: [61.2, 37.2] }] },
     ],
   },
   // Con el enchufe desconectado en la mano (algo ha fallado).
@@ -276,7 +281,7 @@ const POSES = {
     groups: [
       LEGS,
       { items: [{ line: "M11 33 Q4 33 1.4 27.4" }, { dot: [0.8, 25.4] }] },
-      { items: [{ line: "M50 36 Q58 35 62 29.4" }, { dot: [62.8, 27.4] }] },
+      { items: [{ line: "M46 36 Q58 35 62 29.4" }, { dot: [62.8, 27.4] }] },
     ],
   },
 };
@@ -423,53 +428,56 @@ export function BoltMascot({ mood, pose, size = 56, animate = true }) {
           />
           <path d={BODY} {...stroke} strokeWidth={3} />
 
-          {config.blush && (
-            <Box component="g" sx={{ animation: run(`${fadeIn} 0.4s ease 0.5s both`) }}>
-              <ellipse cx="15" cy="37" rx="3" ry="1.8" fill={BLUSH} />
-              <ellipse cx="38.5" cy="37" rx="3" ry="1.8" fill={BLUSH} />
-            </Box>
-          )}
+          {/* La cara, centrada en la parte ancha del rayo. */}
+          <g transform={`translate(${FACE_DX} 0)`}>
+            {config.blush && (
+              <Box component="g" sx={{ animation: run(`${fadeIn} 0.4s ease 0.5s both`) }}>
+                <ellipse cx="15" cy="37" rx="3" ry="1.8" fill={BLUSH} />
+                <ellipse cx="38.5" cy="37" rx="3" ry="1.8" fill={BLUSH} />
+              </Box>
+            )}
 
-          {config.brows.map((d) => (
-            <path key={d} d={d} {...stroke} strokeWidth={2} />
-          ))}
+            {config.brows.map((d) => (
+              <path key={d} d={d} {...stroke} strokeWidth={2} />
+            ))}
 
-          {oval ? (
-            <Box
-              component="g"
-              sx={{
-                transformBox: "fill-box",
-                transformOrigin: "50% 50%",
-                animation: run(
-                  `${blink} 3.2s linear 0.9s 1 both${
-                    config.gestureOnEyes ? `, ${config.gesture} 1.4s ease-in-out 0.6s 1 both` : ""
-                  }`
-                ),
-              }}
-            >
-              {OVAL_EYES.map(({ cx, cy }) => (
-                <ellipse key={cx} cx={cx} cy={cy} rx="2.1" ry="3" fill={INK} />
-              ))}
-            </Box>
-          ) : (
-            config.eyes.map((d) => <path key={d} d={d} {...stroke} />)
-          )}
+            {oval ? (
+              <Box
+                component="g"
+                sx={{
+                  transformBox: "fill-box",
+                  transformOrigin: "50% 50%",
+                  animation: run(
+                    `${blink} 3.2s linear 0.9s 1 both${
+                      config.gestureOnEyes ? `, ${config.gesture} 1.4s ease-in-out 0.6s 1 both` : ""
+                    }`
+                  ),
+                }}
+              >
+                {OVAL_EYES.map(({ cx, cy }) => (
+                  <ellipse key={cx} cx={cx} cy={cy} rx="2.1" ry="3" fill={INK} />
+                ))}
+              </Box>
+            ) : (
+              config.eyes.map((d) => <path key={d} d={d} {...stroke} />)
+            )}
 
-          <Box
-            component="path"
-            d={config.mouth}
-            {...stroke}
-            sx={{ strokeDasharray: 30, animation: run(`${draw} 0.5s ${ease} 0.2s both`) }}
-          />
-
-          {config.sweat && (
             <Box
               component="path"
-              d="M44 12.6 Q47.2 17.4 44 19.6 Q40.8 17.4 44 12.6 Z"
-              fill={SWEAT}
-              sx={{ animation: run(`${drip} 0.7s ease-out 0.8s both`) }}
+              d={config.mouth}
+              {...stroke}
+              sx={{ strokeDasharray: 30, animation: run(`${draw} 0.5s ${ease} 0.2s both`) }}
             />
-          )}
+
+            {config.sweat && (
+              <Box
+                component="path"
+                d="M41.5 12.6 Q44.7 17.4 41.5 19.6 Q38.3 17.4 41.5 12.6 Z"
+                fill={SWEAT}
+                sx={{ animation: run(`${drip} 0.7s ease-out 0.8s both`) }}
+              />
+            )}
+          </g>
         </Box>
       </Box>
     </Box>

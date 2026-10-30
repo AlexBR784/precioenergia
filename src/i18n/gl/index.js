@@ -80,6 +80,7 @@ export default {
   },
 
   layout: {
+    brand: ({ strong }) => ["Prezo da ", strong("luz")],
     skipLink: "Saltar ao contido",
     sections: "Seccións da aplicación",
     tabs: { prices: "Prezos", tips: "Consellos", bill: "Factura", fuel: "Carburantes" },

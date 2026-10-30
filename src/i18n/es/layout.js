@@ -1,6 +1,8 @@
 /** Cabecera, pestañas, pie y menús generales. */
 export default {
   skipLink: "Saltar al contenido",
+  /** Logotipo de la cabecera: la palabra que se busca, en negrita (ver design/marca). */
+  brand: ({ strong }) => ["Precio de la ", strong("luz")],
   sections: "Secciones de la aplicación",
   tabs: {
     prices: "Precios",

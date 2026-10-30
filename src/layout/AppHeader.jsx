@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { AppBar, Container, Stack, Toolbar, Typography } from "@mui/material";
+import { AppBar, Box, Container, Stack, Toolbar, Typography } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import Mascot from "../components/Mascot";
 import ThemeToggle from "./ThemeToggle";
@@ -8,6 +8,7 @@ import LanguageMenu from "./LanguageMenu";
 import AdminButton from "./AdminButton";
 import { HeaderNav } from "./SectionNav";
 import { t } from "../i18n";
+import { rich } from "../i18n/rich";
 
 /**
  * Cabecera fija con la marca, la navegación (en escritorio) y los ajustes
@@ -42,8 +43,21 @@ export function AppHeader({ section }) {
             sx={{ flexGrow: { xs: 1, md: 0 }, flexShrink: 0, minWidth: 0 }}
           >
             <Mascot size={{ xs: 36, sm: 40 }} />
-            <Typography variant="h1" noWrap sx={{ fontSize: { xs: "1rem", sm: "1.25rem" } }}>
-              {t("common.appName")}
+            {/* El logotipo (design/marca): peso medio y la palabra clave en negrita. */}
+            <Typography
+              variant="h1"
+              noWrap
+              sx={{ fontSize: { xs: "1.0625rem", sm: "1.25rem" }, fontWeight: 500, letterSpacing: "-0.02em" }}
+            >
+              {rich(
+                t("layout.brand", {
+                  strong: (text) => (
+                    <Box component="strong" key="brand" sx={{ fontWeight: 700 }}>
+                      {text}
+                    </Box>
+                  ),
+                })
+              )}
             </Typography>
           </Stack>
 
