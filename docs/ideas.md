@@ -22,6 +22,13 @@
   «Ver recorrido» a demanda en el pie. Todo en `precioenergia:guide`; para volver a verlo, borrar
   esa clave.
 
+## Hecho (31/10/2026)
+- Idiomas: castellano, catalán, gallego, euskera e inglés (`src/i18n`, `npm run check:i18n`).
+- Bundle partido: Precios en el principal; Consejos, Factura, Carburantes, Mantenimiento y la
+  gráfica (ECharts) en archivos aparte. React y MUI en `vendor`. Lo que se descarga antes de ver
+  el precio baja de ~470 KB a ~240 KB comprimidos; las demás secciones se descargan después, con
+  el navegador libre, para que cambiar de pestaña y abrir sin conexión sigan funcionando.
+
 ## Mantenimiento: cifras que cambian por ley
 Todas están en `src/data/spain.js`, con la fecha de revisión. La página `#mantenimiento`
 (https://alexbr784.github.io/precioenergia/#mantenimiento, no enlazada) lista qué toca revisar y
@@ -35,9 +42,10 @@ cuándo; tras abrirla una vez, ese dispositivo enseña un aviso con contador en 
   el IPC eléctrico se dispara), IGIC e IPSI.
 
 ## Pendiente
-- **Idiomas** (catalán, gallego, euskera e inglés): obliga a sacar todos los textos de los
-  componentes a ficheros de traducción y a revisar cada idioma con alguien nativo. Mejor como
-  tarea aparte.
+- **Precio de los excedentes solares** (compensación del PVPC, en la misma API de REE): opción
+  «tengo placas» en «Mi suministro» y una línea en Factura.
+- **Accesos directos del icono** (`shortcuts` en el manifiesto): «Precio de mañana», «Gasolineras».
+- **Franja de 24 horas deslizable en el móvil.**
 - PVPC propio de Ceuta y Melilla: algunas horas difieren del peninsular y la API pública de REE
   no lo ofrece (con `geo_limit` distinto de peninsular responde 400). Hoy se avisa al usuario.
 

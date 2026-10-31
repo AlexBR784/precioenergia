@@ -1,10 +1,14 @@
 /* eslint-disable react/prop-types */
+import { lazy, Suspense } from "react";
 import { Box, Stack, Typography } from "@mui/material";
-import HourlyPriceChart from "../../components/HourlyPriceChart";
 import PeriodStrip from "../../components/PeriodStrip";
 import { useEnergyPrefs } from "../../hooks/useEnergyPrefs";
 import { t } from "../../i18n";
 import { useNow } from "../../hooks/useNow";
+
+// ECharts es lo más pesado de la app: va en su propio archivo y se descarga
+// a la vez que el resto, así el resumen del precio no lo espera.
+const HourlyPriceChart = lazy(() => import("../../components/HourlyPriceChart"));
 
 function LegendItem({ swatch, children }) {
   return (
@@ -27,7 +31,9 @@ export function PriceChartCard({ data, units, isToday, date }) {
         {t("prices.chart.title")}
       </Typography>
 
-      <HourlyPriceChart data={data} units={units} isToday={isToday} />
+      <Suspense fallback={<Box sx={{ height: { xs: 260, md: 340 } }} aria-busy="true" />}>
+        <HourlyPriceChart data={data} units={units} isToday={isToday} />
+      </Suspense>
 
       <Stack
         direction="row"

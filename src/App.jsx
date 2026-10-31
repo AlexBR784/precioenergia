@@ -1,12 +1,9 @@
-import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import dayjs from "dayjs";
 
 import AppShell from "./layout/AppShell";
+import { Box } from "@mui/material";
 import PricesTab from "./features/prices/PricesTab";
-import RecommendationsTab from "./features/recommendations/RecommendationsTab";
-import FuelTab from "./features/fuel/FuelTab";
-import BillTab from "./features/bill/BillTab";
-import MaintenancePage from "./features/admin/MaintenancePage";
 import { useAdmin } from "./hooks/useAdmin";
 import { useSection } from "./hooks/useSection";
 import { t } from "./i18n";
@@ -20,6 +17,33 @@ import { useLiveTitle } from "./hooks/useLiveTitle";
 import WhatsNew from "./guide/WhatsNew";
 
 const UNITS_KEY = "precioenergia:units";
+
+/*
+ * Precios va en el bundle principal: es lo que ve casi todo el mundo al
+ * entrar. El resto de secciones se descargan aparte, así que quien solo mira
+ * el precio de hoy no se baja Factura ni Carburantes.
+ */
+const loadTips = () => import("./features/recommendations/RecommendationsTab");
+const loadBill = () => import("./features/bill/BillTab");
+const loadFuel = () => import("./features/fuel/FuelTab");
+const RecommendationsTab = lazy(loadTips);
+const BillTab = lazy(loadBill);
+const FuelTab = lazy(loadFuel);
+const MaintenancePage = lazy(() => import("./features/admin/MaintenancePage"));
+
+/**
+ * Con la página ya pintada y el navegador libre, se descargan las otras
+ * secciones: cambiar de pestaña sigue siendo inmediato y el service worker
+ * las guarda para abrir la app sin conexión.
+ */
+const prefetchSections = () => {
+  const run = () => [loadTips, loadBill, loadFuel].forEach((load) => load().catch(() => {}));
+  if ("requestIdleCallback" in window) window.requestIdleCallback(run, { timeout: 5000 });
+  else window.setTimeout(run, 3000);
+};
+
+/** Mientras llega una sección que aún no se había descargado (al entrar por su enlace). */
+const SectionFallback = () => <Box sx={{ minHeight: "70vh" }} aria-busy="true" />;
 
 const readStoredUnits = () => {
   try {
@@ -37,6 +61,7 @@ function App() {
   // El contenido cambia con un instante de retraso a propósito: la navegación
   // marca la sección nueva al momento y la sección, que pesa, se pinta después.
   const shownTab = useDeferredValue(activeTab);
+  useEffect(prefetchSections, []);
   // Consumo importado en Factura: aquí para que no se pierda al cambiar de pestaña.
   const [usage, setUsage] = useState(null);
 
@@ -131,46 +156,48 @@ function App() {
 
   return (
     <AppShell section={maintenanceOpen ? null : activeTab} sectionLabel={sectionLabel}>
-      {maintenanceOpen && <MaintenancePage />}
-      {!maintenanceOpen && <WhatsNew />}
+      <Suspense fallback={<SectionFallback />}>
+        {maintenanceOpen && <MaintenancePage />}
+        {!maintenanceOpen && <WhatsNew />}
 
-      {!maintenanceOpen && shownTab === "prices" && (
-        <PricesTab
-          energyCost={shownCost}
-          loading={loading}
-          timeoutFlag={timeoutFlag}
-          noData={noData}
-          fetchEnergyCost={fetchEnergyCost}
-          date={selectedDate}
-          onDateChange={handleDateChange}
-          units={units}
-          onUnitsChange={setUnits}
-          onNavigateToTips={() => navigate("tips")}
-        />
-      )}
+        {!maintenanceOpen && shownTab === "prices" && (
+          <PricesTab
+            energyCost={shownCost}
+            loading={loading}
+            timeoutFlag={timeoutFlag}
+            noData={noData}
+            fetchEnergyCost={fetchEnergyCost}
+            date={selectedDate}
+            onDateChange={handleDateChange}
+            units={units}
+            onUnitsChange={setUnits}
+            onNavigateToTips={() => navigate("tips")}
+          />
+        )}
 
-      {!maintenanceOpen && shownTab === "tips" && (
-        <RecommendationsTab
-          energyCost={shownCost}
-          loading={loading}
-          timeoutFlag={timeoutFlag}
-          noData={noData}
-          fetchEnergyCost={fetchEnergyCost}
-          date={selectedDate}
-          onDateChange={handleDateChange}
-          units={units}
-          baseline={baseline}
-          sampleDays={sampleDays}
-          baselineLoading={baselineLoading}
-          onOpenBill={() => navigate("bill")}
-        />
-      )}
+        {!maintenanceOpen && shownTab === "tips" && (
+          <RecommendationsTab
+            energyCost={shownCost}
+            loading={loading}
+            timeoutFlag={timeoutFlag}
+            noData={noData}
+            fetchEnergyCost={fetchEnergyCost}
+            date={selectedDate}
+            onDateChange={handleDateChange}
+            units={units}
+            baseline={baseline}
+            sampleDays={sampleDays}
+            baselineLoading={baselineLoading}
+            onOpenBill={() => navigate("bill")}
+          />
+        )}
 
-      {!maintenanceOpen && shownTab === "bill" && <BillTab usage={usage} onUsage={setUsage} />}
+        {!maintenanceOpen && shownTab === "bill" && <BillTab usage={usage} onUsage={setUsage} />}
 
-      {/* Carga diferida sin flag: los datos se piden al montar la pestaña y
-          useFuelPrices los cachea, así que volver a ella no los repite. */}
-      {!maintenanceOpen && shownTab === "fuel" && <FuelTab energyCost={shownCost} />}
+        {/* Carga diferida sin flag: los datos se piden al montar la pestaña y
+            useFuelPrices los cachea, así que volver a ella no los repite. */}
+        {!maintenanceOpen && shownTab === "fuel" && <FuelTab energyCost={shownCost} />}
+      </Suspense>
     </AppShell>
   );
 }

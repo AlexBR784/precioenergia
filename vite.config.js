@@ -56,4 +56,14 @@ const contentSecurityPolicy = () => ({
 export default defineConfig({
   base: '/precioenergia/',
   plugins: [react(), contentSecurityPolicy()],
+  build: {
+    rollupOptions: {
+      output: {
+        // React y MUI apenas cambian entre versiones de la web: en su propio
+        // archivo, quien vuelve tras un despliegue solo se baja el código nuevo.
+        manualChunks: (id) =>
+          /node_modules[\\/](react|react-dom|scheduler|@mui|@emotion)[\\/]/.test(id) ? 'vendor' : undefined,
+      },
+    },
+  },
 });
