@@ -10,7 +10,8 @@
  *
  * Al cambiar VERSION se borran las cachés anteriores.
  */
-const VERSION = "v1";
+// v2: iconos de la app nuevos; al activarse se borra lo guardado con v1.
+const VERSION = "v2";
 const APP_CACHE = `app-${VERSION}`;
 const DATA_CACHE = `data-${VERSION}`;
 const API_HOSTS = ["apidatos.ree.es", "sedeaplicaciones.minetur.gob.es"];
