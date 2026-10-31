@@ -13,7 +13,7 @@ import os
 import re
 import sys
 
-from PIL import Image, ImageChops, ImageDraw
+from PIL import Image, ImageChops, ImageDraw, ImageFilter
 
 PUBLIC = sys.argv[1]
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -176,13 +176,49 @@ favicons[48].save(
 on_square(32, 1.0, face="happy").save(os.path.join(PUBLIC, "favicon-32x32-happy.png"))
 on_square(32, 1.0, face="worried").save(os.path.join(PUBLIC, "favicon-32x32-worried.png"))
 
-# Pantalla de inicio: el símbolo de la marca (sin cara ni sombreado, como en
-# design/marca) sobre el azul marino (iOS pinta de negro lo transparente).
-on_square(180, 0.7, NAVY, None, False).convert("RGB").save(os.path.join(PUBLIC, "apple-touch-icon.png"))
-on_square(192, 0.7, NAVY, None, False).save(os.path.join(PUBLIC, "android-chrome-192x192.png"))
-on_square(512, 0.7, NAVY, None, False).save(os.path.join(PUBLIC, "android-chrome-512x512.png"))
+# Pantalla de inicio (app instalada): el rayo grande, con su canto oscuro y un
+# contorno de tinta grueso que lo despega del azul marino (un contorno del mismo
+# azul que el fondo no se veía), un poco a la derecha para compensar que el
+# rayo pesa a la izquierda. iOS pinta de negro lo transparente: fondo opaco.
+HALO = (13, 18, 28)
+
+
+def app_icon(size, fraction):
+    art = render(round(size * fraction), None, True)
+    px = art.load()
+    for y in range(art.height):
+        for x in range(art.width):
+            r, g, b, a = px[x, y]
+            if a and abs(r - INK[0]) + abs(g - INK[1]) + abs(b - INK[2]) < 60:
+                px[x, y] = HALO + (a,)
+    canvas = Image.new("RGBA", (size, size), NAVY + (255,))
+    x = (size - art.width) // 2 + round(size * 0.02)
+    y = (size - art.height) // 2
+    radius = max(2, round(size * 0.018))
+    grown = art.getchannel("A").filter(ImageFilter.MaxFilter(2 * radius + 1)).filter(ImageFilter.GaussianBlur(0.8))
+    halo = Image.new("RGBA", art.size, HALO + (0,))
+    halo.putalpha(grown)
+    canvas.alpha_composite(halo, (x, y))
+    canvas.alpha_composite(art, (x, y))
+    return canvas
+
+
+def mono_icon(size, fraction):
+    """Silueta blanca sobre transparente: iconos temáticos de Android 13+."""
+    art = render(round(size * fraction), None, False)
+    white = Image.new("RGBA", art.size, (255, 255, 255, 0))
+    white.putalpha(art.getchannel("A"))
+    canvas = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    canvas.alpha_composite(white, ((size - art.width) // 2 + round(size * 0.02), (size - art.height) // 2))
+    return canvas
+
+
+app_icon(180, 0.78).convert("RGB").save(os.path.join(PUBLIC, "apple-touch-icon.png"))
+app_icon(192, 0.78).save(os.path.join(PUBLIC, "android-chrome-192x192.png"))
+app_icon(512, 0.78).save(os.path.join(PUBLIC, "android-chrome-512x512.png"))
 # Maskable: Android recorta hasta un círculo del 80 % del lado; el rayo cabe dentro.
-on_square(512, 0.56, NAVY, None, False).save(os.path.join(PUBLIC, "maskable-512x512.png"))
+app_icon(512, 0.6).save(os.path.join(PUBLIC, "maskable-512x512.png"))
+mono_icon(512, 0.6).save(os.path.join(PUBLIC, "monochrome-512x512.png"))
 
 # Imagen para redes: se conserva el texto de la izquierda; a la derecha, el símbolo.
 og_path = os.path.join(PUBLIC, "og-image.png")

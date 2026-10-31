@@ -47,7 +47,7 @@ const setPriceIcon = async (color, tier) => {
     return;
   }
   const image =
-    (await loadBaseIcon(originalIcon.replace(/\.png$/, `${FACE_BY_TIER[tier] ?? ""}.png`))) ??
+    (await loadBaseIcon(originalIcon.replace(/\.png(\?.*)?$/, `${FACE_BY_TIER[tier] ?? ""}.png$1`))) ??
     (await loadBaseIcon(originalIcon));
   // Si entretanto ha llegado otro precio, manda ese.
   if (request !== iconRequest) return;
