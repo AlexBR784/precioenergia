@@ -3,8 +3,6 @@ import { useMemo, useState } from "react";
 import {
   Box,
   Button,
-  Card,
-  CardContent,
   Stack,
   ToggleButton,
   ToggleButtonGroup,
@@ -14,7 +12,6 @@ import {
 import { alpha } from "@mui/material/styles";
 import { visuallyHidden } from "@mui/utils";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
-import ScheduleIcon from "@mui/icons-material/ScheduleOutlined";
 import DownloadIcon from "@mui/icons-material/FileDownloadOutlined";
 import ArrowDownIcon from "@mui/icons-material/ArrowDownwardRounded";
 import ArrowUpIcon from "@mui/icons-material/ArrowUpwardRounded";
@@ -23,7 +20,6 @@ import RemoveIcon from "@mui/icons-material/RemoveRounded";
 import { hourOf } from "../../hooks/usePriceStats";
 import { usePowerKw } from "../../hooks/usePowerKw";
 import { useNow } from "../../hooks/useNow";
-import { useEnergyPrefs } from "../../hooks/useEnergyPrefs";
 import { PRICE_TIER_LABELS } from "../../theme/tokens";
 import { euroCost, formatEuros, formatPrice } from "./priceFormat";
 import { t } from "../../i18n";
@@ -75,7 +71,7 @@ const percentVsAverage = (value, average) =>
 
 /**
  * Cuánto más barata o más cara es la hora que la media, dicho con un número:
- * "−78 %", "+77 %" o "≈ media", en el color de su tramo.
+ * "−78 %", "+77 %" o "≈ media", en el color de su tramo (texto, sin pastilla).
  *
  * Antes era una barra divergente (izquierda = más barata, derecha = más cara)
  * que los usuarios no entendían: la media era una rayita tenue, la longitud
@@ -95,14 +91,10 @@ function AverageDelta({ value, average, tier }) {
       sx={{
         justifySelf: "center",
         minWidth: 64,
-        px: 1,
-        py: 0.25,
-        borderRadius: 999,
         textAlign: "center",
-        fontSize: "0.8125rem",
+        fontSize: "0.875rem",
         fontWeight: 700,
         whiteSpace: "nowrap",
-        bgcolor: near ? "surfaceMuted" : `priceSoft.${tier}`,
         color: near ? "text.secondary" : `price.${tier}`,
       }}
     >
@@ -280,7 +272,7 @@ function Column({ title, subtitle, header, rows, renderRow }) {
   return (
     <Box sx={{ minWidth: 0 }}>
       <Stack direction="row" justifyContent="space-between" alignItems="baseline" sx={{ px: 1.25, mb: 0.75 }}>
-        <Typography variant="subtitle2" component="h3" color="text.secondary">
+        <Typography variant="body2" component="h3" sx={{ fontWeight: 700 }}>
           {title}
         </Typography>
         {subtitle && (
@@ -304,7 +296,7 @@ function Column({ title, subtitle, header, rows, renderRow }) {
  * Cada hora lleva su precio, su comparación con la media del día (como %, barra
  * o flecha, a elegir y recordado) y lo que
  * cuesta consumir esa hora con la potencia del usuario (la misma que usa
- * "¿Cuándo lo enciendo?"). Así deja de repetir la gráfica, que ya da la forma
+ * "Cuándo poner cada aparato"). Así deja de repetir la gráfica, que ya da la forma
  * del día, y responde a "¿cuánto me cuesta a esta hora?".
  *
  * Sustituye a la tabla de escritorio (tres columnas estiradas, con su propio
@@ -312,7 +304,6 @@ function Column({ title, subtitle, header, rows, renderRow }) {
  * ordena, y no arriba con la fecha.
  */
 export function HourlyBreakdown({ hours, units, average, isToday, onNavigateToTips, onExport }) {
-  const { prefs: supplyPrefs } = useEnergyPrefs();
   const [order, setOrder] = useState(ORDER.HOUR);
   const [style, setStyleState] = useState(readStoredStyle);
   const setStyle = (value) => {
@@ -391,126 +382,121 @@ export function HourlyBreakdown({ hours, units, average, isToday, onNavigateToTi
   }, [hours, order, units]);
 
   return (
-    <Card component="section" aria-labelledby="hours-heading">
-      <CardContent>
-        <Stack
-          direction={{ xs: "column", md: "row" }}
-          spacing={1.5}
-          alignItems={{ xs: "stretch", md: "flex-start" }}
-          justifyContent="space-between"
-          sx={{ mb: 2.5 }}
-        >
-          <Box sx={{ minWidth: 0 }}>
-            <Stack direction="row" spacing={1} alignItems="center">
-              <ScheduleIcon fontSize="small" color="primary" aria-hidden="true" />
-              <Typography variant="h2" component="h2" id="hours-heading">
-                {t("prices.hours.title")}
-              </Typography>
-            </Stack>
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25 }}>
-              {t("prices.hours.body", { units, kw: formatNumber(powerKw) })}
-            </Typography>
-          </Box>
-
-          <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap sx={{ flexShrink: 0 }}>
-            <ToggleButtonGroup
-              size="small"
-              exclusive
-              value={order}
-              aria-label={t("prices.hours.order")}
-              onChange={(_, value) => value && setOrder(value)}
-            >
-              <ToggleButton value={ORDER.HOUR}>{t("prices.hours.byHour")}</ToggleButton>
-              <ToggleButton value={ORDER.PRICE}>{t("prices.hours.cheapestFirst")}</ToggleButton>
-            </ToggleButtonGroup>
-            {onExport && (
-              <Tooltip title={t("prices.hours.csvTooltip")}>
-                <Button
-                  size="small"
-                  variant="outlined"
-                  startIcon={<DownloadIcon />}
-                  onClick={onExport}
-                  sx={{ minHeight: { xs: 44, sm: 36 } }}
-                >
-                  CSV
-                </Button>
-              </Tooltip>
-            )}
-            <Button
-              size="small"
-              endIcon={<ArrowForwardIcon />}
-              onClick={onNavigateToTips}
-              sx={{ minHeight: { xs: 44, sm: 36 } }}
-            >
-              {t("prices.hours.toTips")}
-            </Button>
-          </Stack>
-        </Stack>
-
-        {/* Leyenda del estilo elegido y el selector, a todo el ancho */}
-        <Stack
-          direction={{ xs: "column", sm: "row" }}
-          spacing={1.5}
-          alignItems={{ xs: "flex-start", sm: "center" }}
-          justifyContent="space-between"
-          sx={{ mt: -1, mb: 2 }}
-        >
-          <Typography variant="body2" color="text.secondary" sx={{ minWidth: 0 }}>
-            <AverageLegend style={style} average={average} units={units} />
+    <Box component="section" aria-labelledby="hours-heading" sx={{ pt: 3, borderTop: 1, borderColor: "divider" }}>
+      <Stack
+        direction={{ xs: "column", md: "row" }}
+        spacing={1.5}
+        alignItems={{ xs: "stretch", md: "flex-start" }}
+        justifyContent="space-between"
+        sx={{ mb: 2.5 }}
+      >
+        <Box sx={{ minWidth: 0 }}>
+          <Typography variant="h2" component="h2" id="hours-heading">
+            {t("prices.hours.title")}
           </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25 }}>
+            {t("prices.hours.body", { units, kw: formatNumber(powerKw) })}
+          </Typography>
+        </Box>
+
+        <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap sx={{ flexShrink: 0 }}>
           <ToggleButtonGroup
             size="small"
             exclusive
-            value={style}
-            aria-label={t("prices.hours.styleLabel")}
-            onChange={(_, value) => value && setStyle(value)}
-            sx={{ flexShrink: 0, "& .MuiToggleButton-root": { px: 1.25, minHeight: 32 } }}
+            value={order}
+            aria-label={t("prices.hours.order")}
+            onChange={(_, value) => value && setOrder(value)}
           >
-            <ToggleButton value={STYLES.PERCENT} aria-label={t("prices.hours.stylePercent")}>
-              %
-            </ToggleButton>
-            <ToggleButton value={STYLES.BAR}>{t("prices.hours.styleBar")}</ToggleButton>
-            <ToggleButton value={STYLES.ARROW}>{t("prices.hours.styleArrow")}</ToggleButton>
+            <ToggleButton value={ORDER.HOUR}>{t("prices.hours.byHour")}</ToggleButton>
+            <ToggleButton value={ORDER.PRICE}>{t("prices.hours.cheapestFirst")}</ToggleButton>
           </ToggleButtonGroup>
+          {onExport && (
+            <Tooltip title={t("prices.hours.csvTooltip")}>
+              <Button
+                size="small"
+                variant="outlined"
+                startIcon={<DownloadIcon />}
+                onClick={onExport}
+                sx={{ minHeight: { xs: 44, sm: 36 } }}
+              >
+                CSV
+              </Button>
+            </Tooltip>
+          )}
+          <Button
+            size="small"
+            endIcon={<ArrowForwardIcon />}
+            onClick={onNavigateToTips}
+            sx={{ minHeight: { xs: 44, sm: 36 } }}
+          >
+            {t("prices.hours.toTips")}
+          </Button>
         </Stack>
+      </Stack>
 
-        <Box
-          sx={{
-            display: "grid",
-            gridTemplateColumns: { xs: "1fr", md: "repeat(3, minmax(0, 1fr))" },
-            columnGap: 3,
-            rowGap: 3,
-          }}
-        >
-          {columns.map((column) => (
-            <Column
-              key={column.id}
-              title={column.title}
-              subtitle={column.subtitle}
-              header={columnHeader}
-              rows={column.rows}
-              renderRow={(row, index) => (
-                <HourRow
-                  key={row.datetime}
-                  row={row}
-                  units={units}
-                  powerKw={powerKw}
-                  average={average}
-                  maxDeviation={maxDeviation}
-                  style={style}
-                  past={isToday && hourOf(row.datetime) < currentHour}
-                  rank={order === ORDER.PRICE ? column.offset + index + 1 : null}
-                />
-              )}
-            />
-          ))}
-        </Box>
-
-        <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 2 }}>
-          {t("prices.hours.footnote", { kw: formatNumber(powerKw), withTaxes: supplyPrefs.withTaxes })}
+      {/* Leyenda del estilo elegido y el selector, a todo el ancho */}
+      <Stack
+        direction={{ xs: "column", sm: "row" }}
+        spacing={1.5}
+        alignItems={{ xs: "flex-start", sm: "center" }}
+        justifyContent="space-between"
+        sx={{ mt: -1, mb: 2 }}
+      >
+        <Typography variant="body2" color="text.secondary" sx={{ minWidth: 0 }}>
+          <AverageLegend style={style} average={average} units={units} />
         </Typography>
-      </CardContent>
-    </Card>
+        <ToggleButtonGroup
+          size="small"
+          exclusive
+          value={style}
+          aria-label={t("prices.hours.styleLabel")}
+          onChange={(_, value) => value && setStyle(value)}
+          sx={{ flexShrink: 0, "& .MuiToggleButton-root": { px: 1.25, minHeight: 32 } }}
+        >
+          <ToggleButton value={STYLES.PERCENT} aria-label={t("prices.hours.stylePercent")}>
+            %
+          </ToggleButton>
+          <ToggleButton value={STYLES.BAR}>{t("prices.hours.styleBar")}</ToggleButton>
+          <ToggleButton value={STYLES.ARROW}>{t("prices.hours.styleArrow")}</ToggleButton>
+        </ToggleButtonGroup>
+      </Stack>
+
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: { xs: "1fr", md: "repeat(3, minmax(0, 1fr))" },
+          columnGap: 3,
+          rowGap: 3,
+        }}
+      >
+        {columns.map((column) => (
+          <Column
+            key={column.id}
+            title={column.title}
+            subtitle={column.subtitle}
+            header={columnHeader}
+            rows={column.rows}
+            renderRow={(row, index) => (
+              <HourRow
+                key={row.datetime}
+                row={row}
+                units={units}
+                powerKw={powerKw}
+                average={average}
+                maxDeviation={maxDeviation}
+                style={style}
+                past={isToday && hourOf(row.datetime) < currentHour}
+                rank={order === ORDER.PRICE ? column.offset + index + 1 : null}
+              />
+            )}
+          />
+        ))}
+      </Box>
+
+      <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 2 }}>
+        {t("prices.hours.footnote", { kw: formatNumber(powerKw) })}
+      </Typography>
+    </Box>
   );
 }
 

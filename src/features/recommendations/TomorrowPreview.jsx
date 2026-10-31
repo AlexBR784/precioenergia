@@ -1,6 +1,5 @@
 /* eslint-disable react/prop-types */
-import { Box, Button, Card, CardContent, Chip, Stack, Typography } from "@mui/material";
-import EventIcon from "@mui/icons-material/EventOutlined";
+import { Box, Button, Stack, Typography } from "@mui/material";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import TrendingDownIcon from "@mui/icons-material/TrendingDown";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
@@ -85,7 +84,7 @@ export function TomorrowNote({ forecast, onShowTomorrow }) {
 function Stat({ label, value, color }) {
   return (
     <Box sx={{ minWidth: 0 }}>
-      <Typography variant="subtitle2" sx={{ color }}>
+      <Typography variant="body2" sx={{ color, fontWeight: 700 }}>
         {label}
       </Typography>
       <Typography className="tabular" sx={{ fontWeight: 700, fontSize: "1.125rem" }}>
@@ -113,49 +112,26 @@ export function TomorrowPreview({ fallback = null }) {
   const { cheapest, priciest } = forecast;
 
   return (
-    <Card component="section" aria-labelledby="tomorrow-heading">
-      <CardContent>
-        <Stack direction="row" spacing={0.75} alignItems="center" flexWrap="wrap" useFlexGap>
-          <Stack direction="row" spacing={0.75} alignItems="center" sx={{ color: "text.secondary" }}>
-            <EventIcon sx={{ fontSize: 16 }} aria-hidden="true" />
-            <Typography variant="subtitle2" sx={{ color: "inherit" }}>
-              {t("tips.tomorrow.label")}
-            </Typography>
-          </Stack>
-          <Chip
-            size="small"
-            variant="outlined"
-            label={t("tips.tomorrow.preview")}
-            sx={{ height: 20, fontSize: "0.75rem", borderColor: "divider", color: "text.secondary" }}
-          />
-        </Stack>
-        <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 0.5 }}>
-          <Icon aria-hidden="true" sx={{ color, fontSize: 28 }} />
-          <Typography variant="h2" component="h2" id="tomorrow-heading">
-            {headline(forecast)}
-          </Typography>
-        </Stack>
-
-        <Box
-          sx={{
-            display: "grid",
-            gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-            gap: 2,
-            mt: 2,
-            p: 2,
-            borderRadius: 2,
-            bgcolor: "surfaceMuted",
-          }}
-        >
-          {cheapest && <Stat label={t("tips.tomorrow.best")} value={formatRangeLabel(cheapest)} color="price.cheapest" />}
-          {priciest && <Stat label={t("tips.tomorrow.avoid")} value={formatRangeLabel(priciest)} color="price.high" />}
-        </Box>
-
-        <Typography variant="caption" color="text.secondary" component="p" sx={{ mt: 1.5 }}>
-          {t("tips.tomorrow.note")}
+    <Box component="section" aria-labelledby="tomorrow-heading">
+      <Typography variant="body2" color="text.secondary">
+        {t("tips.tomorrow.label")} · {t("tips.tomorrow.preview").toLocaleLowerCase()}
+      </Typography>
+      <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 0.5 }}>
+        <Icon aria-hidden="true" sx={{ color, fontSize: 28 }} />
+        <Typography variant="h2" component="h2" id="tomorrow-heading">
+          {headline(forecast)}
         </Typography>
-      </CardContent>
-    </Card>
+      </Stack>
+
+      <Box sx={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 2, mt: 2 }}>
+        {cheapest && <Stat label={t("tips.tomorrow.best")} value={formatRangeLabel(cheapest)} color="price.cheapest" />}
+        {priciest && <Stat label={t("tips.tomorrow.avoid")} value={formatRangeLabel(priciest)} color="price.high" />}
+      </Box>
+
+      <Typography variant="caption" color="text.secondary" component="p" sx={{ mt: 1.5 }}>
+        {t("tips.tomorrow.note")}
+      </Typography>
+    </Box>
   );
 }
 

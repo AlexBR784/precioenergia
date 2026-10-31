@@ -4,9 +4,6 @@ import dayjs from "dayjs";
 import {
   Alert,
   Box,
-  Card,
-  CardContent,
-  Divider,
   Link,
   MenuItem,
   Skeleton,
@@ -15,7 +12,6 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import ReceiptIcon from "@mui/icons-material/ReceiptLongOutlined";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 
 import NumberField from "../../components/NumberField";
@@ -38,31 +34,29 @@ const priceKwh = (value) => `${fixed(value, 3)} €/kWh`;
 
 const discountPercent = (rate) => formatNumber(rate * 100, { maximumFractionDigits: 1 });
 
-/** Desglose de una factura: conceptos y total. */
+/**
+ * Desglose de una factura como un recibo: el total arriba y los conceptos en
+ * filas. La opción más barata lleva una raya verde encima.
+ */
 function Breakdown({ title, bill, note, highlight }) {
   return (
-    <Box
-      sx={{
-        p: 2,
-        borderRadius: 2,
-        border: 1,
-        borderColor: highlight ? "price.cheapest" : "divider",
-        minWidth: 0,
-      }}
-    >
-      <Typography variant="subtitle2" color="text.secondary">
-        {title}
-      </Typography>
+    <Box sx={{ minWidth: 0, pt: 1.5, borderTop: highlight ? 3 : 1, borderColor: highlight ? "price.cheapest" : "divider" }}>
+      <Typography color="text.secondary">{title}</Typography>
       <Typography className="tabular" sx={{ fontSize: "1.75rem", fontWeight: 700, lineHeight: 1.2, mt: 0.5 }}>
         {euros2(bill.total)}
       </Typography>
       <Typography variant="caption" color="text.secondary">
         {t("bill.estimator.perMonth")}
       </Typography>
-      <Divider sx={{ my: 1.5 }} />
-      <Stack spacing={0.5}>
+      <Stack sx={{ mt: 1.5 }}>
         {bill.lines.map((line) => (
-          <Stack key={line.id} direction="row" justifyContent="space-between" spacing={2}>
+          <Stack
+            key={line.id}
+            direction="row"
+            justifyContent="space-between"
+            spacing={2}
+            sx={{ py: 0.75, borderTop: 1, borderColor: "divider" }}
+          >
             <Typography variant="body2" color="text.secondary">
               {line.label}
             </Typography>
@@ -171,136 +165,146 @@ export function BillEstimator({ usage }) {
   }
 
   return (
-    <Card component="section" aria-labelledby="bill-heading">
-      <CardContent>
-        <Stack direction="row" spacing={1} alignItems="center">
-          <ReceiptIcon fontSize="small" color="primary" aria-hidden="true" />
-          <Typography variant="h2" component="h2" id="bill-heading">
-            {t("bill.estimator.title")}
-          </Typography>
-        </Stack>
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, mb: 2.5 }}>
-          {t("bill.estimator.body")}
-        </Typography>
+    <Box component="section" aria-labelledby="bill-heading">
+      <Typography variant="h2" component="h2" id="bill-heading">
+        {t("bill.estimator.title")}
+      </Typography>
+      <Typography color="text.secondary" sx={{ mt: 0.5, mb: 2.5 }}>
+        {t("bill.estimator.body")}
+      </Typography>
 
-        <Box
-          sx={{
-            display: "grid",
-            gap: 2,
-            gridTemplateColumns: { xs: "repeat(2, minmax(0, 1fr))", md: "repeat(4, minmax(0, 1fr))" },
-          }}
-        >
-          <NumberField
-            label={t("bill.estimator.monthly")}
-            unit="kWh"
-            value={usage ? Math.round(kwh * perMonth) : prefs.monthlyKwh}
-            onChange={(value) => value && updatePrefs({ monthlyKwh: value })}
-            disabled={Boolean(usage)}
-            helperText={usage ? t("bill.estimator.monthlyFromFile") : t("bill.estimator.monthlyHelp")}
-          />
-          <NumberField
-            label={t("bill.estimator.power")}
-            unit="kW"
-            value={prefs.contractedKw}
-            onChange={(value) => value && updatePrefs({ contractedKw: value })}
-            helperText={t("bill.estimator.powerHelp")}
-          />
-          <TextField
-            select
-            label={t("bill.estimator.bonus")}
-            value={prefs.bonus ?? "none"}
-            onChange={(event) => updatePrefs({ bonus: event.target.value === "none" ? null : event.target.value })}
-            helperText={t("bill.estimator.bonusHelp")}
+      {/* Datos a la izquierda y el recibo a la derecha; comparando con el
+          contrato, los dos recibos van debajo a todo el ancho. */}
+      <Box
+        sx={{
+          display: "grid",
+          columnGap: 6,
+          rowGap: 3,
+          gridTemplateColumns: { xs: "minmax(0, 1fr)", md: marketMonth ? "minmax(0, 1fr)" : "minmax(0, 6fr) minmax(0, 5fr)" },
+          alignItems: "start",
+        }}
+      >
+        <Box sx={{ minWidth: 0 }}>
+          <Box
+            sx={{
+              display: "grid",
+              gap: 2,
+              gridTemplateColumns: { xs: "repeat(2, minmax(0, 1fr))", md: marketMonth ? "repeat(4, minmax(0, 1fr))" : "repeat(2, minmax(0, 1fr))" },
+            }}
           >
-            <MenuItem value="none">{t("bill.estimator.bonusNone")}</MenuItem>
-            <MenuItem value="vulnerable">
-              {t("bill.estimator.bonusVulnerable", { percent: discountPercent(SOCIAL_BONUS.discount.vulnerable) })}
-            </MenuItem>
-            <MenuItem value="severe">
-              {t("bill.estimator.bonusSevere", { percent: discountPercent(SOCIAL_BONUS.discount.severe) })}
-            </MenuItem>
-          </TextField>
-          <TextField
-            select
-            label={t("bill.estimator.household")}
-            value={prefs.household}
-            onChange={(event) => updatePrefs({ household: event.target.value })}
-            helperText={t("bill.estimator.householdHelp")}
-            disabled={!prefs.bonus}
-          >
-            {HOUSEHOLDS.map((value) => (
-              <MenuItem key={value} value={value}>
-                {t(`bill.estimator.households.${value}`)}
+            <NumberField
+              label={t("bill.estimator.monthly")}
+              unit="kWh"
+              value={usage ? Math.round(kwh * perMonth) : prefs.monthlyKwh}
+              onChange={(value) => value && updatePrefs({ monthlyKwh: value })}
+              disabled={Boolean(usage)}
+              helperText={usage ? t("bill.estimator.monthlyFromFile") : t("bill.estimator.monthlyHelp")}
+            />
+            <NumberField
+              label={t("bill.estimator.power")}
+              unit="kW"
+              value={prefs.contractedKw}
+              onChange={(value) => value && updatePrefs({ contractedKw: value })}
+              helperText={t("bill.estimator.powerHelp")}
+            />
+            <TextField
+              select
+              label={t("bill.estimator.bonus")}
+              value={prefs.bonus ?? "none"}
+              onChange={(event) => updatePrefs({ bonus: event.target.value === "none" ? null : event.target.value })}
+              helperText={t("bill.estimator.bonusHelp")}
+            >
+              <MenuItem value="none">{t("bill.estimator.bonusNone")}</MenuItem>
+              <MenuItem value="vulnerable">
+                {t("bill.estimator.bonusVulnerable", { percent: discountPercent(SOCIAL_BONUS.discount.vulnerable) })}
               </MenuItem>
-            ))}
-          </TextField>
-        </Box>
-
-        {/* Precios del contrato de mercado libre, para comparar. */}
-        {prefs.tariff === TARIFFS.FIXED && (
-          <Box sx={{ mt: 2.5 }}>
-            <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
-              {t("bill.estimator.contract")}
-            </Typography>
-            <Box sx={{ display: "grid", gap: 2, gridTemplateColumns: "repeat(2, minmax(0, 1fr))" }}>
-              <NumberField label={t("bill.estimator.energy")} unit="€/kWh" value={prefs.myPrices.single} onChange={setPrice("single")} />
-              <NumberField
-                label={t("bill.estimator.contractPower")}
-                unit={t("bill.estimator.perKwDay")}
-                value={prefs.myPrices.powerKwDay}
-                onChange={setPrice("powerKwDay")}
-                helperText={t("bill.estimator.contractPowerHelp")}
-                sx={{ gridColumn: { xs: "1 / -1", md: "auto" } }}
-              />
-            </Box>
+              <MenuItem value="severe">
+                {t("bill.estimator.bonusSevere", { percent: discountPercent(SOCIAL_BONUS.discount.severe) })}
+              </MenuItem>
+            </TextField>
+            <TextField
+              select
+              label={t("bill.estimator.household")}
+              value={prefs.household}
+              onChange={(event) => updatePrefs({ household: event.target.value })}
+              helperText={t("bill.estimator.householdHelp")}
+              disabled={!prefs.bonus}
+            >
+              {HOUSEHOLDS.map((value) => (
+                <MenuItem key={value} value={value}>
+                  {t(`bill.estimator.households.${value}`)}
+                </MenuItem>
+              ))}
+            </TextField>
           </Box>
-        )}
-        {prefs.tariff === TARIFFS.PERIODS && (
-          <Box sx={{ mt: 2.5 }}>
-            <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
-              {t("bill.estimator.contract")}
-            </Typography>
-            <Box sx={{ display: "grid", gap: 2, gridTemplateColumns: { xs: "repeat(2, minmax(0, 1fr))", md: "repeat(4, minmax(0, 1fr))" } }}>
-              <NumberField label={PERIODS.P1.label} unit="€/kWh" value={prefs.myPrices.p1} onChange={setPrice("p1")} />
-              <NumberField label={PERIODS.P2.label} unit="€/kWh" value={prefs.myPrices.p2} onChange={setPrice("p2")} />
-              <NumberField label={PERIODS.P3.label} unit="€/kWh" value={prefs.myPrices.p3} onChange={setPrice("p3")} />
-              <NumberField
-                label={t("bill.estimator.contractPower")}
-                unit={t("bill.estimator.perKwDay")}
-                value={prefs.myPrices.powerKwDay}
-                onChange={setPrice("powerKwDay")}
-                helperText={t("bill.estimator.contractPowerHelp")}
-                sx={{ gridColumn: { xs: "1 / -1", md: "auto" } }}
-              />
-            </Box>
-            {!usage && (
-              <Box sx={{ mt: 2, px: 1 }}>
-                <Typography variant="body2" id="valley-share">
-                  {rich(t("bill.estimator.valleyShare", { percent: <strong>{Math.round(prefs.valleyShare * 100)} %</strong> }))}
-                </Typography>
-                <Slider
-                  aria-labelledby="valley-share"
-                  value={Math.round(prefs.valleyShare * 100)}
-                  min={10}
-                  max={90}
-                  step={5}
-                  onChange={(_, value) => updatePrefs({ valleyShare: value / 100 })}
-                  sx={{ maxWidth: 360 }}
+
+          {/* Precios del contrato de mercado libre, para comparar. */}
+          {prefs.tariff === TARIFFS.FIXED && (
+            <Box sx={{ mt: 2.5 }}>
+              <Typography variant="body2" sx={{ fontWeight: 700, mb: 1 }}>
+                {t("bill.estimator.contract")}
+              </Typography>
+              <Box sx={{ display: "grid", gap: 2, gridTemplateColumns: "repeat(2, minmax(0, 1fr))" }}>
+                <NumberField label={t("bill.estimator.energy")} unit="€/kWh" value={prefs.myPrices.single} onChange={setPrice("single")} />
+                <NumberField
+                  label={t("bill.estimator.contractPower")}
+                  unit={t("bill.estimator.perKwDay")}
+                  value={prefs.myPrices.powerKwDay}
+                  onChange={setPrice("powerKwDay")}
+                  helperText={t("bill.estimator.contractPowerHelp")}
+                  sx={{ gridColumn: { xs: "1 / -1", md: "auto" } }}
                 />
               </Box>
-            )}
-          </Box>
-        )}
-        {!prefs.tariff && (
-          <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5} alignItems={{ sm: "center" }} sx={{ mt: 2.5 }}>
-            <Typography variant="body2" color="text.secondary">
-              {t("bill.estimator.noTariff")}
-            </Typography>
-            <SupplyButton />
-          </Stack>
-        )}
+            </Box>
+          )}
+          {prefs.tariff === TARIFFS.PERIODS && (
+            <Box sx={{ mt: 2.5 }}>
+              <Typography variant="body2" sx={{ fontWeight: 700, mb: 1 }}>
+                {t("bill.estimator.contract")}
+              </Typography>
+              <Box sx={{ display: "grid", gap: 2, gridTemplateColumns: { xs: "repeat(2, minmax(0, 1fr))", md: "repeat(4, minmax(0, 1fr))" } }}>
+                <NumberField label={PERIODS.P1.label} unit="€/kWh" value={prefs.myPrices.p1} onChange={setPrice("p1")} />
+                <NumberField label={PERIODS.P2.label} unit="€/kWh" value={prefs.myPrices.p2} onChange={setPrice("p2")} />
+                <NumberField label={PERIODS.P3.label} unit="€/kWh" value={prefs.myPrices.p3} onChange={setPrice("p3")} />
+                <NumberField
+                  label={t("bill.estimator.contractPower")}
+                  unit={t("bill.estimator.perKwDay")}
+                  value={prefs.myPrices.powerKwDay}
+                  onChange={setPrice("powerKwDay")}
+                  helperText={t("bill.estimator.contractPowerHelp")}
+                  sx={{ gridColumn: { xs: "1 / -1", md: "auto" } }}
+                />
+              </Box>
+              {!usage && (
+                <Box sx={{ mt: 2, px: 1 }}>
+                  <Typography variant="body2" id="valley-share">
+                    {rich(t("bill.estimator.valleyShare", { percent: <strong>{Math.round(prefs.valleyShare * 100)} %</strong> }))}
+                  </Typography>
+                  <Slider
+                    aria-labelledby="valley-share"
+                    value={Math.round(prefs.valleyShare * 100)}
+                    min={10}
+                    max={90}
+                    step={5}
+                    onChange={(_, value) => updatePrefs({ valleyShare: value / 100 })}
+                    sx={{ maxWidth: 360 }}
+                  />
+                </Box>
+              )}
+            </Box>
+          )}
+          {!prefs.tariff && (
+            <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5} alignItems={{ sm: "center" }} sx={{ mt: 2.5 }}>
+              <Typography variant="body2" color="text.secondary">
+                {t("bill.estimator.noTariff")}
+              </Typography>
+              <SupplyButton />
+            </Stack>
+          )}
 
-        <Box sx={{ mt: 3 }}>
+        </Box>
+
+        <Box sx={{ minWidth: 0 }}>
           {loading && !usage ? (
             <Skeleton variant="rounded" height={260} />
           ) : error && !usage ? (
@@ -311,9 +315,9 @@ export function BillEstimator({ usage }) {
                 <Box
                   sx={{
                     display: "grid",
-                    gap: 2,
+                    columnGap: 6,
+                    rowGap: 3,
                     gridTemplateColumns: { xs: "1fr", md: marketMonth ? "repeat(2, minmax(0, 1fr))" : "minmax(0, 1fr)" },
-                    maxWidth: marketMonth ? "none" : 480,
                   }}
                 >
                   <Breakdown
@@ -353,33 +357,32 @@ export function BillEstimator({ usage }) {
             )
           )}
         </Box>
+      </Box>
 
-        <Stack
-          direction={{ xs: "column", sm: "row" }}
-          spacing={1}
-          alignItems={{ sm: "center" }}
-          justifyContent="space-between"
-          sx={{ mt: 2.5, p: 2, borderRadius: 2, bgcolor: "surfaceMuted" }}
-        >
-          <Typography variant="body2">
-            {t("bill.estimator.cnmc")}
-          </Typography>
-          <Link
-            href={CNMC_COMPARATOR_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            underline="hover"
-            sx={{ fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 0.5, flexShrink: 0 }}
-          >
-            {t("bill.estimator.cnmcLink")} <OpenInNewIcon sx={{ fontSize: 16 }} aria-hidden="true" />
-          </Link>
-        </Stack>
-
-        <Typography variant="caption" color="text.secondary" component="p" sx={{ mt: 1.5 }}>
-          {t("bill.estimator.footnote")}
+      <Stack
+        direction={{ xs: "column", sm: "row" }}
+        spacing={1}
+        alignItems={{ sm: "baseline" }}
+        sx={{ mt: 3 }}
+      >
+        <Typography variant="body2">
+          {t("bill.estimator.cnmc")}
         </Typography>
-      </CardContent>
-    </Card>
+        <Link
+          href={CNMC_COMPARATOR_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          underline="hover"
+          sx={{ fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 0.5, flexShrink: 0 }}
+        >
+          {t("bill.estimator.cnmcLink")} <OpenInNewIcon sx={{ fontSize: 16 }} aria-hidden="true" />
+        </Link>
+      </Stack>
+
+      <Typography variant="caption" color="text.secondary" component="p" sx={{ mt: 1.5 }}>
+        {t("bill.estimator.footnote")}
+      </Typography>
+    </Box>
   );
 }
 

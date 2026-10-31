@@ -22,7 +22,7 @@ import { fixed } from "../../i18n/format";
  *    es lo que se escanea), `detail` y opcionalmente `status`.
  *
  * "La mejor franja" y "lo que cambia en euros" ya no son reglas: los responde
- * la calculadora "¿Cuándo lo enciendo?", y repetirlos aquí daba la misma
+ * la calculadora "Cuándo poner cada aparato", y repetirlos aquí daba la misma
  * respuesta dos veces en la misma pantalla.
  *  - "fact": contexto que no pide acción inmediata (euros, partes del día…).
  * `title` y `body` se mantienen como versión en prosa del mismo consejo.

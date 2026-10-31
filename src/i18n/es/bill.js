@@ -11,7 +11,7 @@ export default {
 
   estimator: {
     title: "Tu factura de luz",
-    body: "Lo que pagas al mes de verdad: energía, potencia, impuestos y alquiler del contador.",
+    body: "Lo que pagas al mes: energía, potencia, impuestos y alquiler del contador.",
     monthly: "Consumo al mes",
     monthlyFromFile: "Sale de tu archivo de consumo.",
     monthlyHelp: "En tu factura. Un hogar medio: 250 kWh.",
@@ -83,7 +83,7 @@ export default {
   },
 
   bonus: {
-    title: "¿Podrías tener el bono social?",
+    title: "Comprueba si te corresponde el bono social",
     body: "Es un descuento de hasta el {percent} en la luz para hogares con pocos ingresos, familias numerosas y pensionistas. Muchos hogares con derecho no lo piden. Lo que escribas aquí no se guarda ni sale de tu navegador.",
     adults: "Adultos en casa",
     minors: "Menores de edad",

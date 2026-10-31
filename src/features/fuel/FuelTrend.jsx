@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 import { useMemo, useState } from "react";
-import { Alert, Box, Button, Card, CardContent, CircularProgress, Stack, Typography } from "@mui/material";
+import { Alert, Box, Button, CircularProgress, Stack, Typography } from "@mui/material";
 import { alpha, keyframes } from "@mui/material/styles";
 import TrendingDownIcon from "@mui/icons-material/TrendingDown";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
@@ -268,58 +268,54 @@ export function FuelTrend({ provinceId, provinceLabel, productId, todayAverage, 
   const { Icon } = verdict;
 
   return (
-    <Card component="section" aria-labelledby="fuel-trend-heading">
-      <CardContent sx={{ p: { xs: 2, sm: 3 }, "&:last-child": { pb: { xs: 2, sm: 3 } } }}>
-        <Stack
-          direction={{ xs: "column", md: "row" }}
-          spacing={{ xs: 2, md: 4 }}
-          alignItems={{ xs: "stretch", md: "center" }}
-        >
-          <Box sx={{ minWidth: 0, flex: 1 }}>
-            <Stack direction="row" spacing={0.75} alignItems="center" sx={{ color: verdict.color }}>
-              <Icon sx={{ fontSize: 18 }} aria-hidden="true" />
-              <Typography variant="subtitle2" sx={{ color: "inherit" }}>
-                {t("fuel.trend.kicker")}
-              </Typography>
-            </Stack>
-            <Typography variant="h2" component="h2" id="fuel-trend-heading" sx={{ mt: 0.75 }}>
-              {t(`fuel.trend.${trend.direction}`)}
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-              {rich(
-                t("fuel.trend.average", {
-                  province: provinceLabel,
-                  price: (
-                    <Box component="span" className="tabular" sx={{ color: "text.primary", fontWeight: 600 }}>
-                      {formatLiterPrice(trend.last.average)} {LITER_UNITS}
-                    </Box>
-                  ),
-                  comparison: comparison(trend, liters),
-                })
-              )}
-            </Typography>
-          </Box>
-
-          <Box sx={{ flexShrink: 0, width: { xs: "100%", md: 300 } }}>
-            <Sparkline trend={trend} color={verdict.color} />
-          </Box>
-        </Stack>
-
-        {peak && (
-          <Alert severity="info" icon={<LuggageIcon fontSize="inherit" />} sx={{ mt: 2 }}>
-            {t("fuel.trend.peak", { date: formatDate(peak.date, { weekday: "long", day: "numeric" }), name: peak.name })}
-          </Alert>
-        )}
-
-        <Box sx={{ mt: 2 }}>
-          <WeekdayInsight provinceId={provinceId} productId={productId} provinceLabel={provinceLabel} />
+    <Box component="section" aria-labelledby="fuel-trend-heading" sx={{ pt: 3, borderTop: 1, borderColor: "divider" }}>
+      <Stack
+        direction={{ xs: "column", md: "row" }}
+        spacing={{ xs: 2, md: 4 }}
+        alignItems={{ xs: "stretch", md: "center" }}
+      >
+        <Box sx={{ minWidth: 0, flex: 1 }}>
+          <Stack direction="row" spacing={0.75} alignItems="center" sx={{ color: "text.secondary" }}>
+            <Icon sx={{ fontSize: 18, color: verdict.color }} aria-hidden="true" />
+            <Typography sx={{ color: "inherit" }}>{t("fuel.trend.kicker")}</Typography>
+          </Stack>
+          <Typography variant="h2" component="h2" id="fuel-trend-heading" sx={{ mt: 0.75 }}>
+            {t(`fuel.trend.${trend.direction}`)}
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+            {rich(
+              t("fuel.trend.average", {
+                province: provinceLabel,
+                price: (
+                  <Box component="span" className="tabular" sx={{ color: "text.primary", fontWeight: 600 }}>
+                    {formatLiterPrice(trend.last.average)} {LITER_UNITS}
+                  </Box>
+                ),
+                comparison: comparison(trend, liters),
+              })
+            )}
+          </Typography>
         </Box>
 
-        <Typography variant="caption" color="text.secondary" component="p" sx={{ mt: 1.5 }}>
-          {t("fuel.trend.note", { province: provinceLabel })}
-        </Typography>
-      </CardContent>
-    </Card>
+        <Box sx={{ flexShrink: 0, width: { xs: "100%", md: 300 } }}>
+          <Sparkline trend={trend} color={verdict.color} />
+        </Box>
+      </Stack>
+
+      {peak && (
+        <Alert severity="info" icon={<LuggageIcon fontSize="inherit" />} sx={{ mt: 2 }}>
+          {t("fuel.trend.peak", { date: formatDate(peak.date, { weekday: "long", day: "numeric" }), name: peak.name })}
+        </Alert>
+      )}
+
+      <Box sx={{ mt: 2 }}>
+        <WeekdayInsight provinceId={provinceId} productId={productId} provinceLabel={provinceLabel} />
+      </Box>
+
+      <Typography variant="caption" color="text.secondary" component="p" sx={{ mt: 1.5 }}>
+        {t("fuel.trend.note", { province: provinceLabel })}
+      </Typography>
+    </Box>
   );
 }
 

@@ -14,7 +14,7 @@ import RegulatedPrices from "./RegulatedPrices";
  */
 export function BillTab({ usage, onUsage }) {
   return (
-    <Stack spacing={3}>
+    <Stack spacing={{ xs: 4, md: 5 }}>
       <BillEstimator usage={usage} />
       <ConsumptionImport usage={usage} onUsage={onUsage} />
       <SocialBonusCheck />

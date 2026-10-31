@@ -1,12 +1,23 @@
 /* eslint-disable react/prop-types */
 import { useEffect, useId, useState } from "react";
 import { Box, Button, ClickAwayListener, Fade, Paper, Popper, Typography, useMediaQuery } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
 
 import { claimHint, hintAllowed, hintWait } from "./guideStore";
+import BoltMascot from "../components/BoltMascot";
 import { t } from "../i18n";
 
 /** Lo que tapan arriba la cabecera y abajo la barra de secciones en móvil. */
 const VISIBLE_AREA = "-72px 0px -96px 0px";
+/** ¿Hay ya algún rayo con cara a la vista (el veredicto, un aviso)? Entonces la pista va sin él. */
+const mascotInView = () =>
+  [...document.querySelectorAll("[data-bolt-mascot]")].some((element) => {
+    const rect = element.getBoundingClientRect();
+    return rect.bottom > 0 && rect.top < window.innerHeight && rect.width > 0;
+  });
+
+/** Punto final para el título, salvo si ya acaba en signo ("¿Tienes descuento…?"). */
+const withStop = (text) => (/[.?!…]$/.test(text) ? text : `${text}.`);
 /** Respiro tras entrar en la sección, para que no salga a la vez que el contenido. */
 const SETTLE_MS = 800;
 
@@ -39,10 +50,12 @@ const liveRegion = () => {
  */
 export function Hint({ id, anchor, enabled = true, placement = "bottom", visibleArea = VISIBLE_AREA }) {
   const [open, setOpen] = useState(false);
+  const [withFace, setWithFace] = useState(false);
   const [arrow, setArrow] = useState(null);
   const titleId = useId();
   const bodyId = useId();
   const reduceMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
+  const theme = useTheme();
 
   useEffect(() => {
     if (!enabled || !anchor || !hintAllowed(id)) return undefined;
@@ -53,6 +66,8 @@ export function Hint({ id, anchor, enabled = true, placement = "bottom", visible
         (entries) => {
           if (entries.some((entry) => entry.isIntersecting) && claimHint(id)) {
             observer.disconnect();
+            // La regla de "un rayo por pantalla": si ya hay uno, la pista va sin cara.
+            setWithFace(!mascotInView());
             setOpen(true);
           }
         },
@@ -78,13 +93,20 @@ export function Hint({ id, anchor, enabled = true, placement = "bottom", visible
     };
     document.addEventListener("keydown", onKey);
     anchor.setAttribute("aria-describedby", bodyId);
+    // El control del que se habla, rodeado en dorado mientras la pista está
+    // abierta: une la burbuja con su sitio sin velo ni animación.
+    const { outline, outlineOffset } = anchor.style;
+    anchor.style.outline = `2px solid ${theme.palette.secondary.main}`;
+    anchor.style.outlineOffset = "3px";
     liveRegion().textContent = `${t(`guide.hints.${id}.title`)}. ${t(`guide.hints.${id}.body`)}`;
     return () => {
       document.removeEventListener("keydown", onKey);
       anchor.removeAttribute("aria-describedby");
+      anchor.style.outline = outline;
+      anchor.style.outlineOffset = outlineOffset;
       liveRegion().textContent = "";
     };
-  }, [open, anchor, id, bodyId]);
+  }, [open, anchor, id, bodyId, theme]);
 
   if (!anchor) return null;
 
@@ -106,8 +128,8 @@ export function Hint({ id, anchor, enabled = true, placement = "bottom", visible
         zIndex: (theme) => theme.zIndex.appBar + 1,
         width: "max-content",
         maxWidth: "min(320px, calc(100vw - 32px))",
-        '&[data-popper-placement^="bottom"] .hint-arrow': { top: -6, "&::before": { borderWidth: "1px 0 0 1px" } },
-        '&[data-popper-placement^="top"] .hint-arrow': { bottom: -6, "&::before": { borderWidth: "0 1px 1px 0" } },
+        '&[data-popper-placement^="bottom"] .hint-arrow': { top: -5 },
+        '&[data-popper-placement^="top"] .hint-arrow': { bottom: -5 },
       }}
     >
       {({ TransitionProps }) => (
@@ -118,15 +140,18 @@ export function Hint({ id, anchor, enabled = true, placement = "bottom", visible
               <Paper
                 role="group"
                 aria-labelledby={titleId}
-                elevation={6}
+                elevation={8}
                 sx={{
                   position: "relative",
-                  p: 2,
-                  pb: 1,
-                  bgcolor: "primarySoft",
-                  border: 1,
-                  borderColor: "primary.main",
-                  borderRadius: 3,
+                  py: 1.5,
+                  pl: 2,
+                  pr: 1,
+                  borderRadius: 2,
+                  // Superficie invertida (tinta en claro, clara en oscuro), como
+                  // un aviso del sistema: se distingue del contenido sin borde.
+                  bgcolor: "text.primary",
+                  color: "background.paper",
+                  backgroundImage: "none",
                 }}
               >
                 <Box
@@ -143,21 +168,32 @@ export function Hint({ id, anchor, enabled = true, placement = "bottom", visible
                       content: '""',
                       position: "absolute",
                       inset: 0,
-                      bgcolor: "primarySoft",
-                      borderStyle: "solid",
-                      borderColor: "primary.main",
+                      bgcolor: "text.primary",
                       transform: "rotate(45deg)",
+                      borderRadius: "2px",
                     },
                   }}
                 />
-                <Typography id={titleId} variant="body2" sx={{ fontWeight: 700 }}>
-                  {t(`guide.hints.${id}.title`)}
-                </Typography>
-                <Typography id={bodyId} variant="body2" sx={{ mt: 0.5 }}>
-                  {t(`guide.hints.${id}.body`)}
-                </Typography>
-                <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 0.5, mr: -1 }}>
-                  <Button size="small" onClick={() => setOpen(false)}>
+                {/* Una sola frase: el título en negrita como entrada del texto. */}
+                <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.25 }}>
+                  {/* La cara del rayo, pequeña y quieta: firma la pista sin
+                      convertirla en un personaje que habla. */}
+                  {withFace && (
+                    <Box sx={{ flexShrink: 0, mt: "1px" }}>
+                      <BoltMascot mood="neutral" size={28} animate={false} />
+                    </Box>
+                  )}
+                  <Typography id={bodyId} variant="body2" sx={{ flex: 1, lineHeight: 1.55 }}>
+                    <Box component="strong" id={titleId} sx={{ fontWeight: 700 }}>
+                      {withStop(t(`guide.hints.${id}.title`))}
+                    </Box>{" "}
+                    {t(`guide.hints.${id}.body`)}
+                  </Typography>
+                  <Button
+                    size="small"
+                    onClick={() => setOpen(false)}
+                    sx={{ color: "inherit", fontWeight: 700, flexShrink: 0, minWidth: 0, mt: -0.5, textDecoration: "underline", textUnderlineOffset: 3 }}
+                  >
                     {t("guide.gotIt")}
                   </Button>
                 </Box>

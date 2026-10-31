@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import {
   Box,
   Button,
-  Card,
   Divider,
   IconButton,
   Stack,
@@ -88,7 +87,6 @@ function StationRow({ station, rank, min, span, tier, liters, open, showDistance
         alignItems: "center",
         columnGap: { xs: 1.5, sm: 2 },
         rowGap: 1,
-        px: { xs: 2, sm: 2.5 },
         py: 1.75,
         // Móvil: puesto | datos | precio | ir, y la barra debajo de los datos.
         // Escritorio: todo en una fila, con la barra en su propia columna.
@@ -228,12 +226,12 @@ export function StationList({ stations, stats, liters, showDistance, now, resetK
   const span = stats.priciest.price - min;
 
   return (
-    <Card component="section" aria-labelledby="ranking-heading">
+    <Box component="section" aria-labelledby="ranking-heading" sx={{ pt: 3, borderTop: 1, borderColor: "divider" }}>
       <Stack
         direction="row"
         justifyContent="space-between"
         alignItems="baseline"
-        sx={{ px: { xs: 2, sm: 2.5 }, pt: 2.5, pb: 1.5 }}
+        sx={{ pb: 1.5 }}
       >
         <Typography variant="h2" component="h2" id="ranking-heading">
           {t("fuel.list.title")}
@@ -244,7 +242,7 @@ export function StationList({ stations, stats, liters, showDistance, now, resetK
       </Stack>
       <Divider />
 
-      <Stack component="ol" divider={<Divider component="li" aria-hidden="true" />} sx={{ m: 0, p: 0 }}>
+      <Stack component="ol" divider={<Divider component="li" aria-hidden="true" />} sx={{ m: 0, p: 0, listStyle: "none" }}>
         {stations.slice(0, visible).map((station, index) => (
           <StationRow
             key={station.id}
@@ -272,7 +270,7 @@ export function StationList({ stations, stats, liters, showDistance, now, resetK
           </Box>
         </>
       )}
-    </Card>
+    </Box>
   );
 }
 

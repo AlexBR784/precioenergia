@@ -49,6 +49,8 @@ export default {
     sortPrice: "Precio",
     sortDistance: "Distancia",
     onlyOpen: "Solo abiertas ahora",
+    more: "Más filtros",
+    fewer: "Menos filtros",
     litersHelp: "Los litros se usan para calcular cuánto cuesta llenar el depósito.",
     geo: {
       denied: "No tenemos permiso para usar tu ubicación. Puedes activarlo en los ajustes del navegador o elegir tu provincia a mano.",
@@ -99,7 +101,7 @@ export default {
   },
 
   trend: {
-    kicker: "¿Lleno ahora o espero?",
+    kicker: "Cómo va el precio",
     down: "Bajando: si no tienes prisa, espera unos días",
     up: "Subiendo: mejor llena ahora",
     flat: "Estable: llena cuando te venga bien",
@@ -131,7 +133,7 @@ export default {
   },
 
   trip: {
-    title: "¿Cuánto me cuesta el viaje?",
+    title: "Coste del viaje",
     km: "Kilómetros",
     consumption: "Consumo (L/100 km)",
     consumptionHelp: "En la ficha del coche. Típico: 5–7.",

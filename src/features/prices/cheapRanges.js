@@ -5,8 +5,7 @@ import { t } from "../../i18n";
  * Búsqueda de las ventanas de N horas consecutivas más baratas del día.
  *
  * Vivía dentro del componente del diálogo; extraerla permite calcular además
- * la ventana más cara, que es la referencia que da sentido a la recomendación
- * ("un 72 % más barato que el peor momento").
+ * la ventana más cara (que marca la franja a evitar en el plan del día).
  */
 
 /**
@@ -62,13 +61,6 @@ export const findRanges = (
     worst: sorted.length > 1 ? sorted[sorted.length - 1] : null,
     total: sorted.length,
   };
-};
-
-/** Ahorro porcentual de la mejor ventana frente a la peor. */
-export const savingPercent = (best, worst) => {
-  if (!best || !worst || worst.sumPrice <= 0) return null;
-  const saving = ((worst.sumPrice - best.sumPrice) / worst.sumPrice) * 100;
-  return saving > 0 ? saving : null;
 };
 
 /**

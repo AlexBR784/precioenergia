@@ -118,7 +118,7 @@ def layer(size, color, mask):
     return out
 
 
-def render(height, face="neutral"):
+def render(height, face="neutral", shade=True):
     """El rayo a `height` px de alto, con fondo transparente. `face`: ánimo o None."""
     scale = height * K / VIEW[1]
     size = (math.ceil(VIEW[0] * scale), math.ceil(VIEW[1] * scale))
@@ -128,7 +128,7 @@ def render(height, face="neutral"):
     ImageDraw.Draw(body_mask).polygon(scaled(body, scale), fill=255)
     shade_mask = Image.new("L", size)
     stroke(ImageDraw.Draw(shade_mask), flatten(constant("SHADE"))[0], 9, scale)
-    shade_mask = ImageChops.multiply(shade_mask, body_mask)
+    shade_mask = ImageChops.multiply(shade_mask, body_mask) if shade else Image.new("L", size)
     ink_mask = Image.new("L", size)
     ink = ImageDraw.Draw(ink_mask)
     stroke(ink, body, 3, scale)
@@ -156,8 +156,8 @@ def render(height, face="neutral"):
     return out.resize(final, Image.LANCZOS)
 
 
-def on_square(size, fraction, bg=None, face="neutral"):
-    art = render(round(size * fraction), face)
+def on_square(size, fraction, bg=None, face="neutral", shade=True):
+    art = render(round(size * fraction), face, shade)
     canvas = Image.new("RGBA", (size, size), bg + (255,) if bg else (0, 0, 0, 0))
     canvas.alpha_composite(art, ((size - art.width) // 2, (size - art.height) // 2))
     return canvas
@@ -176,18 +176,19 @@ favicons[48].save(
 on_square(32, 1.0, face="happy").save(os.path.join(PUBLIC, "favicon-32x32-happy.png"))
 on_square(32, 1.0, face="worried").save(os.path.join(PUBLIC, "favicon-32x32-worried.png"))
 
-# Pantalla de inicio: fondo azul marino de la marca (iOS pinta de negro lo transparente).
-on_square(180, 0.7, NAVY).convert("RGB").save(os.path.join(PUBLIC, "apple-touch-icon.png"))
-on_square(192, 0.7, NAVY).save(os.path.join(PUBLIC, "android-chrome-192x192.png"))
-on_square(512, 0.7, NAVY).save(os.path.join(PUBLIC, "android-chrome-512x512.png"))
+# Pantalla de inicio: el símbolo de la marca (sin cara ni sombreado, como en
+# design/marca) sobre el azul marino (iOS pinta de negro lo transparente).
+on_square(180, 0.7, NAVY, None, False).convert("RGB").save(os.path.join(PUBLIC, "apple-touch-icon.png"))
+on_square(192, 0.7, NAVY, None, False).save(os.path.join(PUBLIC, "android-chrome-192x192.png"))
+on_square(512, 0.7, NAVY, None, False).save(os.path.join(PUBLIC, "android-chrome-512x512.png"))
 # Maskable: Android recorta hasta un círculo del 80 % del lado; el rayo cabe dentro.
-on_square(512, 0.56, NAVY).save(os.path.join(PUBLIC, "maskable-512x512.png"))
+on_square(512, 0.56, NAVY, None, False).save(os.path.join(PUBLIC, "maskable-512x512.png"))
 
-# Imagen para redes: se conserva el texto de la izquierda y se cambia la mascota.
+# Imagen para redes: se conserva el texto de la izquierda; a la derecha, el símbolo.
 og_path = os.path.join(PUBLIC, "og-image.png")
 og = Image.open(og_path).convert("RGBA")
 og.paste(OG_BG + (255,), (700, 0, og.width, og.height))
-art = render(400)
+art = render(400, None, False)
 og.alpha_composite(art, (700 + (500 - art.width) // 2, (og.height - art.height) // 2))
 og.convert("RGB").save(og_path, optimize=True)
 print("ok")

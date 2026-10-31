@@ -3,7 +3,7 @@ import { Stack } from "@mui/material";
 import dayjs from "dayjs";
 
 import PriceFiltersBar from "./PriceFiltersBar";
-import PriceHeadline from "./PriceHeadline";
+import PriceSummary from "./PriceSummary";
 import PriceChartCard from "./PriceChartCard";
 import HourlyBreakdown from "./HourlyBreakdown";
 import MonthlyHistory from "./MonthlyHistory";
@@ -17,8 +17,9 @@ import { t } from "../../i18n";
 import { useEnergyPrefs } from "../../hooks/useEnergyPrefs";
 
 /**
- * Pestaña de precios. Sustituye a los ternarios anidados que antes decidían
- * el layout completo dentro de App.jsx por guardas planas.
+ * Pestaña de precios, en formato editorial: el precio de ahora y lo que hay
+ * que saber en frases arriba, y debajo el detalle (gráfico, horas, el mes)
+ * en secciones separadas por una línea, sin tarjetas.
  */
 export function PricesTab({
   energyCost,
@@ -98,10 +99,10 @@ export function PricesTab({
   if (loading) return <PricesSkeleton />;
 
   return (
-    <Stack spacing={3}>
+    <Stack spacing={{ xs: 4, md: 5 }}>
       {filters}
 
-      <PriceHeadline stats={stats} units={units} />
+      <PriceSummary stats={stats} units={units} date={date} />
 
       <PriceChartCard data={energyCost} units={units} isToday={stats.isToday} date={date} />
 

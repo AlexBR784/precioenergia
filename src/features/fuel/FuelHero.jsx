@@ -1,8 +1,7 @@
 /* eslint-disable react/prop-types */
 import { useEffect, useMemo, useState } from "react";
-import { Box, Card, CardContent, Stack, Typography } from "@mui/material";
+import { Box, Stack, Typography } from "@mui/material";
 import { alpha, keyframes } from "@mui/material/styles";
-import LocalGasStationIcon from "@mui/icons-material/LocalGasStationOutlined";
 
 import { formatEuros } from "../prices/priceFormat";
 import { fillCost } from "./fuelData";
@@ -209,77 +208,64 @@ export function FuelHero({ fuelLabel, scopeLabel, stats, stations, liters }) {
     .join(" · ");
 
   return (
-    <Card component="section" aria-labelledby="fuel-hero-heading">
-      <CardContent sx={{ p: { xs: 2, sm: 3 }, "&:last-child": { pb: { xs: 2, sm: 3 } } }}>
-        <Stack
-          direction={{ xs: "column", md: "row" }}
-          spacing={{ xs: 2.5, md: 4 }}
-          justifyContent="space-between"
-          alignItems={{ xs: "stretch", md: "flex-start" }}
-        >
-          <Box sx={{ minWidth: 0 }}>
-            <Stack direction="row" spacing={0.75} alignItems="center" sx={{ color: "price.cheapest" }}>
-              <LocalGasStationIcon sx={{ fontSize: 18 }} aria-hidden="true" />
-              <Typography variant="subtitle2" sx={{ color: "inherit" }}>
-                {t("fuel.hero.meta", { fuel: fuelLabel, scope: scopeLabel, count: formatNumber(count) })}
-              </Typography>
-            </Stack>
+    <Box component="section" aria-labelledby="fuel-hero-heading">
+      <Stack
+        direction={{ xs: "column", md: "row" }}
+        spacing={{ xs: 2.5, md: 4 }}
+        justifyContent="space-between"
+        alignItems={{ xs: "stretch", md: "flex-start" }}
+      >
+        <Box sx={{ minWidth: 0 }}>
+          <Typography color="text.secondary">
+            {t("fuel.hero.meta", { fuel: fuelLabel, scope: scopeLabel, count: formatNumber(count) })}
+          </Typography>
 
-            <Typography
-              variant="h2"
-              component="h2"
-              id="fuel-hero-heading"
-              sx={{ mt: 1, fontSize: { xs: "1.375rem", sm: "1.625rem" }, lineHeight: 1.25 }}
-            >
-              {rich(
-                t("fuel.hero.cheapest", {
-                  brand: (
-                    <Box component="span" sx={{ whiteSpace: "nowrap" }}>
-                      {cheapest.brand}
-                    </Box>
-                  ),
-                  price: (
-                    <Box component="span" className="tabular" sx={{ whiteSpace: "nowrap", color: "price.cheapest" }}>
-                      {formatLiterPrice(cheapest.price)} {LITER_UNITS}
-                    </Box>
-                  ),
-                })
-              )}
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-              {where}
-            </Typography>
-          </Box>
-
-          <Box
-            sx={{
-              flexShrink: 0,
-              minWidth: { md: 220 },
-              p: 2,
-              borderRadius: 2,
-              bgcolor: "surfaceMuted",
-            }}
+          <Typography
+            variant="h2"
+            component="h2"
+            id="fuel-hero-heading"
+            sx={{ mt: 0.5, fontSize: { xs: "1.5rem", sm: "1.875rem" }, lineHeight: 1.2, letterSpacing: "-0.01em" }}
           >
-            <Typography variant="subtitle2" color="text.secondary">
-              {t("fuel.hero.fill", { liters: formatNumber(liters) })}
-            </Typography>
-            <Typography className="tabular" sx={{ fontSize: "1.5rem", fontWeight: 700, lineHeight: 1.2 }}>
-              {formatEuros(fillCost(cheapest.price, liters))}
-            </Typography>
-            {saving >= 0.01 && (
-              <Typography variant="body2" className="tabular" sx={{ color: "price.cheapest", fontWeight: 600 }}>
-                {/* Dos decimales fijos: mientras cuenta, formatEuros cambiaría de 3 a 2. */}
-                {t("fuel.hero.saving", { amount: formatMoney(shownSaving, 2) })}
-              </Typography>
+            {rich(
+              t("fuel.hero.cheapest", {
+                brand: (
+                  <Box component="span" sx={{ whiteSpace: "nowrap" }}>
+                    {cheapest.brand}
+                  </Box>
+                ),
+                price: (
+                  <Box component="span" className="tabular" sx={{ whiteSpace: "nowrap", color: "price.cheapest" }}>
+                    {formatLiterPrice(cheapest.price)} {LITER_UNITS}
+                  </Box>
+                ),
+              })
             )}
-          </Box>
-        </Stack>
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+            {where}
+          </Typography>
+        </Box>
 
-        {count > 1 && priciest.price > cheapest.price && (
-          <PriceSpread prices={prices} min={cheapest.price} max={priciest.price} average={average} />
-        )}
-      </CardContent>
-    </Card>
+        <Box sx={{ flexShrink: 0, minWidth: { md: 220 } }}>
+          <Typography color="text.secondary">
+            {t("fuel.hero.fill", { liters: formatNumber(liters) })}
+          </Typography>
+          <Typography className="tabular" sx={{ fontSize: "1.5rem", fontWeight: 700, lineHeight: 1.2 }}>
+            {formatEuros(fillCost(cheapest.price, liters))}
+          </Typography>
+          {saving >= 0.01 && (
+            <Typography variant="body2" className="tabular" sx={{ color: "price.cheapest", fontWeight: 600 }}>
+              {/* Dos decimales fijos: mientras cuenta, formatEuros cambiaría de 3 a 2. */}
+              {t("fuel.hero.saving", { amount: formatMoney(shownSaving, 2) })}
+            </Typography>
+          )}
+        </Box>
+      </Stack>
+
+      {count > 1 && priciest.price > cheapest.price && (
+        <PriceSpread prices={prices} min={cheapest.price} max={priciest.price} average={average} />
+      )}
+    </Box>
   );
 }
 

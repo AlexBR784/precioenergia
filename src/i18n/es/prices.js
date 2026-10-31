@@ -19,24 +19,30 @@ export default {
     priceTaxes: "Precio ({units}, con impuestos)",
   },
 
-  headline: {
-    summary: "Resumen del día",
-    now: "Ahora · {hour}",
+  summary: {
+    label: "Resumen del día",
     dayAverage: "Media del día",
-    atAverage: "En la media del día",
-    vsAverage: ({ percent, below }) => `${percent} % ${below ? "por debajo" : "por encima"} de la media`,
-    min: "Mínimo",
-    max: "Máximo",
-    average: "Media",
-    atHour: "a las {hour}",
-    ofDay: "del día",
-    // "Tramo punta hasta las 22:00": `period` llega resaltado.
-    period: ({ period, until }) => ["Tramo ", period, until ? ` hasta las ${until}` : ""],
+    now: "Ahora, {hour}",
+    cheapUntil: "Sigue barato hasta las {time}.",
+    cheapRestOfDay: "Sigue barato el resto del día.",
+    dropsAt: "Baja a las {time} ({price}).",
+    noDrop: "Ya no baja en lo que queda de día.",
+    risesAt: "Sube a las {time} ({price}).",
+    noRise: "No sube en lo que queda de día.",
+    dayRange: "Lo más barato, a las {minTime} ({min}).",
+    peak: "Lo más caro, de {from} a {to}, con el pico a las {time} ({price}).",
+    peakPast: "Lo más caro ya ha pasado: de {from} a {to}, con el pico a las {time} ({price}).",
+    valleyAllDay: "Todo el día es {period} ({reason}).",
+    periodUntil: "Tramo {period} hasta las {time}.",
+    periodUntilDay: "Tramo {period} hasta el {day} a las {time}.",
+    stripAria: "Precio de cada hora del día por colores. Horas baratas: {hours}.",
+    next: "Próximas horas",
+    nextColumns: "{units} · 1 h a {kw} kW",
+    nowShort: "ahora",
   },
 
   chart: {
     title: "Precio por hora",
-    body: "El precio de cada hora. El color va de frío (barato) a caliente (caro). Pasa el ratón o toca la gráfica para ver el precio de una hora.",
     legendGradient: "De más barato a más caro",
     legendAverage: "Media del día",
     legendNow: "Hora actual",
@@ -98,10 +104,8 @@ export default {
       dear("en positivo, más cara"),
       ".",
     ],
-    footnote: ({ kw, withTaxes }) =>
-      `«1 h a ${kw} kW»: lo que cuesta una hora de consumo a esa potencia (término de energía PVPC, ${
-        withTaxes ? "con impuestos, sin término de potencia" : "sin impuestos ni término de potencia"
-      }). Cambia la potencia en «¿Cuándo lo enciendo?».`,
+    footnote: ({ kw }) =>
+      `«1 h a ${kw} kW»: lo que cuesta una hora de consumo a esa potencia. Cambia la potencia en «Cuándo poner cada aparato».`,
   },
 
   month: {

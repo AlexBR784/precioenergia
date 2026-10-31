@@ -1,9 +1,8 @@
 /* eslint-disable react/prop-types */
 import { useRef, useState } from "react";
 import dayjs from "dayjs";
-import { Alert, Box, Button, Card, CardContent, CircularProgress, Link, Stack, Typography } from "@mui/material";
+import { Alert, Box, Button, CircularProgress, Link, Stack, Typography } from "@mui/material";
 import UploadIcon from "@mui/icons-material/UploadFileOutlined";
-import InsightsIcon from "@mui/icons-material/InsightsOutlined";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 
 import { useEnergyPrefs } from "../../hooks/useEnergyPrefs";
@@ -138,109 +137,104 @@ export function ConsumptionImport({ usage, onUsage }) {
       : null;
 
   return (
-    <Card component="section" aria-labelledby="import-heading">
-      <CardContent>
-        <Stack direction="row" spacing={1} alignItems="center">
-          <InsightsIcon fontSize="small" color="primary" aria-hidden="true" />
-          <Typography variant="h2" component="h2" id="import-heading">
-            {t("bill.import.title")}
-          </Typography>
-        </Stack>
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-          {rich(
-            t("bill.import.body", {
-              strong: (text) => <strong>{text}</strong>,
-              datadis: (
-                <Link href="https://datadis.es/" target="_blank" rel="noopener noreferrer" underline="hover">
-                  Datadis <OpenInNewIcon sx={{ fontSize: 13, verticalAlign: "-2px" }} aria-hidden="true" />
-                </Link>
-              ),
-            })
-          )}
-        </Typography>
-        <Typography variant="caption" color="text.secondary" component="p" sx={{ mt: 0.75 }}>
-          {t("bill.import.privacy")}
-        </Typography>
-
-        <Stack direction="row" spacing={1.5} alignItems="center" flexWrap="wrap" useFlexGap sx={{ mt: 2 }}>
-          <Button
-            ref={setUploadButton}
-            variant={usage ? "outlined" : "contained"}
-            startIcon={state.loading ? <CircularProgress size={16} color="inherit" /> : <UploadIcon />}
-            onClick={() => inputRef.current?.click()}
-            disabled={state.loading}
-          >
-            {usage ? t("bill.import.uploadAnother") : t("bill.import.upload")}
-          </Button>
-          {usage && (
-            <Button onClick={clear} color="inherit">
-              {t("common.actions.remove")}
-            </Button>
-          )}
-          {state.fileName && !state.error && (
-            <Typography variant="caption" color="text.secondary" noWrap sx={{ maxWidth: 240 }}>
-              {state.fileName}
-            </Typography>
-          )}
-          <Hint id="import" anchor={uploadButton} enabled={!usage && !state.loading} />
-          <input
-            ref={inputRef}
-            type="file"
-            accept=".csv,text/csv"
-            hidden
-            onChange={(event) => handleFile(event.target.files?.[0])}
-          />
-        </Stack>
-
-        {state.error && (
-          <Alert severity="error" sx={{ mt: 2 }}>
-            {state.error}
-          </Alert>
+    <Box component="section" aria-labelledby="import-heading" sx={{ pt: 3, borderTop: 1, borderColor: "divider" }}>
+      <Typography variant="h2" component="h2" id="import-heading">
+        {t("bill.import.title")}
+      </Typography>
+      <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+        {rich(
+          t("bill.import.body", {
+            strong: (text) => <strong>{text}</strong>,
+            datadis: (
+              <Link href="https://datadis.es/" target="_blank" rel="noopener noreferrer" underline="hover">
+                Datadis <OpenInNewIcon sx={{ fontSize: 13, verticalAlign: "-2px" }} aria-hidden="true" />
+              </Link>
+            ),
+          })
         )}
+      </Typography>
+      <Typography variant="caption" color="text.secondary" component="p" sx={{ mt: 0.75 }}>
+        {t("bill.import.privacy")}
+      </Typography>
 
+      <Stack direction="row" spacing={1.5} alignItems="center" flexWrap="wrap" useFlexGap sx={{ mt: 2 }}>
+        <Button
+          ref={setUploadButton}
+          variant={usage ? "outlined" : "contained"}
+          startIcon={state.loading ? <CircularProgress size={16} color="inherit" /> : <UploadIcon />}
+          onClick={() => inputRef.current?.click()}
+          disabled={state.loading}
+        >
+          {usage ? t("bill.import.uploadAnother") : t("bill.import.upload")}
+        </Button>
         {usage && (
-          <Box
-            sx={{
-              mt: 2.5,
-              display: "grid",
-              gap: 3,
-              gridTemplateColumns: { xs: "1fr", md: "repeat(2, minmax(0, 1fr))" },
-            }}
-          >
-            <Box>
-              <Typography variant="subtitle2" color="text.secondary">
-                {t("bill.import.range", { from: shortDate(usage.from), to: shortDate(usage.to), days: usage.days })}
-              </Typography>
-              <Typography className="tabular" sx={{ fontSize: "1.5rem", fontWeight: 700, mt: 0.5 }}>
-                {kwhText(usage.kwh)}
-              </Typography>
-              <Typography variant="caption" color="text.secondary" component="p" sx={{ mb: 1.5 }}>
-                {t("bill.import.perMonth", { kwh: kwhText((usage.kwh / usage.days) * 30) })}
-                {state.trimmed ? t("bill.import.trimmed", { days: MAX_DAYS }) : ""}
-              </Typography>
-              <SplitBar split={usage.split} />
-              {usage.weightedPriceKwh != null && (
-                <Typography variant="body2" sx={{ mt: 2 }}>
-                  {rich(t("bill.import.weighted", { price: <strong className="tabular">{priceKwh(usage.weightedPriceKwh)}</strong> }))}
-                  {diff != null &&
-                    (Math.abs(diff) < 2
-                      ? t("bill.import.sameAsAverage")
-                      : diff < 0
-                        ? t("bill.import.belowAverage", { percent: Math.round(-diff) })
-                        : t("bill.import.aboveAverage", { percent: Math.round(diff) }))}
-                </Typography>
-              )}
-            </Box>
-            <Box>
-              <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
-                {t("bill.import.profile")}
-              </Typography>
-              <Profile profile={usage.profile} />
-            </Box>
-          </Box>
+          <Button onClick={clear} color="inherit">
+            {t("common.actions.remove")}
+          </Button>
         )}
-      </CardContent>
-    </Card>
+        {state.fileName && !state.error && (
+          <Typography variant="caption" color="text.secondary" noWrap sx={{ maxWidth: 240 }}>
+            {state.fileName}
+          </Typography>
+        )}
+        <Hint id="import" anchor={uploadButton} enabled={!usage && !state.loading} />
+        <input
+          ref={inputRef}
+          type="file"
+          accept=".csv,text/csv"
+          hidden
+          onChange={(event) => handleFile(event.target.files?.[0])}
+        />
+      </Stack>
+
+      {state.error && (
+        <Alert severity="error" sx={{ mt: 2 }}>
+          {state.error}
+        </Alert>
+      )}
+
+      {usage && (
+        <Box
+          sx={{
+            mt: 2.5,
+            display: "grid",
+            gap: 3,
+            gridTemplateColumns: { xs: "1fr", md: "repeat(2, minmax(0, 1fr))" },
+          }}
+        >
+          <Box>
+            <Typography color="text.secondary">
+              {t("bill.import.range", { from: shortDate(usage.from), to: shortDate(usage.to), days: usage.days })}
+            </Typography>
+            <Typography className="tabular" sx={{ fontSize: "1.5rem", fontWeight: 700, mt: 0.5 }}>
+              {kwhText(usage.kwh)}
+            </Typography>
+            <Typography variant="caption" color="text.secondary" component="p" sx={{ mb: 1.5 }}>
+              {t("bill.import.perMonth", { kwh: kwhText((usage.kwh / usage.days) * 30) })}
+              {state.trimmed ? t("bill.import.trimmed", { days: MAX_DAYS }) : ""}
+            </Typography>
+            <SplitBar split={usage.split} />
+            {usage.weightedPriceKwh != null && (
+              <Typography variant="body2" sx={{ mt: 2 }}>
+                {rich(t("bill.import.weighted", { price: <strong className="tabular">{priceKwh(usage.weightedPriceKwh)}</strong> }))}
+                {diff != null &&
+                  (Math.abs(diff) < 2
+                    ? t("bill.import.sameAsAverage")
+                    : diff < 0
+                      ? t("bill.import.belowAverage", { percent: Math.round(-diff) })
+                      : t("bill.import.aboveAverage", { percent: Math.round(diff) }))}
+              </Typography>
+            )}
+          </Box>
+          <Box>
+            <Typography color="text.secondary" sx={{ mb: 1 }}>
+              {t("bill.import.profile")}
+            </Typography>
+            <Profile profile={usage.profile} />
+          </Box>
+        </Box>
+      )}
+    </Box>
   );
 }
 

@@ -1,12 +1,10 @@
 /* eslint-disable react/prop-types */
 import { useState } from "react";
-import { Box, Button, Card, CardContent, Stack, Typography } from "@mui/material";
-import HelpIcon from "@mui/icons-material/HelpOutlineOutlined";
-import ScheduleIcon from "@mui/icons-material/ScheduleOutlined";
-import LockClockIcon from "@mui/icons-material/LockClockOutlined";
+import { Box, Button, Typography } from "@mui/material";
 import ReceiptIcon from "@mui/icons-material/ReceiptLongOutlined";
 
 import PeriodStrip from "../../components/PeriodStrip";
+import Section from "../../components/Section";
 import { TARIFFS, useEnergyPrefs } from "../../hooks/useEnergyPrefs";
 import { PERIODS, allDayValleyReason, currentPeriod, nextValley } from "../../utils/tariffPeriods";
 import SupplyDialog, { TariffHelp, TariffOptions } from "../supply/SupplyDialog";
@@ -28,17 +26,6 @@ const whenLabel = (date, now) => {
 
 const hoursUntil = (date, now) => Math.max(1, Math.round((date - now) / 3_600_000));
 
-function Kicker({ icon: Icon, children, color = "text.secondary" }) {
-  return (
-    <Stack direction="row" spacing={0.75} alignItems="center" sx={{ color }}>
-      <Icon sx={{ fontSize: 16 }} aria-hidden="true" />
-      <Typography variant="subtitle2" sx={{ color: "inherit" }}>
-        {children}
-      </Typography>
-    </Stack>
-  );
-}
-
 function ChangeTariffButton() {
   const [open, setOpen] = useState(false);
   return (
@@ -55,23 +42,15 @@ function ChangeTariffButton() {
 function TariffQuestion() {
   const { prefs, updatePrefs } = useEnergyPrefs();
   return (
-    <Card component="section" aria-labelledby="tariff-question" sx={{ borderColor: "primary.main" }}>
-      <CardContent>
-        <Kicker icon={HelpIcon} color="primary.main">
-          {t("tips.tariff.first")}
-        </Kicker>
-        <Typography variant="h2" component="h2" id="tariff-question" sx={{ mt: 0.5 }}>
-          {t("tips.tariff.question")}
-        </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, mb: 2 }}>
-          {t("tips.tariff.questionBody")}
-        </Typography>
-        <TariffOptions value={prefs.tariff} onChange={(tariff) => updatePrefs({ tariff })} />
-        <Box sx={{ mt: 1.5 }}>
-          <TariffHelp />
-        </Box>
-      </CardContent>
-    </Card>
+    <Section id="tariff-question" kicker={t("tips.tariff.first")} title={t("tips.tariff.question")} divider={false}>
+      <Typography color="text.secondary" sx={{ mt: -1, mb: 2 }}>
+        {t("tips.tariff.questionBody")}
+      </Typography>
+      <TariffOptions value={prefs.tariff} onChange={(tariff) => updatePrefs({ tariff })} />
+      <Box sx={{ mt: 1.5 }}>
+        <TariffHelp />
+      </Box>
+    </Section>
   );
 }
 
@@ -107,52 +86,46 @@ function PeriodsAdvice({ date, isToday, now, region }) {
   }
 
   return (
-    <Card component="section" aria-labelledby="periods-advice">
-      <CardContent>
-        <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between">
-          <Kicker icon={ScheduleIcon}>{t("tips.tariff.periodsKicker")}</Kicker>
-          <ChangeTariffButton />
-        </Stack>
-        <Typography variant="h2" component="h2" id="periods-advice" sx={{ mt: 0.25 }}>
-          {title}
-        </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, mb: 2 }}>
-          {body}
-        </Typography>
-        <PeriodStrip date={date} region={region} nowHour={isToday ? now.getHours() : null} />
-        <Typography variant="caption" color="text.secondary" component="p" sx={{ mt: 1.5 }}>
-          {t("tips.tariff.periodsNote")}
-        </Typography>
-      </CardContent>
-    </Card>
+    <Section
+      id="periods-advice"
+      kicker={t("tips.tariff.periodsKicker")}
+      title={title}
+      action={<ChangeTariffButton />}
+      divider={false}
+    >
+      <Typography color="text.secondary" sx={{ mt: -1, mb: 2 }}>
+        {body}
+      </Typography>
+      <PeriodStrip date={date} region={region} nowHour={isToday ? now.getHours() : null} />
+      <Typography variant="caption" color="text.secondary" component="p" sx={{ mt: 1.5 }}>
+        {t("tips.tariff.periodsNote")}
+      </Typography>
+    </Section>
   );
 }
 
 /** Mercado libre con precio fijo: la hora no importa; lo que ahorra es otra cosa. */
 function FixedAdvice({ onOpenBill }) {
   return (
-    <Card component="section" aria-labelledby="fixed-advice">
-      <CardContent>
-        <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between">
-          <Kicker icon={LockClockIcon}>{t("tips.tariff.fixedKicker")}</Kicker>
-          <ChangeTariffButton />
-        </Stack>
-        <Typography variant="h2" component="h2" id="fixed-advice" sx={{ mt: 0.25 }}>
-          {t("tips.tariff.fixedTitle")}
-        </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-          {t("tips.tariff.fixedBody")}
-        </Typography>
-        {onOpenBill && (
-          <Button variant="outlined" startIcon={<ReceiptIcon />} onClick={onOpenBill} sx={{ mt: 2 }}>
-            {t("tips.tariff.fixedButton")}
-          </Button>
-        )}
-        <Typography variant="caption" color="text.secondary" component="p" sx={{ mt: 1.5 }}>
-          {t("tips.tariff.fixedNote")}
-        </Typography>
-      </CardContent>
-    </Card>
+    <Section
+      id="fixed-advice"
+      kicker={t("tips.tariff.fixedKicker")}
+      title={t("tips.tariff.fixedTitle")}
+      action={<ChangeTariffButton />}
+      divider={false}
+    >
+      <Typography color="text.secondary" sx={{ mt: -1 }}>
+        {t("tips.tariff.fixedBody")}
+      </Typography>
+      {onOpenBill && (
+        <Button variant="outlined" startIcon={<ReceiptIcon />} onClick={onOpenBill} sx={{ mt: 2 }}>
+          {t("tips.tariff.fixedButton")}
+        </Button>
+      )}
+      <Typography variant="caption" color="text.secondary" component="p" sx={{ mt: 1.5 }}>
+        {t("tips.tariff.fixedNote")}
+      </Typography>
+    </Section>
   );
 }
 

@@ -1,207 +1,131 @@
 /* eslint-disable react/prop-types */
 import { useState } from "react";
-import { Box, Button, Card, CardContent, Chip, Divider, Skeleton, Stack, Typography } from "@mui/material";
+import { Box, Button, Skeleton, Stack, Typography } from "@mui/material";
 import ShareIcon from "@mui/icons-material/ShareOutlined";
 import CheckIcon from "@mui/icons-material/Check";
-import TipsIcon from "@mui/icons-material/EmojiObjectsOutlined";
-import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
-import BlockIcon from "@mui/icons-material/Block";
-import EuroSymbolIcon from "@mui/icons-material/EuroSymbol";
-import WbSunnyIcon from "@mui/icons-material/WbSunnyOutlined";
-import ScheduleIcon from "@mui/icons-material/ScheduleOutlined";
-import HorizontalRuleIcon from "@mui/icons-material/HorizontalRule";
-import EventIcon from "@mui/icons-material/EventOutlined";
-import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 
 import { EmptyState } from "../../components/StateViews";
 import BoltMascot from "../../components/BoltMascot";
 import { shareText } from "../../utils/share";
 import { t } from "../../i18n";
 
-/**
- * El mapa de iconos vive aquí y no en `dayInsights.js`: la lógica solo emite
- * una clave, y así se mantiene libre de JSX.
- */
-const ICONS = {
-  best: CheckCircleOutlineIcon,
-  avoid: BlockIcon,
-  money: EuroSymbolIcon,
-  solar: WbSunnyIcon,
-  clock: ScheduleIcon,
-  flat: HorizontalRuleIcon,
-  calendar: EventIcon,
-  info: InfoOutlinedIcon,
-};
-
-/** Cada tono lleva color de icono y fondo tenue; el texto dice siempre qué significa. */
+/** Color de cada tono; el texto dice siempre qué significa, el color solo lo refuerza. */
 const TONES = {
-  success: { color: "price.cheapest", bg: "priceSoft.cheapest" },
-  warning: { color: "price.medium", bg: "priceSoft.medium" },
-  danger: { color: "price.high", bg: "priceSoft.high" },
-  info: { color: "primary.main", bg: "primarySoft" },
+  success: "price.cheapest",
+  warning: "price.medium",
+  danger: "price.high",
+  info: "text.secondary",
 };
-
 const toneOf = (insight) => TONES[insight.tone] ?? TONES.info;
-const iconOf = (insight) => ICONS[insight.icon] ?? ICONS.info;
 
-function GroupLabel({ children }) {
+/** Ánimo del rayo según el veredicto del día. */
+const MOOD_BY_LEVEL = { cheap: "happy", expensive: "sad", normal: "neutral", unknown: "unknown" };
+
+const Dot = ({ color }) => (
+  <Box
+    component="span"
+    aria-hidden="true"
+    sx={{ display: "inline-block", flexShrink: 0, width: 8, height: 8, borderRadius: "50%", bgcolor: color, mr: 0.75 }}
+  />
+);
+
+function GroupTitle({ children }) {
   return (
-    <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1.25 }}>
+    <Typography variant="body1" component="h3" sx={{ fontWeight: 700, mb: 0.5 }}>
       {children}
     </Typography>
   );
 }
 
-/** Lo que conviene hacer ahora mismo: el titular, con su tono de fondo. */
+/** Lo que conviene hacer ahora mismo, como una frase destacada (sin caja). */
 function NowLead({ insight }) {
-  const tone = toneOf(insight);
-  const Icon = iconOf(insight);
-
   return (
-    <Stack
-      direction="row"
-      spacing={1.5}
-      alignItems="flex-start"
-      sx={{ p: { xs: 1.75, sm: 2 }, borderRadius: 2, bgcolor: tone.bg }}
-    >
-      <Box
-        aria-hidden="true"
-        sx={{
-          display: "grid",
-          placeItems: "center",
-          flexShrink: 0,
-          width: 36,
-          height: 36,
-          borderRadius: "50%",
-          bgcolor: "background.paper",
-          color: tone.color,
-        }}
-      >
-        <Icon fontSize="small" />
-      </Box>
-      <Box sx={{ minWidth: 0 }}>
-        <Typography variant="subtitle2" sx={{ color: tone.color }}>
-          {insight.kicker}
-        </Typography>
-        <Typography variant="h3" component="p" sx={{ fontSize: "1.0625rem", mt: 0.25 }}>
-          {insight.title}
-        </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25 }}>
-          {insight.body}
-        </Typography>
-      </Box>
-    </Stack>
-  );
-}
-
-/**
- * Una franja horaria. La hora va grande porque es lo que se busca con la
- * vista; la etiqueta dice qué hacer con ella y el detalle, por qué.
- */
-function MomentTile({ insight }) {
-  const tone = toneOf(insight);
-  const Icon = iconOf(insight);
-  const past = Boolean(insight.past);
-  // Varios tramos sueltos ("01:00–04:00 y 13:00–16:00") no caben en grande.
-  const longWhen = insight.when.length > 16;
-
-  return (
-    <Box
-      component="article"
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        minWidth: 0,
-        p: 2,
-        borderRadius: 2,
-        border: 1,
-        borderColor: "divider",
-      }}
-    >
-      <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between">
-        <Stack direction="row" spacing={0.75} alignItems="center" sx={{ minWidth: 0, color: tone.color }}>
-          <Icon sx={{ fontSize: 18 }} aria-hidden="true" />
-          <Typography variant="subtitle2" component="h3" noWrap sx={{ color: "inherit" }}>
-            {insight.label}
-          </Typography>
-        </Stack>
-        {insight.status && (
-          <Chip
-            size="small"
-            variant="outlined"
-            label={insight.status}
-            sx={{ height: 22, fontSize: "0.75rem", borderColor: "divider", color: "text.secondary" }}
-          />
-        )}
-      </Stack>
-
-      <Typography
-        className="tabular"
-        sx={{
-          mt: 1,
-          fontSize: longWhen ? "1.125rem" : { xs: "1.5rem", sm: "1.625rem" },
-          fontWeight: 700,
-          lineHeight: 1.2,
-          // Una franja que ya pasó se queda como referencia, no como consejo.
-          color: past ? "text.secondary" : "text.primary",
-        }}
-      >
-        {insight.when}
+    <Box>
+      <Typography variant="body2" color="text.secondary">
+        <Dot color={toneOf(insight)} />
+        {insight.kicker}
       </Typography>
-      <Typography variant="body2" color="text.secondary" className="tabular" sx={{ mt: 0.5 }}>
-        {insight.detail}
+      <Typography sx={{ mt: 0.25, fontSize: { xs: "1.125rem", sm: "1.25rem" }, fontWeight: 700, color: toneOf(insight) }}>
+        {insight.title}
       </Typography>
-
+      <Typography color="text.secondary" sx={{ mt: 0.25 }}>
+        {insight.body}
+      </Typography>
     </Box>
   );
 }
 
-/** Contexto sin acción inmediata: una fila compacta por dato. */
-function FactRow({ insight }) {
-  const Icon = iconOf(insight);
-
+/**
+ * Una franja horaria como fila de un panel: qué hacer (con su punto de color),
+ * la hora grande, el detalle y, a la derecha, si ya empezó o falta poco.
+ */
+function MomentRow({ insight }) {
+  const past = Boolean(insight.past);
   return (
-    <Stack direction="row" spacing={1.5} alignItems="flex-start" sx={{ py: 1.5 }}>
-      <Icon aria-hidden="true" sx={{ fontSize: 20, mt: "1px", color: "text.secondary" }} />
-      <Box sx={{ minWidth: 0 }}>
-        <Typography variant="body2" component="h3" sx={{ fontWeight: 600 }}>
-          {insight.title}
+    <Box
+      component="li"
+      sx={{
+        display: "grid",
+        gridTemplateColumns: { xs: "minmax(0, 1fr) auto", sm: "120px minmax(0, 1fr) auto" },
+        columnGap: 2,
+        rowGap: 0.25,
+        alignItems: "baseline",
+        py: 1.5,
+        borderTop: 1,
+        borderColor: "divider",
+      }}
+    >
+      <Typography variant="body2" component="h4" sx={{ fontWeight: 700, color: toneOf(insight), gridColumn: { xs: "1", sm: "auto" } }}>
+        <Dot color={toneOf(insight)} />
+        {insight.label}
+      </Typography>
+      <Box sx={{ minWidth: 0, gridColumn: { xs: "1 / -1", sm: "auto" }, gridRow: { xs: 2, sm: "auto" } }}>
+        <Typography
+          className="tabular"
+          sx={{
+            fontSize: insight.when.length > 16 ? "1.0625rem" : { xs: "1.375rem", sm: "1.5rem" },
+            fontWeight: 700,
+            lineHeight: 1.25,
+            // Una franja que ya pasó se queda como referencia, no como consejo.
+            color: past ? "text.secondary" : "text.primary",
+          }}
+        >
+          {insight.when}
         </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25 }}>
-          {insight.body}
+        <Typography variant="body2" color="text.secondary" className="tabular">
+          {insight.detail}
         </Typography>
-        {insight.note && (
-          <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
-            {insight.note}
-          </Typography>
-        )}
       </Box>
-    </Stack>
+      {insight.status ? (
+        <Typography variant="body2" color="text.secondary" sx={{ whiteSpace: "nowrap", gridColumn: { xs: "2", sm: "auto" }, gridRow: { xs: 1, sm: "auto" } }}>
+          {insight.status}
+        </Typography>
+      ) : (
+        <Box />
+      )}
+    </Box>
   );
 }
 
-/**
- * "Qué hacer hoy" como un plan en una sola tarjeta, de lo general a lo concreto:
- *
- *  0. Cabecera: cómo es el día frente a la semana anterior, con la carita.
- *  1. Ahora: lo que conviene hacer en este momento (si se mira hoy).
- *  2. Momentos del día: las franjas concretas, con la hora como protagonista.
- *  3. Para tener en cuenta: el contexto, en filas compactas.
- *
- * Antes eran cinco o seis tarjetas iguales en rejilla: todas pesaban lo mismo,
- * las alturas no casaban y el título repetía la hora que había que buscar
- * dentro del texto. Ordenar por "cuándo actúo" deja claro qué leer primero.
- */
-/** Ánimo del rayo según el veredicto del día. */
-const MOOD_BY_LEVEL = { cheap: "happy", expensive: "sad", normal: "neutral", unknown: "unknown" };
+/** Contexto sin acción inmediata: una fila por dato, sin icono. */
+function FactRow({ insight }) {
+  return (
+    <Box component="li" sx={{ py: 1.25, borderTop: 1, borderColor: "divider" }}>
+      <Typography variant="body2" component="h4" sx={{ fontWeight: 600 }}>
+        {insight.title}
+      </Typography>
+      <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25 }}>
+        {insight.body}
+      </Typography>
+      {insight.note && (
+        <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
+          {insight.note}
+        </Typography>
+      )}
+    </Box>
+  );
+}
 
-/**
- * Cabecera del plan: cómo es el día frente a la semana anterior, con el rayo.
- *
- * Antes era una tarjeta suelta encima del plan, con la media del día en grande
- * (la misma cifra que la cabecera de Precios). Aquí abre el plan: primero cómo
- * es el día y después qué hacer, en una sola tarjeta.
- */
 /**
  * Compartir el resumen del día ("Hoy es un día caro. Evita 18:00 – 21:00…"):
  * pensado para avisar a la familia por WhatsApp. En escritorio se copia.
@@ -226,27 +150,25 @@ function ShareDayButton({ text }) {
   );
 }
 
+/** Cómo es el día frente a la semana anterior, con el rayo poniéndole cara. */
 function VerdictHeader({ verdict, whenLabel, loadingBaseline, share }) {
   return (
-    <Stack direction="row" spacing={1.75} alignItems="center" sx={{ mb: 2.5 }}>
+    <Stack direction="row" spacing={2} alignItems="center">
       {/* key: al cambiar de veredicto (otro día) el rayo vuelve a animarse */}
-      <BoltMascot key={verdict.level} mood={MOOD_BY_LEVEL[verdict.level] ?? "unknown"} size={56} />
+      <BoltMascot key={verdict.level} mood={MOOD_BY_LEVEL[verdict.level] ?? "unknown"} size={64} />
       <Box sx={{ minWidth: 0 }}>
-        <Stack direction="row" spacing={0.75} alignItems="center" sx={{ color: "text.secondary" }}>
-          <TipsIcon sx={{ fontSize: 16 }} aria-hidden="true" />
-          <Typography variant="subtitle2" sx={{ color: "inherit" }}>
-            {t(`tips.plan.title.${whenLabel}`)}
-          </Typography>
-        </Stack>
+        <Typography variant="body2" color="text.secondary">
+          {t(`tips.plan.title.${whenLabel}`)}
+        </Typography>
         <Typography
           variant="h2"
           component="h2"
           id="tips-heading"
-          sx={{ fontSize: { xs: "1.25rem", sm: "1.375rem" }, mt: 0.25 }}
+          sx={{ fontSize: { xs: "1.5rem", sm: "1.75rem" }, letterSpacing: "-0.01em", lineHeight: 1.2 }}
         >
           {verdict.title}
         </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25 }}>
+        <Typography color="text.secondary" sx={{ mt: 0.25 }}>
           {loadingBaseline ? <Skeleton width={260} /> : verdict.body}
         </Typography>
       </Box>
@@ -260,8 +182,10 @@ function VerdictHeader({ verdict, whenLabel, loadingBaseline, share }) {
 }
 
 /**
- * `aside` es una fila extra al final de "Para tener en cuenta" (el apunte de
- * mañana); se pasa ya montada para que el plan no sepa de dónde sale.
+ * "Qué hacer hoy" como un texto que se lee de arriba abajo, sin cajas: cómo es
+ * el día, lo que conviene ahora, las franjas del día como un panel de horas y
+ * el contexto en filas. `aside` es una fila extra al final del contexto (el
+ * apunte de mañana); llega ya montada.
  */
 export function DayPlan({ insights, whenLabel, verdict, loadingBaseline, aside = null, share = null }) {
   const now = insights.find((insight) => insight.kind === "now");
@@ -269,71 +193,54 @@ export function DayPlan({ insights, whenLabel, verdict, loadingBaseline, aside =
   const facts = insights.filter((insight) => insight.kind === "fact");
 
   return (
-    <Card component="section" aria-labelledby="tips-heading">
-      <CardContent>
-        {verdict ? (
-          <VerdictHeader verdict={verdict} whenLabel={whenLabel} loadingBaseline={loadingBaseline} share={share} />
-        ) : (
-          <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2 }}>
-            <TipsIcon fontSize="small" color="primary" aria-hidden="true" />
-            <Typography variant="h2" component="h2" id="tips-heading">
-              {t(`tips.plan.title.${whenLabel}`)}
-            </Typography>
-          </Stack>
-        )}
+    <Box component="section" aria-labelledby="tips-heading">
+      {verdict ? (
+        <VerdictHeader verdict={verdict} whenLabel={whenLabel} loadingBaseline={loadingBaseline} share={share} />
+      ) : (
+        <Typography variant="h2" component="h2" id="tips-heading">
+          {t(`tips.plan.title.${whenLabel}`)}
+        </Typography>
+      )}
 
-        {!insights.length ? (
-          <EmptyState
-            pose="normal"
-            title={t("tips.plan.emptyTitle")}
-            description={t("tips.plan.emptyBody")}
-          />
-        ) : (
-          <Stack spacing={3}>
-            {now && <NowLead insight={now} />}
+      {!insights.length ? (
+        <Box sx={{ mt: 3 }}>
+          <EmptyState pose="normal" title={t("tips.plan.emptyTitle")} description={t("tips.plan.emptyBody")} />
+        </Box>
+      ) : (
+        <Stack spacing={3.5} sx={{ mt: 3 }}>
+          {now && <NowLead insight={now} />}
 
-            {moments.length > 0 && (
-              <Box>
-                <GroupLabel>{t("tips.plan.moments")}</GroupLabel>
-                <Box
-                  sx={{
-                    display: "grid",
-                    gap: 1.5,
-                    gridTemplateColumns: {
-                      xs: "1fr",
-                      sm: "repeat(2, minmax(0, 1fr))",
-                      md: `repeat(${Math.min(moments.length, 3)}, minmax(0, 1fr))`,
-                    },
-                  }}
-                >
-                  {moments.map((insight) => (
-                    <MomentTile key={insight.id} insight={insight} />
-                  ))}
-                </Box>
+          {moments.length > 0 && (
+            <Box>
+              <GroupTitle>{t("tips.plan.moments")}</GroupTitle>
+              <Box component="ul" sx={{ m: 0, p: 0, listStyle: "none" }}>
+                {moments.map((insight) => (
+                  <MomentRow key={insight.id} insight={insight} />
+                ))}
               </Box>
-            )}
+            </Box>
+          )}
 
-            {share && (
-              <Box sx={{ display: { xs: "block", sm: "none" }, mt: -1 }}>
-                <ShareDayButton text={share} />
-              </Box>
-            )}
+          {share && (
+            <Box sx={{ display: { xs: "block", sm: "none" }, mt: "8px !important" }}>
+              <ShareDayButton text={share} />
+            </Box>
+          )}
 
-            {(facts.length > 0 || aside) && (
-              <Box>
-                <GroupLabel>{t("tips.plan.facts")}</GroupLabel>
-                <Stack divider={<Divider flexItem />} sx={{ mt: -1.5 }}>
-                  {facts.map((insight) => (
-                    <FactRow key={insight.id} insight={insight} />
-                  ))}
-                  {aside}
-                </Stack>
+          {(facts.length > 0 || aside) && (
+            <Box>
+              <GroupTitle>{t("tips.plan.facts")}</GroupTitle>
+              <Box component="ul" sx={{ m: 0, p: 0, listStyle: "none" }}>
+                {facts.map((insight) => (
+                  <FactRow key={insight.id} insight={insight} />
+                ))}
               </Box>
-            )}
-          </Stack>
-        )}
-      </CardContent>
-    </Card>
+              {aside && <Box sx={{ borderTop: 1, borderColor: "divider" }}>{aside}</Box>}
+            </Box>
+          )}
+        </Stack>
+      )}
+    </Box>
   );
 }
 

@@ -384,6 +384,8 @@ export function BoltMascot({ mood, pose, size = 56, animate = true }) {
   return (
     <Box
       aria-hidden="true"
+      // Para que otras piezas sepan si ya hay un rayo a la vista (las pistas).
+      data-bolt-mascot=""
       sx={{
         flexShrink: 0,
         height: size,
@@ -480,6 +482,26 @@ export function BoltMascot({ mood, pose, size = 56, animate = true }) {
           </g>
         </Box>
       </Box>
+    </Box>
+  );
+}
+
+/**
+ * El símbolo de la marca: el mismo rayo, plano y sin cara (ver
+ * `design/marca`). Va en la cabecera, junto al nombre. La cara es para
+ * expresar algo (el veredicto, los avisos); en el logo, una cara tranquila
+ * fija se confundía con el veredicto de "día normal", que es idéntico.
+ */
+export function BrandSymbol({ size = 40 }) {
+  const theme = useTheme();
+  return (
+    <Box
+      component="svg"
+      viewBox="0 0 64 66"
+      aria-hidden="true"
+      sx={{ display: "block", flexShrink: 0, height: size, width: widthFor(size, 64 / 66), overflow: "visible" }}
+    >
+      <path d={BODY} {...stroke} fill={theme.palette.secondary.main} strokeWidth={3} />
     </Box>
   );
 }

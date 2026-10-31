@@ -36,7 +36,7 @@ export function PeriodStrip({ date, region, nowHour = null }) {
   return (
     <Box component="figure" sx={{ m: 0 }}>
       <Stack direction="row" spacing={1} alignItems="baseline" justifyContent="space-between" sx={{ mb: 0.75 }}>
-        <Typography variant="subtitle2" color="text.secondary" component="figcaption">
+        <Typography variant="body2" component="figcaption" sx={{ fontWeight: 700 }}>
           {t("common.periodStrip.title")}
         </Typography>
         <Typography variant="caption" color="text.secondary">

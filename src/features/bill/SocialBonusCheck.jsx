@@ -3,15 +3,12 @@ import {
   Alert,
   Box,
   Button,
-  Card,
-  CardContent,
   Checkbox,
   FormControlLabel,
   Link,
   Stack,
   Typography,
 } from "@mui/material";
-import VolunteerIcon from "@mui/icons-material/VolunteerActivismOutlined";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 
 import NumberField from "../../components/NumberField";
@@ -57,80 +54,75 @@ export function SocialBonusCheck() {
   const qualifies = result.level === "vulnerable" || result.level === "severe";
 
   return (
-    <Card component="section" aria-labelledby="bonus-heading">
-      <CardContent>
-        <Stack direction="row" spacing={1} alignItems="center">
-          <VolunteerIcon fontSize="small" color="primary" aria-hidden="true" />
-          <Typography variant="h2" component="h2" id="bonus-heading">
-            {t("bill.bonus.title")}
-          </Typography>
-        </Stack>
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, mb: 2.5 }}>
-          {t("bill.bonus.body", { percent: percent(SOCIAL_BONUS.discount.severe) })}
+    <Box component="section" aria-labelledby="bonus-heading" sx={{ pt: 3, borderTop: 1, borderColor: "divider" }}>
+      <Typography variant="h2" component="h2" id="bonus-heading">
+        {t("bill.bonus.title")}
+      </Typography>
+      <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, mb: 2.5 }}>
+        {t("bill.bonus.body", { percent: percent(SOCIAL_BONUS.discount.severe) })}
+      </Typography>
+
+      <Box sx={{ display: "grid", gap: 2, gridTemplateColumns: { xs: "1fr", sm: "repeat(3, minmax(0, 1fr))" } }}>
+        <NumberField label={t("bill.bonus.adults")} value={form.adults} min={1} max={20} onChange={(v) => v && set("adults")(Math.round(v))} />
+        <NumberField label={t("bill.bonus.minors")} value={form.minors} min={0} max={20} onChange={(v) => set("minors")(Math.round(v ?? 0))} />
+        <NumberField
+          label={t("bill.bonus.income")}
+          unit="€"
+          value={form.income}
+          onChange={set("income")}
+          helperText={t("bill.bonus.incomeHelp")}
+        />
+      </Box>
+
+      <Stack sx={{ mt: 1.5 }}>
+        <FormControlLabel control={<Checkbox checked={form.largeFamily} onChange={toggle("largeFamily")} />} label={t("bill.bonus.largeFamily")} />
+        <FormControlLabel
+          control={<Checkbox checked={form.minimumPension} onChange={toggle("minimumPension")} />}
+          label={t("bill.bonus.minimumPension")}
+        />
+        <FormControlLabel control={<Checkbox checked={form.minimumIncome} onChange={toggle("minimumIncome")} />} label={t("bill.bonus.minimumIncome")} />
+        <FormControlLabel
+          control={<Checkbox checked={form.specialCircumstances} onChange={toggle("specialCircumstances")} />}
+          label={t("bill.bonus.special")}
+        />
+      </Stack>
+
+      <Alert severity={view.severity} sx={{ mt: 2 }}>
+        <Typography variant="body2" sx={{ fontWeight: 700 }}>
+          {t(`bill.bonus.results.${result.level}`, { percent: view.percent != null ? percent(view.percent) : "" })}
         </Typography>
-
-        <Box sx={{ display: "grid", gap: 2, gridTemplateColumns: { xs: "1fr", sm: "repeat(3, minmax(0, 1fr))" } }}>
-          <NumberField label={t("bill.bonus.adults")} value={form.adults} min={1} max={20} onChange={(v) => v && set("adults")(Math.round(v))} />
-          <NumberField label={t("bill.bonus.minors")} value={form.minors} min={0} max={20} onChange={(v) => set("minors")(Math.round(v ?? 0))} />
-          <NumberField
-            label={t("bill.bonus.income")}
-            unit="€"
-            value={form.income}
-            onChange={set("income")}
-            helperText={t("bill.bonus.incomeHelp")}
-          />
-        </Box>
-
-        <Stack sx={{ mt: 1.5 }}>
-          <FormControlLabel control={<Checkbox checked={form.largeFamily} onChange={toggle("largeFamily")} />} label={t("bill.bonus.largeFamily")} />
-          <FormControlLabel
-            control={<Checkbox checked={form.minimumPension} onChange={toggle("minimumPension")} />}
-            label={t("bill.bonus.minimumPension")}
-          />
-          <FormControlLabel control={<Checkbox checked={form.minimumIncome} onChange={toggle("minimumIncome")} />} label={t("bill.bonus.minimumIncome")} />
-          <FormControlLabel
-            control={<Checkbox checked={form.specialCircumstances} onChange={toggle("specialCircumstances")} />}
-            label={t("bill.bonus.special")}
-          />
-        </Stack>
-
-        <Alert severity={view.severity} sx={{ mt: 2 }}>
-          <Typography variant="body2" sx={{ fontWeight: 700 }}>
-            {t(`bill.bonus.results.${result.level}`, { percent: view.percent != null ? percent(view.percent) : "" })}
-          </Typography>
-          <Typography variant="body2" sx={{ mt: 0.5 }}>
-            {qualifies &&
-              result.reasons.length > 0 &&
-              t("bill.bonus.because", { reasons: result.reasons.map((reason) => t(`bill.bonus.reasons.${reason}`)) })}
-            {!form.largeFamily && !form.minimumPension && t("bill.bonus.threshold", { amount: euros0(result.threshold) })}
-            {qualifies && t("bill.bonus.requirements")}
-          </Typography>
-          <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5} sx={{ mt: 1.5 }}>
-            <Link
-              href={SOCIAL_BONUS.officialUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              underline="hover"
-              sx={{ fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 0.5 }}
+        <Typography variant="body2" sx={{ mt: 0.5 }}>
+          {qualifies &&
+            result.reasons.length > 0 &&
+            t("bill.bonus.because", { reasons: result.reasons.map((reason) => t(`bill.bonus.reasons.${reason}`)) })}
+          {!form.largeFamily && !form.minimumPension && t("bill.bonus.threshold", { amount: euros0(result.threshold) })}
+          {qualifies && t("bill.bonus.requirements")}
+        </Typography>
+        <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5} sx={{ mt: 1.5 }}>
+          <Link
+            href={SOCIAL_BONUS.officialUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            underline="hover"
+            sx={{ fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 0.5 }}
+          >
+            {t("bill.bonus.howTo")} <OpenInNewIcon sx={{ fontSize: 16 }} aria-hidden="true" />
+          </Link>
+          {qualifies && (
+            <Button
+              size="small"
+              onClick={() => updatePrefs({ bonus: result.level, household: householdFor(form) })}
             >
-              {t("bill.bonus.howTo")} <OpenInNewIcon sx={{ fontSize: 16 }} aria-hidden="true" />
-            </Link>
-            {qualifies && (
-              <Button
-                size="small"
-                onClick={() => updatePrefs({ bonus: result.level, household: householdFor(form) })}
-              >
-                {t("bill.bonus.apply")}
-              </Button>
-            )}
-          </Stack>
-        </Alert>
+              {t("bill.bonus.apply")}
+            </Button>
+          )}
+        </Stack>
+      </Alert>
 
-        <Typography variant="caption" color="text.secondary" component="p" sx={{ mt: 1.5 }}>
-          {t("bill.bonus.footnote", { iprem: euros0(SOCIAL_BONUS.iprem), date: formatDate(new Date(SOCIAL_BONUS.validUntil)) })}
-        </Typography>
-      </CardContent>
-    </Card>
+      <Typography variant="caption" color="text.secondary" component="p" sx={{ mt: 1.5 }}>
+        {t("bill.bonus.footnote", { iprem: euros0(SOCIAL_BONUS.iprem), date: formatDate(new Date(SOCIAL_BONUS.validUntil)) })}
+      </Typography>
+    </Box>
   );
 }
 

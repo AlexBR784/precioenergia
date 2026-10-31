@@ -226,7 +226,7 @@ export function FuelTab({ energyCost }) {
   }
 
   return (
-    <Stack spacing={3}>
+    <Stack spacing={{ xs: 4, md: 5 }}>
       <FuelFiltersBar
         prefs={prefs}
         onPrefsChange={updatePrefs}

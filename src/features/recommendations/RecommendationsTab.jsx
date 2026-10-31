@@ -1,13 +1,14 @@
 /* eslint-disable react/prop-types */
 import { useMemo } from "react";
 import dayjs from "dayjs";
-import { Stack } from "@mui/material";
+import { Box, Stack } from "@mui/material";
 
 import DaySelector from "../../components/DaySelector";
 import { EmptyState, ErrorState } from "../../components/StateViews";
 import { usePriceStats } from "../../hooks/usePriceStats";
 import { useNow } from "../../hooks/useNow";
 import { useTomorrowForecast } from "../../hooks/useTomorrowForecast";
+import { TARIFFS, useEnergyPrefs } from "../../hooks/useEnergyPrefs";
 import { buildInsights } from "./dayInsights";
 import DayPlan from "./DayPlan";
 import RecommendationsSkeleton from "./RecommendationsSkeleton";
@@ -40,6 +41,10 @@ export function RecommendationsTab({
   // El reloj entra por estado, no se lee dentro de la lógica: con la pestaña
   // abierta un rato, "ahora mismo estás en una hora cara" dejaría de ser cierto.
   const now = useNow();
+  // Sin PVPC (o sin saberlo) va antes un bloque sobre la tarifa: el plan del
+  // día se separa de él con una línea.
+  const { prefs } = useEnergyPrefs();
+  const afterTariff = prefs.tariff !== TARIFFS.PVPC;
 
   const stats = usePriceStats(energyCost, date);
   const isFuture = useMemo(() => dayjs(date).isAfter(dayjs(), "day"), [date]);
@@ -132,34 +137,34 @@ export function RecommendationsTab({
   if (loading) return <RecommendationsSkeleton />;
 
   return (
-    <Stack spacing={3}>
+    <Stack spacing={{ xs: 4, md: 5 }}>
       {dateControl}
 
       {/* Sin PVPC los consejos por horas no ahorran: primero, lo que sí. */}
       <TariffAdvice date={date} isToday={stats.isToday} now={now} onOpenBill={onOpenBill} />
 
-      <DayPlan
-        insights={insights}
-        whenLabel={stats.isToday ? "today" : isFuture ? "future" : "past"}
-        verdict={verdict}
-        loadingBaseline={baselineLoading}
-        share={share}
-        aside={
-          // Mañana como apunte, no como otro veredicto: aparece cuando REE ya
-          // ha publicado el mercado de mañana (hacia mediodía).
-          stats.isToday && forecast?.available ? (
-            <TomorrowNote
-              forecast={forecast}
-              onShowTomorrow={() => onDateChange(dayjs().add(1, "day"))}
-            />
-          ) : null
-        }
-      />
+      <Box sx={afterTariff ? { pt: 3, borderTop: 1, borderColor: "divider" } : undefined}>
+        <DayPlan
+          insights={insights}
+          whenLabel={stats.isToday ? "today" : isFuture ? "future" : "past"}
+          verdict={verdict}
+          loadingBaseline={baselineLoading}
+          share={share}
+          aside={
+            // Mañana como apunte, no como otro veredicto: aparece cuando REE ya
+            // ha publicado el mercado de mañana (hacia mediodía).
+            stats.isToday && forecast?.available ? (
+              <TomorrowNote
+                forecast={forecast}
+                onShowTomorrow={() => onDateChange(dayjs().add(1, "day"))}
+              />
+            ) : null
+          }
+        />
+      </Box>
 
       {/* Los consejos de arriba dan por supuesta una tarea genérica; esta
-          sección responde a la concreta ("mi coche, 4 h a 7,4 kW"). Sustituye
-          al antiguo diálogo de la calculadora y al gráfico "El día de un
-          vistazo", que repetía la pestaña de precios. */}
+          sección responde a la concreta ("mi coche, 4 h a 7,4 kW"). */}
       <WhenToRun energyCost={energyCost} units={units} isToday={stats.isToday} date={date} />
     </Stack>
   );

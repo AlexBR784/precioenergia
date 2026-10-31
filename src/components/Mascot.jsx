@@ -3,13 +3,14 @@ import { useEffect, useState } from "react";
 import { Box } from "@mui/material";
 import { keyframes } from "@mui/material/styles";
 
-import BoltMascot from "./BoltMascot";
+import { BrandSymbol } from "./BoltMascot";
 
 /**
- * El rayo de la marca en la cabecera: el mismo `BoltMascot` del veredicto del
- * día, con cara tranquila y quieto, para que toda la app hable con un solo
- * personaje. El favicon y los iconos de la app salen del mismo dibujo
- * (`design/mascota/iconos.py`).
+ * El símbolo de la marca en la cabecera: el rayo sin cara (`BrandSymbol`), como
+ * en el logotipo de `design/marca`. La mascota con cara se queda para lo que
+ * expresa algo: con la cara tranquila en el logo, el veredicto de "día normal"
+ * salía repetido arriba. Los iconos de la app también van sin cara; el
+ * favicon sí la lleva, porque cambia con el precio (`useLiveTitle`).
  *
  * Al cargar la página da un saltito y se queda quieto. Solo una vez: si
  * saltara en cada cambio de sección, con la barra de navegación y el
@@ -46,7 +47,7 @@ export function Mascot({ size = 40 }) {
         "@media (prefers-reduced-motion: reduce)": { animation: "none" },
       }}
     >
-      <BoltMascot mood="neutral" size={size} animate={false} />
+      <BrandSymbol size={size} />
     </Box>
   );
 }
